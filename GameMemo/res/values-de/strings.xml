@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GameMemo</string>
+    <string name="no_tichus">Noch keine Tichu Spiele.</string>
+    <string name="new_tichu_game">Neues Spiel</string>
+    <string name="menu_delete_game">Löschen</string>
+    <string name="menu_info_game">Info</string>
+    <string name="tichu_row_team2_heading">Team 2</string>
+    <string name="tichu_row_team1_heading">Team 1</string>
+    <string name="tichu_row_time_empty">Startzeit</string>
+    <string name="tichu_row_time_heading">Startzeit</string>
+    <string name="game_starttime">Startzeit</string>
+    <string name="game_runtime">Dauer</string>
+    <string name="game_team">Team</string>
+    <string name="no_tichu_rounds">Noch keine Runden</string>
+    <string name="default_tichu_round_score"> </string><string name="default_player_name">Spieler</string>
+    <string name="tichu_game_lock_round">Speichern</string><string name="tichu_game_lock_game">Beenden</string>
+    <string name="tichu_game_deselect_round">Neue Runde</string>
+    <string name="tichu_team_select_team1">Team 1</string>
+    <string name="tichu_team_select_team2">Team 2</string>
+    <string name="game_enter_name">Name eingeben</string>
+    <string name="game_select_player">Wähle einen Spieler</string>
+    <string name="tichu_team_select_shuffle">Mische Spieler</string>
+    <string name="tichu_team_select_add_player">Füge hinzu</string>
+    <string name="tichu_team_select_start_game">Spiel starten</string>
+    <string name="tichu_game_tichu_button_1_content_description">Tichu Ansage umschalten für Spieler 1</string>
+    <string name="tichu_game_tichu_button_2_content_description">Tichu Ansage umschalten für Spieler 2</string>
+    <string name="tichu_game_tichu_button_3_content_description">Tichu Ansage umschalten für Spieler 3</string>
+    <string name="tichu_game_tichu_button_4_content_description">Tichu Ansage umschalten für Spieler 4</string>
+    <string name="game_detail_option_show_delta">Zeige Punktedelta</string>
+    <string name="game_detail_option_show_tichus">Zeige Tichus</string>
+    <string name="tichu_game_tichu_round_bid_image_content_description">Visualisiert Tichu Ansage in einer Runde</string>
+    <string name="tichu_game_failed_loading">Tichu Spiel konnte nicht geladen werden.</string>
+    <string name ="tichu_game_lockin_button_empty">"?" : "?"</string>
+    <string name ="show_statistics">Statistik</string>
+    <string name="statistics_games_played_descr">Gespielte Spiele</string>
+    <string name="statistics_games_won_descr">Gewonnene Spiele</string>
+    <string name="statistics_rounds_played_descr">Gespielte Runden</string>
+    <string name="statistics_rounds_won_descr">Gewonnene Runden</string>
+    <string name="statistics_small_tichus_descr">Kleine Tichus</string>
+    <string name="statistics_small_tichus_won_descr">Gewonnene kleine Tichus</string>
+    <string name="statistics_big_tichus_descr">Große Tichus</string>
+    <string name="statistics_big_tichus_won_descr">Gewonnene große Tichus</string>
+    <string name="statistics_score_per_round_no_tichus">Punkte pro Runde (ohne Tichus)</string>
+    <string name="statistics_score_per_round_incl_tichus">Punkte pro Runde (mit Tichus)</string>
+    <string name="statistics_average_finisher_pos_descr">Endplatzierung (Schnitt)</string>
+    <string name="statistics_column_header_total_abs_value">Gesamt</string>
+	<string name="statistics_column_header_won">Gewonnen</string>
+	<string name="statistics_by_player">Nach Spielern</string>
+	<string name="statistics_by_genre">Nach Typ</string>
+	<string name="statistics_by_genre_value_column_descr">Wert</string>
+	<string name="data_exchange_button_refresh_devices_list">Erneuern</string>
+	<string name="data_exchange_connection_status_title">Status:</string>
+	<string name="data_exchange_connection_status_none">Ruhend</string>
+	<string name="data_exchange_connection_status_listen">Wartend</string>
+	<string name="data_exchange_connection_status_connecting">Verbinden</string>
+	<string name="data_exchange_connection_status_connected">Verbunden</string>
+	<string name="data_exchange_connected_to">Verbunden mit </string>
+	<string name="data_exchange_status_synchronizing_with">Synchronisiere mit:</string>
+	<string name="data_exchange_status_synchronized_with">Synchronisiert mit:</string>
+	<string name="data_exchange_status_synchronizing_failed">Synchronisation fehlgeschlagen</string>
+	<string name="data_exchange_bluetooth_no_devices">Keine Geräte</string>
+	<string name="bluetooth_unable_to_connect">Verbinden mit Gerät fehlgeschlagen.</string>
+	<string name="data_exchange_bluetooth_not_enabled_leaving">Bluetooth nicht verfügbar; Abbruch.</string>
+	<string name="bluetooth_not_available">Bluetooth ist nicht verfübar.</string>
+	<string name="open_data_exchanger_bluetooth">Spieldatenaustausch</string>
+	<string name="data_exchange_bluetooth_button_ensure_discoverable">Auffindbar machen</string>
+	<string name="data_exchange_bluetooth_make_discoverable_on_start">Beim Start auffindbar machen</string>
+	<string name="confirm_delete">Löschen bestätigen</string>
+	<string name="confirm_delete_tichu_game">Willst du dieses Spiel wirklich löschen?</string>
+	<string name="data_exchange_complete">Datenaustausch beendet.</string>
+	<string name="data_exchange_games_received">Spiele empfangen:</string>
+	<string name="data_exchange_games_sent">Spiele gesendet:</string>
+	<string name="bluetooth_devices_state_bonded">Gekoppelt</string>
+    <string name ="TichuTableAccessPermissionDescription">Zugriff auf die TichuTable Datenbank</string>
+	<string name="bluetooth_confirm_turn_off_title">Bluetooth ausschalten?</string>
+	<string name="bluetooth_confirm_turn_off">Willst du Bluetooth ausschalten?</string>
+	<string name="bluetooth_leave_enabled">Eingeschaltet lassen</string>
+	<string name="unfinished_game_found_title">Offenes Spiel gefunden</string>
+	<string name="unfinished_game_found_want_continue">Offenes Spiel gefunden, weiter spielen?</string>
+	<string name="unfinished_game_found_but_start_new">Starte neues Spiel</string>
+	<string name="rename_player">Spieler umbenennen</string>
+	<string name="hint_new_player_name">Neuer Spielername</string>
+	<string name="rename_conflict_title">Doppelter Name</string>
+	<string name="rename_conflict">Es gibt bereits einen Spieler mit diesem Namen. Zusammenfügen? (Kann Spiele ungültig machen)</string>
+	<string name="rename_success">Umbenennen erfolgreich.</string>
+	<string name="rename_failure">Umbenennen fehlgeschlagen.</string>
+	<string name="help">Hilfe</string>
+	<string name="about">Über GameMemo</string>
+	<string name="hints">Hinweise</string>
+	<string name="hints_message"><Data><![CDATA[ 
+	    <ul>
+	    <li>Wenn du ein neues Spiel startest
+	    	<ul>
+	    	<li>Wähle existierende Spieler von der Liste oder gib einen neuen Namen ein um die Plätze zu belegen.
+	    	<li>Spielernamen sind unabhängig von der Groß-/Kleinschreibung und können alle Zeichen enthalten.
+	    	<li>Mische Spieler um zufällige Teams zu erzeugen.
+	    	<li>Falls es ein offenes Spiel mit den gewählten Spielern gibt kannst du dieses fortsetzen.
+	    	</ul>
+	    <li>Wenn du ein Spiel spielst
+	    	<ul>
+	    	<li>Gebe große und kleine Tichuansagen durch einen Klick auf das Hundesymbol unter dem Spieler an.
+	    		Ein Phoenix symbolisiert ein kleines Tichu, ein Drache ein großes Tichu.
+	    	<li>Du musst bei jeder Spielrunde angeben, wer als erster fertig wurde, indem du auf den Spielernamen klickst. Dies ermöglicht die automatische Tichupunkte Berechnung.
+	    	<li>Gebe alle Platzierungen für eine Runde an, um noch genauere Statistiken zu erhalten.
+	    	<li>Du musst nur Punkte für ein Team angeben, die anderen Punkte werden für dich berechnet. Gebe nur die normalen Punkte ohne eventuelle Tichupunkte an.
+	    	<li>Spielrunden können jederzeit angepasst werden, solange das Spiel noch nicht beendet und geschlossen wurde.
+			</ul>
+		<li>Tausche Spieldaten mit anderen um die Statistiken zu verbessern.
+	    <li>Falls ein Spieler unter verschiedenen Namen gespeichert ist kannst du einen einfach umbenennen: Sie werden zusammengefügt und ihre Spiele und Statistiken kombiniert.
+	    </ul>
+	    ]]></Data></string>
+	
+	<string name="statistics_sort_by_percentage">Nach Prozentzahl sortieren</string>
+	<string name="statistics_sort_by_value">Nach Wert sortieren</string>
+	<string name="statistics_only_show_significant">Nur aussagekräftige</string>	
+	<string name="tichu_game_mery_rule">Mercy Regel</string>
+	<string name="tichu_game_mery_rule_short">Mercy</string>
+	<string name="game_winner">Gewinner</string>
+	<string name="tichu_game_score_limit">Punktelimit</string>
+	<string name="tichu_game_score_limit_short">Limit</string>
+	<string name="game_origin">Herkunft</string>
+	<string name="tichu_game_state_add_round">Runde hinzufügen</string>
+	<string name="tichu_game_state_new_round">Neue Runde</string>
+	<string name="tichu_game_state_old_round_edited">Änderungen speichern</string>
+	<string name="tichu_game_state_game_closable">Spiel beenden</string>
+	<string name="tichu_game_state_expect_data">Neue Runde eingeben: Wer wurde erster? Tichus?</string>
+	<string name="tichu_game_enter_hand_score">Punkte</string>
+	<string name="tichu_game_lock_button_content_description">Beginne neue Runde, ändere die gewählte oder verlasse das Spiel.</string>
+	<string name="clear">Zurücksetzen</string>
+	<string name="game_options">Optionen</string>
+</resources>

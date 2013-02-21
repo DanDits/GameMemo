@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/statistics_toggle_sort_type" android:title="@string/statistics_sort_by_percentage"></item>
+    <item android:id="@+id/statistics_only_show_significant" android:title="@string/statistics_only_show_significant" android:checkable="true"></item>
+    
+
+</menu>

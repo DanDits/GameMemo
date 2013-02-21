@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/data_exchange_bluetooth_ensure_discoverable" android:title="@string/data_exchange_bluetooth_button_ensure_discoverable"></item>
+    <item android:id="@+id/data_exchange_bluetooth_make_discoverable_on_start" android:title="@string/data_exchange_bluetooth_make_discoverable_on_start" android:checkable="true"></item>
+    
+
+</menu>

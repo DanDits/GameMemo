@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="tichu_image_in_round_max_height">20dp</dimen>
+    <dimen name="tichu_image_for_toggle_max_height">50dp</dimen>
+    <dimen name="tichu_detail_separator_line_width">2dp</dimen>
+</resources>

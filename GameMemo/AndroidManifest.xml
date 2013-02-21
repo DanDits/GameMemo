@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dan.dit.gameMemo"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="15" />
+	<permission 
+   		    android:description="@string/TichuTableAccessPermissionDescription"
+   		    android:label="Tichu games access"
+   		    android:name="TichuGames"
+   		    android:protectionLevel="signature">
+    </permission>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/tichu_phoenix"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name=".appCore.tichu.TichuGamesActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".appCore.tichu.TichuGameDetailActivity"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" >
+        </activity>
+        <activity
+            android:name=".appCore.GamePlayerSelectionActivity"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" >
+        </activity>
+        <activity
+            android:name=".util.DebugShowStacktraceActivity">
+        </activity>
+        <activity
+            android:name=".appCore.tichu.TichuGamesStatisticsActivity">
+        </activity>
+        <activity
+            android:name=".dataExchange.bluetooth.BluetoothDataExchangeActivity">
+        </activity>
+          <provider
+     		 android:name=".storage.database.tichu.TichuTableContentProvider"
+      		 android:authorities="dan.dit.gameMemo.tichu.contentprovider" 
+      		 android:permission="TichuGames"
+      		 android:exported="true">
+   		</provider>
+   		
+    </application>
+
+</manifest>

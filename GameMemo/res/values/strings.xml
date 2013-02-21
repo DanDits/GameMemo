@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GameMemo</string>
+    <string name="no_tichus">No tichu games yet.</string>
+    <string name="new_tichu_game">New game</string>
+    <string name="menu_delete_game">Delete game</string>
+    <string name="menu_info_game">Info</string>
+    <string name="tichu_row_team2_heading">Team 2</string>
+    <string name="tichu_row_team1_heading">Team 1</string>
+    <string name="tichu_row_time_empty">Started</string>
+    <string name="game_starttime">Starttime</string>
+    <string name="game_runtime">Duration</string>
+    <string name="tichu_row_time_heading">Starttime</string>
+    <string name="game_team">Team</string>
+    <string name="no_tichu_rounds">No rounds yet</string>
+    <string name="default_tichu_round_score"> </string><string name="default_player_name">Player</string>
+    <string name="tichu_team_select_team1">Team 1</string>
+    <string name="tichu_team_select_team2">Team 2</string>
+    <string name="game_select_player">Select player</string>
+    <string name="tichu_team_select_shuffle">Shuffle</string>
+    <string name="tichu_team_select_add_player">Add</string>
+    <string name="game_enter_name">Enter name</string>
+    <string name="tichu_team_select_start_game">Start game</string>
+    <string name="tichu_game_tichu_button_1_content_description">Toggle tichu bid player 1</string>
+    <string name="tichu_game_tichu_button_2_content_description">Toggle tichu bid player 2</string>
+    <string name="tichu_game_tichu_button_3_content_description">Toggle tichu bid player 3</string>
+    <string name="tichu_game_tichu_button_4_content_description">Toggle tichu bid player 4</string>
+    <string name="game_detail_option_show_delta">Show score delta</string>
+    <string name="game_detail_option_show_tichus">Show tichus</string>
+    <string name="tichu_game_tichu_round_bid_image_content_description">Visualizes tichu bid for player</string>
+    <string name="tichu_game_failed_loading">Failed loading game.</string>
+    <string name ="TichuTableAccessPermissionDescription">Access to tichu games database table</string>
+    <string name ="show_statistics">Stats</string>
+    <string name="statistics_games_played_descr">Games played</string>
+    <string name="statistics_games_won_descr">Games won</string>
+    <string name="statistics_rounds_played_descr">Rounds played</string>
+    <string name="statistics_rounds_won_descr">Rounds won</string>
+    <string name="statistics_small_tichus_descr">Small tichus</string>
+    <string name="statistics_small_tichus_won_descr">Small tichus won</string>
+    <string name="statistics_big_tichus_descr">Big tichus</string>
+    <string name="statistics_big_tichus_won_descr">Big tichus won</string>
+    <string name="statistics_score_per_round_no_tichus">Score per round (no tichus)</string>
+    <string name="statistics_score_per_round_incl_tichus">Score per round (incl tichus)</string>
+    <string name="statistics_average_finisher_pos_descr">Finisher pos (average)</string>
+    <string name="statistics_column_header_total_abs_value">Total</string>
+	<string name="statistics_column_header_won">Won</string>
+	<string name="statistics_by_player">By player</string>
+	<string name="statistics_by_genre">By genre</string>
+	<string name="statistics_by_genre_value_column_descr">Value</string>
+	<string name="data_exchange_button_refresh_devices_list">Refresh</string>
+	<string name="data_exchange_connection_status_title">Status:</string>
+	<string name="data_exchange_connection_status_none">Idle</string>
+	<string name="data_exchange_connection_status_listen">Waiting</string>
+	<string name="data_exchange_connection_status_connecting">Connecting</string>
+	<string name="data_exchange_connection_status_connected">Connected</string>
+	<string name="data_exchange_connected_to">Connected to </string>
+	<string name="data_exchange_status_synchronizing_with">Synchronizing with:</string>
+	<string name="data_exchange_status_synchronized_with">Synchronized with:</string>
+	<string name="data_exchange_status_synchronizing_failed">Synchronizing failed</string>
+	<string name="data_exchange_bluetooth_no_devices">No devices</string>
+	<string name="bluetooth_unable_to_connect">Unable to connect to device.</string>
+	<string name="data_exchange_bluetooth_not_enabled_leaving">Bluetooth not enabled.</string>
+	<string name="bluetooth_not_available">Bluetooth is not available</string>
+	<string name="open_data_exchanger_bluetooth">Exchange data</string>
+	<string name="data_exchange_bluetooth_button_ensure_discoverable">Ensure discoverability</string>
+	<string name="data_exchange_bluetooth_make_discoverable_on_start">Make discoverable on start</string>
+	<string name="confirm_delete">Confirm delete</string>
+	<string name="confirm_delete_tichu_game">Do you really want to delete this game?</string>
+	<string name="data_exchange_complete">Data exchange complete.</string>
+	<string name="data_exchange_games_received">Games received:</string>
+	<string name="data_exchange_games_sent">Games sent:</string>
+	<string name="bluetooth_devices_state_bonded">Bonded</string>
+	<string name="bluetooth_confirm_turn_off_title">Turn off bluetooth?</string>
+	<string name="bluetooth_confirm_turn_off">Do you want to turn off bluetooth?</string>
+	<string name="bluetooth_leave_enabled">Leave enabled</string>
+	<string name="unfinished_game_found_title">Unfinished game found</string>
+	<string name="unfinished_game_found_want_continue">Unfinished game found, continue?</string>
+	<string name="unfinished_game_found_but_start_new">Start new game</string>
+	<string name="rename_player">Rename player</string>
+	<string name="hint_new_player_name">New player name</string>
+	<string name="rename_conflict_title">Name conflict</string>
+	<string name="rename_conflict">Another player with this name found. Merge? (Can invalidate games)</string>
+	<string name="rename_success">Renaming successful.</string>
+	<string name="rename_failure">Renaming failed.</string>
+	<string name="help">Help</string>
+	<string name="about">About GameMemo</string>
+	<string name="about_summary">GameMemo Version 1.03 Daniel Dittmar Da.dittmar@t-online.de</string>
+	<string name="hints">Hints</string>
+	<string name="hints_message"><Data><![CDATA[<ul>
+	    <li>When starting a game
+	    	<ul>
+	    	<li>Select existing players from the list or enter a new name and click add to fill the slots.
+	    	<li>Player names are not case sensitive and can contain any characters.
+	    	<li>Shuffle players to create a random setup.
+	    	<li>You will be prompted to continue an unfinished game if there is one with the selected players.
+	    	</ul>
+	    <li>When playing a game
+	    	<ul>
+	    	<li>Enter grande and small tichu bids by clicking on the dog icons below the according player. A phoenix symbols a small tichu.
+	    	<li>For each game round you need to tell who finished first by clicking on a player name.
+	    	<li>Supply all finishing positions to get more accurate statistics.
+	    	<li>Only enter one score (without the score gained/lost from bids), the other one will be calculated if possible.
+	    	<li>Game rounds can be changed as long as the game is not finished and you haven\'t left the game screen.
+			</ul>
+		 <li>Share game data with other people to improve the accuracy of the statistics.
+	    <li>If a player is saved with two different names, simply rename one: They will be merged and their games and statistics combined.
+	</ul>]]></Data></string>
+	<string name="statistics_sort_by_percentage">Sort by percentage</string>
+	<string name="statistics_sort_by_value">Sort by value</string>
+	<string name="statistics_only_show_significant">Only show significant</string>
+	<string name="tichu_game_mery_rule">Mercy rule</string>
+	<string name="tichu_game_mery_rule_short">mercy</string>
+	<string name="tichu_game_score_limit">Score limit</string>
+	<string name="tichu_game_score_limit_short">limit</string>
+	<string name="game_winner">Winner</string>
+	<string name="game_origin">Origin</string>
+	<string name="tichu_game_state_add_round">Add round</string>
+	<string name="tichu_game_state_new_round">New round</string>
+	<string name="tichu_game_state_old_round_edited">Save round</string>
+	<string name="tichu_game_state_game_closable">Close game</string>
+	<string name="tichu_game_state_expect_data">Enter new round: Who finished first? Tichus?</string>
+	<string name="tichu_game_enter_hand_score">Score</string>
+	<string name="tichu_game_lock_button_content_description">Start new round, edit selected or leave finished game.</string>
+	<string name="clear">Clear</string>
+	<string name="game_options">Options</string>
+</resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/new_tichu_game"
+        android:showAsAction="always"
+        android:title="@string/new_tichu_game">
+    </item>
+    <item
+        android:id="@+id/show_statistics"
+        android:showAsAction="never"
+        android:title="@string/show_statistics">
+    </item>
+    <item
+        android:id="@+id/open_data_exchanger_bluetooth"
+        android:showAsAction="never"
+        android:title="@string/open_data_exchanger_bluetooth">
+    </item>
+    <item
+        android:id="@+id/rename_player"
+        android:showAsAction="never"
+        android:title="@string/rename_player">
+    </item>
+    <item
+        android:id="@+id/help"
+        android:showAsAction="never"
+        android:title="@string/help">
+        <menu>
+            
+            <item android:id="@+id/hints" android:title="@string/hints"/><item android:id="@+id/about" android:title="@string/about" />
+        </menu>
+    </item>
+</menu>
