@@ -86,6 +86,10 @@ public class Postman {
 	}
 	
 	public synchronized void sendPost(int messageId, String message) {
+		if (mTarget == null) {
+			Log.d(TAG, "Attempting to send message " + messageId + " message = " + message + " over closed postman (target is null)");
+			return; // closed
+		}
 		byte[] header = new byte[HEADER_SIZE];
 		intToByte(mConnectionId, header, 0);
 		intToByte(messageId, header, 4);
