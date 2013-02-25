@@ -58,7 +58,7 @@ public class Postman {
 	public synchronized void close() {
 		// free resources, this makes the Postman unusable
 		if (mTarget != null) {
-			mTarget.removeInputReceiver(this, true);
+			mTarget.removeInputReceiver(this);
 		}
 		mTarget = null;
 		mReceiver = null;

@@ -36,11 +36,9 @@ public interface ExchangeService {
 	 * Removes the receiver of incoming data. If <code>null</code> or not contained this method does
 	 * nothing.
 	 * @param postman The receiver that is to be removed from the recipient list.
-	 * @param closeIfLastReceiver If there is no more receiver registered with this exchange service after the
-	 * given was (if possible) removed, the ExchangeService's connection is terminated and closed.
 	 * @return If the postman was successfully removed.
 	 */
-	boolean removeInputReceiver(Postman postman, boolean closeIfLastReceiver);
+	boolean removeInputReceiver(Postman postmanr);
 	
 
 }

@@ -503,7 +503,7 @@ public final class BluetoothExchangeService  implements ExchangeService {
 	}
 	
 	@Override
-	public synchronized boolean removeInputReceiver(Postman postman, boolean closeIfLastReceiver) {
+	public synchronized boolean removeInputReceiver(Postman postman) {
 		boolean result = false;
 		if (postman != null) {
 			result = mDataReceiver.remove(postman);
@@ -512,10 +512,6 @@ public final class BluetoothExchangeService  implements ExchangeService {
 			} else {
 				return false;
 			}
-		}
-		assert result == true;
-		if (closeIfLastReceiver && mDataReceiver.size() == 0) {
-			terminateConnection();
 		}
 		return true;
 	}
