@@ -100,11 +100,10 @@
 	    	</ul>
 	    <li>Wenn du ein Spiel spielst
 	    	<ul>
-	    	<li>Gebe große und kleine Tichuansagen durch einen Klick auf das Hundesymbol unter dem Spieler an.
-	    		Ein Phoenix symbolisiert ein kleines Tichu, ein Drache ein großes Tichu.
+	    	<li>Gebe große und kleine Tichuansagen durch einen Klick auf das Tichusymbol unter dem Spieler an.
 	    	<li>Du musst bei jeder Spielrunde angeben, wer als erster fertig wurde, indem du auf den Spielernamen klickst. Dies ermöglicht die automatische Tichupunkte Berechnung.
 	    	<li>Gebe alle Platzierungen für eine Runde an, um noch genauere Statistiken zu erhalten.
-	    	<li>Du musst nur Punkte für ein Team angeben, die anderen Punkte werden für dich berechnet. Gebe nur die normalen Punkte ohne eventuelle Tichupunkte an.
+	    	<li>Es reicht aus Punkte für ein Team anzugeben, die anderen Punkte werden für dich berechnet. Gebe nur die normalen Punkte ohne eventuelle Tichupunkte an.
 	    	<li>Spielrunden können jederzeit angepasst werden, solange das Spiel noch nicht beendet und geschlossen wurde.
 			</ul>
 		<li>Tausche Spieldaten mit anderen um die Statistiken zu verbessern.

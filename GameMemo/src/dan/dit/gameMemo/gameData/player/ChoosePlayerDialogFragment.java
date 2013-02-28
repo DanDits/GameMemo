@@ -9,11 +9,17 @@ import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 import dan.dit.gameMemo.R;
 
 public class ChoosePlayerDialogFragment extends DialogFragment {
@@ -41,23 +47,41 @@ public class ChoosePlayerDialogFragment extends DialogFragment {
 			mPool = mListener.getPool();
 			mPlayersAdapter = mPool.makeAdapter(getActivity(), mListener.toFilter());
 	        mPlayers.setAdapter(mPlayersAdapter);
+	        mPlayers.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+				@Override
+				public void onItemSelected(AdapterView<?> arg0, View arg1,
+						int arg2, long arg3) {
+					mNewName.setText("");
+				}
+
+				@Override
+				public void onNothingSelected(AdapterView<?> arg0) {
+				}
+			});
 	        mNewName.setAdapter(mPool.makeAdapter(getActivity(), mListener.toFilter()));
 	        mNewName.setThreshold(1);
+	        mNewName.setOnEditorActionListener(new OnEditorActionListener() {
+				
+				@Override
+				public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+					if (actionId == EditorInfo.IME_ACTION_DONE || event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+						onConfirmation();
+						getDialog().dismiss();
+						//InputMethodManager imm = (InputMethodManager)v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+						//imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+						return true;
+					}
+					return false;
+				}
+			});
 	        // Use the Builder class for convenient dialog construction
 	        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 	        builder.setTitle(R.string.game_select_player)
 	        		.setView(baseView)
 	               .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 	                   public void onClick(DialogInterface dialog, int id) {
-	                	   String newPlayerName = mNewName.getText().toString();
-	                	   if (Player.isValidPlayerName(newPlayerName)) {
-	                		   mListener.playerChosen(mPool.populatePlayer(newPlayerName));
-	                	   } else {
-		                	   Object selected = mPlayers.getSelectedItem();
-		                	   if (selected != null && selected instanceof Player) {
-		                		   mListener.playerChosen((Player) selected);
-		                	   }
-	                	   }
+	                	   onConfirmation();
 	                   }
 	               })
 	               .setNegativeButton(android.R.string.no, null);
@@ -65,12 +89,24 @@ public class ChoosePlayerDialogFragment extends DialogFragment {
 	        return builder.create();
 	    }
 	   
+	   private void onConfirmation() {
+		   String newPlayerName = mNewName.getText().toString();
+    	   if (Player.isValidPlayerName(newPlayerName)) {
+    		   mListener.playerChosen(mPool.populatePlayer(newPlayerName));
+    	   } else {
+        	   Object selected = mPlayers.getSelectedItem();
+        	   if (selected != null && selected instanceof Player) {
+        		   mListener.playerChosen((Player) selected);
+        	   }
+    	   }
+	   }
+	   
 	   @Override
 	   public void onStart() {
 		   super.onStart();
 		   mPlayersAdapter.sort(Player.NAME_COMPARATOR);
 		   if (mNewName.hasFocus() && getResources().getConfiguration().orientation ==  Configuration.ORIENTATION_PORTRAIT) {
-				getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+				getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 		   }
 	   }
 	   

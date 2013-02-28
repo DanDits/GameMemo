@@ -85,19 +85,19 @@
 	<string name="rename_failure">Renaming failed.</string>
 	<string name="help">Help</string>
 	<string name="about">About GameMemo</string>
-	<string name="about_summary">GameMemo Version 1.03 Daniel Dittmar Da.dittmar@t-online.de</string>
+	<string name="about_summary">GameMemo Version 1.04 Daniel Dittmar Da.dittmar@t-online.de</string>
 	<string name="hints">Hints</string>
 	<string name="hints_message"><Data><![CDATA[<ul>
 	    <li>When starting a game
 	    	<ul>
-	    	<li>Select existing players from the list or enter a new name and click add to fill the slots.
+	    	<li>Select existing players from the list or enter a new name to fill the slots.
 	    	<li>Player names are not case sensitive and can contain any characters.
 	    	<li>Shuffle players to create a random setup.
 	    	<li>You will be prompted to continue an unfinished game if there is one with the selected players.
 	    	</ul>
 	    <li>When playing a game
 	    	<ul>
-	    	<li>Enter grande and small tichu bids by clicking on the dog icons below the according player. A phoenix symbols a small tichu.
+	    	<li>Enter grande and small tichu bids by clicking on the tichu icon below the player.
 	    	<li>For each game round you need to tell who finished first by clicking on a player name.
 	    	<li>Supply all finishing positions to get more accurate statistics.
 	    	<li>Only enter one score (without the score gained/lost from bids), the other one will be calculated if possible.

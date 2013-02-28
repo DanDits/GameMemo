@@ -20,7 +20,8 @@
         android:layout_alignParentRight="true"
         android:layout_below="@+id/choose_player_list"
         android:ems="10"
-        android:hint="@string/game_enter_name" >
+        android:hint="@string/game_enter_name"
+        android:imeOptions="actionDone" >
 
         <requestFocus />
     </AutoCompleteTextView>
