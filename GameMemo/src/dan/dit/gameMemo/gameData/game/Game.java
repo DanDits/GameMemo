@@ -215,14 +215,16 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 		/* this is not 100% accurate since it could say a game with the players (A,B,C,BDDB) is an open game for the given players (D,B,C,A) 
 		 * so this only checks for substrings
 		 */
+		int index = 0;
+		String[] selectionArgs = new String[matchTeam.size()];
 		for (Player p : matchTeam) {
 			where.append(" and ");
 			where.append(GameSQLiteHelper.COLUMN_PLAYERS);
-			where.append(" like '%");
-			where.append(p.getName());
-			where.append("%'");
+			where.append(" like '%?%'");
+			selectionArgs[index] = p.getName();
+			index++;
 		}
-		Cursor cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), null,
+		Cursor cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), selectionArgs,
 				null);
 		if (cursor != null) {
 			cursor.moveToFirst();

@@ -97,10 +97,10 @@ public class Player extends PlayerTeam {
 		// get all those games that at least contain a player which has the old name as a substring
 		StringBuilder where = new StringBuilder();
 		where.append(GameSQLiteHelper.COLUMN_PLAYERS);
-		where.append(" like '%");
-		where.append(oldName);
-		where.append("%'");
-		Cursor cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), null,
+		where.append(" like '%?%'");
+		String[] selectionArgs = new String[1];
+		selectionArgs[0] = oldName;
+		Cursor cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), selectionArgs,
 				null);
 		if (cursor != null) {
 			cursor.moveToFirst();
