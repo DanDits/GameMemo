@@ -220,8 +220,8 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 		for (Player p : matchTeam) {
 			where.append(" and ");
 			where.append(GameSQLiteHelper.COLUMN_PLAYERS);
-			where.append(" like '%?%'");
-			selectionArgs[index] = p.getName();
+			where.append(" like ?");
+			selectionArgs[index] = '%' + p.getName() + '%';
 			index++;
 		}
 		Cursor cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), selectionArgs,
