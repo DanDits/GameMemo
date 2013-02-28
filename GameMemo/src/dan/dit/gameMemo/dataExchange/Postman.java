@@ -4,21 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import android.util.Log;
-/**
- * A man-in-the-middle class to simplify sending and receiving of messages over a ExchangeService.
- * A Postman coordinates the connection between a {@link GameDataExchanger} and an {@link ExchangeService}
- * by offering a simple way to send a message over the service to the target. This target needs to listen
- * for the same exchange service and use the same connection id, else the message will be lost.<br>
- * Sending of <code>null</code> or empty messages is possible and results in the receiving of an empty message
- * String in either case.<br>
- * A message will be received in its own thread, so a PostRecipient must be 
- * thread safe, this can be easily achieved by synchronizing the receivePost method.<br>
- * Always close a Postman from the PostRecipient after using to free resources and references, the ExchangeService
- * does not need to care about closing a Postman. After being closed the Postman is unusable and all methods will not
- * perform any action when invoked.
- * @author Daniel
- *
- */
+
 public class Postman {
 	private static final String TAG = "GameDataExchange";
 	// states how incoming data is expected for a single message (HEADER=(KEY, ID, SIZE)[, DATA])
@@ -35,39 +21,23 @@ public class Postman {
 	private byte[] mCurrMessage;
 	
 	// member fields
-	private final int mConnectionId;
-	private PostRecipient mReceiver;
 	private ExchangeService mTarget;
 	
 	public interface PostRecipient {
 		void receivePost(int messageId, String message);
 	}
 	
-	public Postman(int connectionId, PostRecipient receiver, ExchangeService target) {
-		mConnectionId = connectionId;
-		mReceiver = receiver;
+	public Postman(ExchangeService target) {
 		mTarget = target;
-		if (receiver == null || target == null) {
-			throw new NullPointerException("PostRecipient or ExchangeService null.");
+		if (target == null) {
+			throw new NullPointerException("ExchangeService null.");
 		}
-		target.addInputReceiver(this);
 		mDataIncomeState = DATA_INCOME_STATE_EXPECT_HEADER;
 		mBytesReceived = new ByteArrayOutputStream(512);
 	}
 	
-	public synchronized void close() {
-		// free resources, this makes the Postman unusable
-		if (mTarget != null) {
-			mTarget.removeInputReceiver(this);
-		}
-		mTarget = null;
-		mReceiver = null;
-		mBytesReceived = null;
-		mCurrMessage = null;
-	}
-	
-	public synchronized void onReceiveData(byte[] data, int dataCount) {
-		if (mReceiver == null) {
+	public void onReceiveData(byte[] data, int dataCount) {
+		if (mBytesReceived == null) {
 			return; // ignore gracefully, the Postman is not usable anymore, but there could still be some data around
 		}
 		if (dataCount <= 0) {
@@ -75,30 +45,25 @@ public class Postman {
 		}
 		//Log.d(TAG, "Received " + dataSize + " bytes via bluetooth.");
 		saveReceivedBytes(data, 0, dataCount);
-		new Thread() {
-			@Override
-			public void run() {
-				while (processData()) {
-					//Log.d(TAG, "Data processed. Waiting for " + ((mDataIncomeState == DATA_INCOME_STATE_EXPECT_DATA) ? "DATA" : "HEADER"));
-				}
-			}
-		}.start();
+		while (processData()) {
+			//Log.d(TAG, "Data processed. Waiting for " + ((mDataIncomeState == DATA_INCOME_STATE_EXPECT_DATA) ? "DATA" : "HEADER"));
+		}
 	}
 	
-	public synchronized void sendPost(int messageId, String message) {
+	public void sendPost(int connectionId, int messageId, String message) {
 		if (mTarget == null) {
 			Log.d(TAG, "Attempting to send message " + messageId + " message = " + message + " over closed postman (target is null)");
 			return; // closed
 		}
 		byte[] header = new byte[HEADER_SIZE];
-		intToByte(mConnectionId, header, 0);
+		intToByte(connectionId, header, 0);
 		intToByte(messageId, header, 4);
 		intToByte(0, header, 8); // default message size is 0
 		if (message != null && message.length() > 0) {
 			//Log.d(TAG, "Sending message : key=" + mGameKey + " and id=" + messageId + ", message size =" + message.length);
 			int messageSize = message.length();
 			intToByte(messageSize, header, 8); // updating actual message size which is >0
-			mTarget.sendData(header);
+			mTarget.sendData(header); 
 			mTarget.sendData(message.getBytes());
 		} else {
 			// sending an empty message (only the header)
@@ -123,7 +88,7 @@ public class Postman {
 		mBytesReceived.write(data, offset, count); 
 	}
 	
-	private synchronized boolean processData() {
+	private boolean processData() {
 		if (mBytesReceived == null) {
 			return false; // is closed, cannot process data anymore
 		}
@@ -167,37 +132,26 @@ public class Postman {
 			}
 			return false;
 		} else {
-			throw new IllegalStateException("Expecting state invalid for postman with connectionId " + mConnectionId + " and message state " + mDataIncomeState);
+			throw new IllegalStateException("Expecting state invalid for postman with message state " + mDataIncomeState);
 		}
 	}
 	
 	private void processHeader() {
 		mDataIncomeState = DATA_INCOME_STATE_EXPECT_DATA;
-		if (mConnectionId != mCurrMessageConnectionId) {
-			Log.d(TAG, "Received message header for connection id=" + mCurrMessageConnectionId + ", expected " + mConnectionId);
-			return;
-		}
-		//Log.d(TAG, "Handling currently received header: key=" + mGameKey + " and id=" + mCurrMessageId + ", message size =" + mCurrMessageSize);
-
 		if (mCurrMessageSize > 0) {
 			mCurrMessage = null; // not really important, but this signals the old message is over and we expect a new one to come
 		} else {
 			mDataIncomeState = DATA_INCOME_STATE_EXPECT_HEADER;//back to first state, there will no data be sent
-			mReceiver.receivePost(mCurrMessageId, "");
+			mTarget.onNewPost(mCurrMessageConnectionId, mCurrMessageId, "");
 			//Log.d(TAG, "Switching back to first state: EXPECT_HEADER since no data is expected, (size=" + mCurrMessageSize + ")");
 		}
 	}
 	
 	protected void handleCurrentMessage() {
 		mDataIncomeState = DATA_INCOME_STATE_EXPECT_HEADER; // back to the first state if message is finished
-		if (mConnectionId != mCurrMessageConnectionId) {
-			Log.d(TAG, "Received message for connection id=" + mCurrMessageConnectionId + ", expected " + mConnectionId);
-			return; // not for me
-		}
-
 		byte[] messageRaw = mCurrMessage;
 		String message = new String(messageRaw);
-		mReceiver.receivePost(mCurrMessageId, message);
+		mTarget.onNewPost(mCurrMessageConnectionId, mCurrMessageId, message);
 		//Log.d(TAG, "Handling currently received message: key=" + mGameKey + " and id=" + mCurrMessageId + ", message size =" + mCurrMessageSize);
 		
 	}
@@ -220,9 +174,5 @@ public class Postman {
 		i |= ((buffer[offset + 2] & 0xFF) << 8);
 		i |= ((buffer[offset + 3] & 0xFF));
 		return i;
-	}
-
-	public int getConnectionId() {
-		return mConnectionId;
 	}
 }

@@ -90,7 +90,7 @@ public class PlayerPool {
 	}
 	
 	public ArrayAdapter<Player> makeAdapter(Context context) {
-		ArrayAdapter<Player> adapter = new ArrayAdapter<Player>(context, android.R.layout.simple_spinner_item, android.R.id.text1);
+		ArrayAdapter<Player> adapter = new PlayerAdapter(context, android.R.layout.simple_spinner_item, android.R.id.text1);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		for (Player p : getAllSortByName(true)) {
 			adapter.add(p);

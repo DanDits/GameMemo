@@ -56,7 +56,7 @@ public class BluetoothDataExchangeActivity extends Activity {
 	// handler message constants
 	public static final int MESSAGE_CONNECTION_STATE_CHANGE = 1;
 	public static final int MESSAGE_TOAST = 2;
-	public static final int MESSAGE_EXCHANGE_COMPLETE = 3;
+	private static final long DEFAULT_EXCHANGE_START_DELAY = 1500; //ms, smaller than timeout of exchange service
 
 	// a hack that the user is not asked twice on activity start to enable discoverability if preference to do so is set
 	// the problem is that the check for discoverability is done too fast and the adapter is not yet discoverable so it is asked again
@@ -65,7 +65,6 @@ public class BluetoothDataExchangeActivity extends Activity {
 	private MenuItem mOptionToggleDiscoverableOnStart;
 	private Button mScanButton;
 	private BluetoothExchangeService mExchangeService;
-	private TextView mSynchStatusText;
 	private TextView mConnectionStatusText;
 	private BluetoothAdapter mBtAdapter;
 	private ArrayAdapter<BluetoothDevice> mDevicesArrayAdapter;
@@ -81,7 +80,8 @@ public class BluetoothDataExchangeActivity extends Activity {
 		setProgressBarIndeterminateVisibility(false);
 		mBtAdapter = BluetoothAdapter.getDefaultAdapter();
 		Bundle extras = getIntent().getExtras();
-		
+		//TODO only use the given game key(s) as a suggestion and mark them, give possibility to check and uncheck all games in a drop down
+		// and only built data exchangers for checked games
 		if (savedInstanceData != null) {
 			this.mGameKeys = savedInstanceData.getIntArray(GameKey.EXTRA_GAMEKEY);
 			if (mGameKeys == null) {
@@ -116,7 +116,6 @@ public class BluetoothDataExchangeActivity extends Activity {
             	refreshDeviceList(true);
             }
         });
-        mSynchStatusText = (TextView) findViewById(R.id.data_exchange_synch_status_text);
         mConnectionStatusText = (TextView) findViewById(R.id.data_exchange_connection_status_text);
         
         initDeviceList();
@@ -281,66 +280,16 @@ public class BluetoothDataExchangeActivity extends Activity {
         	}
         	// handle messages from the exchange service
             switch (msg.what) {
-            case MESSAGE_EXCHANGE_COMPLETE:
-            	// get the current data exchanger by game key, which is the arg1 of the message
-            	//TODO make a textview that shows a list of all games that are being exchanged:
-            	// Tichu: failed  oder Tichu: Sent 10 Received 5
-            	// Poker: Sent 5 Received 0
-            	//...
-            	// therefore make the connection have a timeout, if there is no incoming or outgoing data for 10 seconds, terminate connection, 
-            	// but when terminating make sure to close all post receivers so that this message here is being sent
-        		GameDataExchanger exch = act.mDataExchanger;
-        		act.mDataExchanger = null;
-             	Resources res = act.getResources();        
-        		if (exch.exchangeFinishedSuccessfully()) {
-                 	act.mSynchStatusText.setText(res.getString(R.string.data_exchange_status_synchronized_with) 
-                    		+ act.mLastConnectedDeviceName);
-  	                Toast.makeText(act.getApplicationContext(), 
-  	                		res.getString(R.string.data_exchange_complete) + " " 
-  	                               + res.getString(R.string.data_exchange_games_received) + " " + exch.getGamesReceivedCount()
-  	                               + ", "
-  	                               + res.getString(R.string.data_exchange_games_sent) + " " + exch.getGamesSentCount(), 
-  	                               Toast.LENGTH_LONG).show();
-            	} else {
-            		String failedSynch = act.getResources().getString(R.string.data_exchange_status_synchronizing_failed);
-            		act.mSynchStatusText.setText(failedSynch + act.mLastConnectedDeviceName);
-            		if (exch.getGamesReceivedCount() > 0 || exch.getGamesSentCount() > 0) {
-      	                Toast.makeText(act.getApplicationContext(), 
-      	                		failedSynch + " " 
-      	                               + res.getString(R.string.data_exchange_games_received) + " " + exch.getGamesReceivedCount()
-      	                               + ", "
-      	                               + res.getString(R.string.data_exchange_games_sent) + " " + exch.getGamesSentCount(), 
-      	                               Toast.LENGTH_LONG).show();
-            		}
-            	}
-        		// there is no connection, close the exchanger
-        		exch.close();
-            	break;
             case MESSAGE_CONNECTION_STATE_CHANGE:
             	if (act.mExchangeService != null 
             			&& msg.arg2 == BluetoothExchangeService.STATE_CONNECTED ) {
             		// we lost a previous connection 
-   
-            		if (act.mIsStopped && act.mExchangeService != null) {
-            			// connection finished and activity is closed, stop exchange service
-            			act.mExchangeService.stop();
-            		}
+            		act.onConnectionTerminated();
             	}
             	if (act.mExchangeService != null && msg.arg1 == BluetoothExchangeService.STATE_CONNECTED) {
             		// we are now connected to a remote device
             		BluetoothDevice connectedTo = (BluetoothDevice) msg.obj;
-                    // save the connected device's name
-	                act.mLastConnectedDeviceName = connectedTo.getName();
-	                act.mSynchStatusText.setText(act.getResources().getString(R.string.data_exchange_status_synchronizing_with) 
-	                		+ act.mLastConnectedDeviceName);
-	                Toast.makeText(act.getApplicationContext(), 
-	                		act.getApplicationContext().getResources().getString(R.string.data_exchange_connected_to)
-	                               + act.mLastConnectedDeviceName, Toast.LENGTH_SHORT).show();
-
-	                for (int i = 0; i < act.mGameKeys.length; i++) {
-	                	act.mDataExchangers[i] = new GameDataExchanger(act.getContentResolver(), act.mExchangeService, act.mGameKeys[i]);
-	                	act.mDataExchangers[i].startExchange();
-	                }
+                   act.onNewConnection(connectedTo);
             	}
             	act.setConnectionStatusText(msg.arg1);
                 break;
@@ -351,6 +300,55 @@ public class BluetoothDataExchangeActivity extends Activity {
             }
         }
     };
+    
+    private void onNewConnection(BluetoothDevice device) {
+    	 // save the connected device's name
+        mLastConnectedDeviceName = device.getName();
+        Toast.makeText(this, 
+        		getResources().getString(R.string.data_exchange_connected_to)
+                       + mLastConnectedDeviceName, Toast.LENGTH_SHORT).show();
+
+        for (int i = 0; i < mGameKeys.length; i++) {
+        	mDataExchangers[i] = new GameDataExchanger(getContentResolver(), mExchangeService, mGameKeys[i]);
+        	mDataExchangers[i].startExchange(DEFAULT_EXCHANGE_START_DELAY);
+        }
+        mExchangeService.startTimeoutTimer(BluetoothExchangeService.DEFAULT_TIMEOUT);
+    }
+    
+    private void onConnectionTerminated() {
+       	//TODO make a textview that shows a list of all games that are being exchanged:
+    	// Tichu: failed  oder Tichu: Sent 10 Received 5
+    	// Poker: Sent 5 Received 0
+    	//...
+		/*GameDataExchanger exch = mDataExchanger;
+		mDataExchanger = null;
+     	Resources res = getResources();        
+		if (exch.exchangeFinishedSuccessfully()) {
+         	mSynchStatusText.setText(res.getString(R.string.data_exchange_status_synchronized_with) 
+            		+ mLastConnectedDeviceName);
+              Toast.makeText(this, 
+              		res.getString(R.string.data_exchange_complete) + " " 
+                             + res.getString(R.string.data_exchange_games_received) + " " + exch.getGamesReceivedCount()
+                             + ", "
+                             + res.getString(R.string.data_exchange_games_sent) + " " + exch.getGamesSentCount(), 
+                             Toast.LENGTH_LONG).show();
+    	} else {
+    		String failedSynch = res.getString(R.string.data_exchange_status_synchronizing_failed);
+    		mSynchStatusText.setText(failedSynch + mLastConnectedDeviceName);
+    		if (exch.getGamesReceivedCount() > 0 || exch.getGamesSentCount() > 0) {
+	                Toast.makeText(this, 
+	                		failedSynch + " " 
+	                               + res.getString(R.string.data_exchange_games_received) + " " + exch.getGamesReceivedCount()
+	                               + ", "
+	                               + res.getString(R.string.data_exchange_games_sent) + " " + exch.getGamesSentCount(), 
+	                               Toast.LENGTH_LONG).show();
+    		}
+    	}*/
+		if (mIsStopped && mExchangeService != null) {
+			// connection finished and activity is stopped, stop exchange service
+			mExchangeService.stop();
+		}
+    }
     
     private void initDeviceList() {
     	  // Initialize array adapter for paired and newly discovered devices

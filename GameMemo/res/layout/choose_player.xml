@@ -12,7 +12,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true" />
 
-    <EditText
+    <AutoCompleteTextView
         android:id="@+id/choose_player_new_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,6 +23,6 @@
         android:hint="@string/game_enter_name" >
 
         <requestFocus />
-    </EditText>
+    </AutoCompleteTextView>
 
 </RelativeLayout>

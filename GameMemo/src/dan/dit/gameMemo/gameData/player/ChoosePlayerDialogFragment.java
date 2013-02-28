@@ -6,16 +6,18 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
+import android.widget.AutoCompleteTextView;
 import android.widget.Spinner;
 import dan.dit.gameMemo.R;
 
 public class ChoosePlayerDialogFragment extends DialogFragment {
-	private EditText mNewName;
+	private AutoCompleteTextView mNewName;
 	private ArrayAdapter<Player> mPlayersAdapter;
 	private Spinner mPlayers;
 	private PlayerPool mPool;
@@ -34,11 +36,13 @@ public class ChoosePlayerDialogFragment extends DialogFragment {
 	   @Override
 	    public Dialog onCreateDialog(Bundle savedInstanceState) {
 		   View baseView = getActivity().getLayoutInflater().inflate(R.layout.choose_player, null);
-	        mNewName = (EditText) baseView.findViewById(R.id.choose_player_new_name);
+	        mNewName = (AutoCompleteTextView) baseView.findViewById(R.id.choose_player_new_name);
 	        mPlayers = (Spinner) baseView.findViewById(R.id.choose_player_list);
 			mPool = mListener.getPool();
 			mPlayersAdapter = mPool.makeAdapter(getActivity(), mListener.toFilter());
 	        mPlayers.setAdapter(mPlayersAdapter);
+	        mNewName.setAdapter(mPool.makeAdapter(getActivity(), mListener.toFilter()));
+	        mNewName.setThreshold(1);
 	        // Use the Builder class for convenient dialog construction
 	        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 	        builder.setTitle(R.string.game_select_player)
@@ -65,6 +69,9 @@ public class ChoosePlayerDialogFragment extends DialogFragment {
 	   public void onStart() {
 		   super.onStart();
 		   mPlayersAdapter.sort(Player.NAME_COMPARATOR);
+		   if (mNewName.hasFocus() && getResources().getConfiguration().orientation ==  Configuration.ORIENTATION_PORTRAIT) {
+				getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+		   }
 	   }
 	   
 	   @Override

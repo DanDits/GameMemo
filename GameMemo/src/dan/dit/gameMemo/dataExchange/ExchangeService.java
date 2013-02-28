@@ -1,5 +1,6 @@
 package dan.dit.gameMemo.dataExchange;
 
+import dan.dit.gameMemo.dataExchange.Postman.PostRecipient;
 import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothExchangeService;
 
 /**
@@ -10,7 +11,7 @@ import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothExchangeService;
  * @author Daniel
  *
  */
-public interface ExchangeService {
+public interface ExchangeService  {
 	
 	/**
 	 * Sends the given data.
@@ -18,27 +19,18 @@ public interface ExchangeService {
 	 */
 	void sendData(byte[] data);
 	
+	void sendPost(int connectionId, int messageId, String message);
+	
+	void onNewPost(int connectionId, int messageId, String message);
+	
+	void registerRecipient(int connectionId, PostRecipient receiver);
+	
+	void unregisterRecipient(PostRecipient receiver);
+	
 	/**
 	 * Flushes the OutputStream. Call this after a coherent block of data
 	 * was sent to the exchange service to make sure it is sent to the target.
 	 */
-	void flush();
-	
-	/**
-	 * Adds a receiver of incoming data. If <code>null</code> or already contained this method does nothing.
-	 * @param postman The receiver of incoming data that will deliver the message to the
-	 * actual target.
-	 * @return If the postman was successfully added.
-	 */
-	boolean addInputReceiver(Postman postman);
-	
-	/**
-	 * Removes the receiver of incoming data. If <code>null</code> or not contained this method does
-	 * nothing.
-	 * @param postman The receiver that is to be removed from the recipient list.
-	 * @return If the postman was successfully removed.
-	 */
-	boolean removeInputReceiver(Postman postmanr);
-	
+	void flush();	
 
 }

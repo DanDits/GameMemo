@@ -3,7 +3,6 @@ package dan.dit.gameMemo.dataExchange;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -38,19 +37,11 @@ public class GameDataExchanger implements PostRecipient {
 	private static final int MESSAGE_ID_REQUESTING_DATA = 2;
 	private static final int MESSAGE_ID_SENDING_DATA = 3;
 	
-	// member vars
-		// concerning thread
-	private Thread mWorkingThread;
-	private Queue<Integer> mPendingReceivedMessageId;
-	private Queue<String> mPendingReceivedMessage;
-	
-		// concerning exchanger in general
-	private boolean mClosed;
+	// member vars	
 	private ContentResolver mContentResolver;
-
-		//TODO the following need to be included in a class (to simulate an array of them ) and methods work in this class instead
+	private ExchangeService mService; 
+	
 	private int mGameKey;
-	private Postman mPostman;
 	private int mGamesSentCount;
 	private int mGamesReceivedCount;
 	private List<Long> mOwnStarttimes;
@@ -62,28 +53,28 @@ public class GameDataExchanger implements PostRecipient {
 	
 	public GameDataExchanger(ContentResolver resolver, ExchangeService service, int gameKey) {
 		mContentResolver = resolver;
-		mPartnerRequestSatisfied = mOwnRequestDataReceived = mPartnerOfferReceived = mPartnerWantsToTerminate = false;
+		mPartnerRequestSatisfied = mOwnRequestDataReceived = mPartnerOfferReceived = false;
 		mGameKey = gameKey;
+		mService = service;
+		mService.registerRecipient(mGameKey, this);
 		if (service == null || resolver == null) {
 			throw new NullPointerException();
 		}
-		mPostman = new Postman(mGameKey, this, service);
 		if (!GameKey.isGameSupported(gameKey)) {
 			throw new IllegalArgumentException("Game key not supported " + gameKey);
 		}
-		mPendingReceivedMessage = new LinkedList<String>();
-		mPendingReceivedMessageId= new LinkedList<Integer>();
-		mWorkingThread = new GameDataExchangerThread();
-		mWorkingThread.start();
 	}
 	
 	public synchronized void receivePost(int messageId, String message) {
-		mPendingReceivedMessageId.add(messageId);
-		mPendingReceivedMessage.add(message);
-		notifyAll();
+		if (mService == null) {
+			assert false;
+			return; // i am closed
+		}
+		// receivePost is always invoked in an extra thread
+		processPendingPost(message, messageId);
 	}
 	
-	private synchronized void processPendingPost(String message, int messageId) {
+	private void processPendingPost(String message, int messageId) {
 		if (message == null || message.length() == 0) {
 			// handle receiving of no data messages
 			switch(messageId) {
@@ -99,9 +90,6 @@ public class GameDataExchanger implements PostRecipient {
 			case MESSAGE_ID_SENDING_DATA:
 				// well... theoretically my requested data could not be received, but since other will not sent more than this, we will say ok
 				mOwnRequestDataReceived = true;
-				break;
-			case MESSAGE_ID_TERMINATE:
-				mPartnerWantsToTerminate = true;
 				break;
 			default:
 				// I don't even understand what you tell me
@@ -138,7 +126,6 @@ public class GameDataExchanger implements PostRecipient {
 				break;
 			}
 		}
-		closeOrRequestCloseIfExchangeComplete();
 	}
 
 	
@@ -159,9 +146,6 @@ public class GameDataExchanger implements PostRecipient {
 				// we are sending no data, this satisfies our partners needs from our point of view
 				mPartnerRequestSatisfied = true;
 				break;
-			case MESSAGE_ID_TERMINATE:
-				// do nothing, this is the usual content of a terminate message
-				break;
 			default:
 				// I don't even understand what I'm doing, critical program error
 				close();
@@ -169,26 +153,20 @@ public class GameDataExchanger implements PostRecipient {
 				break;
 			}
 		}
-		mPostman.sendPost(messageId, message);
-		if (messageId != MESSAGE_ID_TERMINATE) {
-			closeOrRequestCloseIfExchangeComplete();
-		}
+		mService.sendPost(mGameKey, messageId, message);
 	}
 	
 	private synchronized boolean isExchangeCompleteCondition() {
 		return mPartnerRequestSatisfied && mOwnRequestDataReceived;
 	}
 	
-	private void closeOrRequestCloseIfExchangeComplete() {
-		if (isExchangeCompleteCondition()) {
-			if (mPartnerWantsToTerminate) {
-				close();
-			} else {
-				sendMessage(MESSAGE_ID_TERMINATE, null);
-			}
+	private void close() {
+		if (mService != null) {
+			mService.unregisterRecipient(this);
+			mService = null;
 		}
 	}
-	
+
 	private void onReceiveRequest(String message) {	
 		List<Long> timestamps = timesFromString(message);
 		// load the games that are requested and that we actually have
@@ -284,7 +262,7 @@ public class GameDataExchanger implements PostRecipient {
 		sendMessage(MESSAGE_ID_REQUESTING_DATA, message);
 	}
 
-	private void offerOwnData() {
+	private synchronized void offerOwnData() {
 		buildOwnStarttimes();
 		String message = timesToString(mOwnStarttimes);
 		sendMessage(MESSAGE_ID_OFFERING_DATA, message);
@@ -305,7 +283,7 @@ public class GameDataExchanger implements PostRecipient {
 		mPartnerRequestSatisfied = true; // even though we do not know if partner received data, it is ok to expect it
 	}
 
-	public synchronized void startExchange(long delay) {
+	public void startExchange(long delay) {
 		Timer delayedStart = new Timer();
 		delayedStart.schedule(new TimerTask() {
 
@@ -315,16 +293,6 @@ public class GameDataExchanger implements PostRecipient {
 			}
 			
 		}, delay);
-	}
-
-	public synchronized void close() {
-		// this method can be invoked more than once, no bad effects on multiple invocations
-		mClosed = true;
-	    mPostman.close();
-	    if (mWorkingThread != null) {
-	    	mWorkingThread.interrupt();
-	    	mWorkingThread = null;
-	    }
 	}
 	
 	public int getGamesSentCount() {
@@ -364,28 +332,5 @@ public class GameDataExchanger implements PostRecipient {
 		}
 		return starttimesCompressor.compress();
 	}
-	
-	private class GameDataExchangerThread extends Thread {
-		
-		@Override
-		public void run() {
-			synchronized (GameDataExchanger.this) {
-				while (!isClosed() && !isExchangeCompleteCondition()) {
-					if (!mPendingReceivedMessage.isEmpty()) {
-						processPendingPost(mPendingReceivedMessage.poll(), mPendingReceivedMessageId.poll());
-					} else {
-						try {
-							GameDataExchanger.this.wait();
-						} catch (InterruptedException e) {
-							Log.d(TAG, "GameDataExchangerThread interrupted: " + e.getLocalizedMessage());
-						}
-					}
-				}
-			}
-		}
-	}
 
-	public boolean isClosed() {
-		return mClosed;
-	}
 }

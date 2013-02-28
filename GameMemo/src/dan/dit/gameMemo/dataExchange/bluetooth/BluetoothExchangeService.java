@@ -3,8 +3,8 @@ package dan.dit.gameMemo.dataExchange.bluetooth;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import android.annotation.SuppressLint;
@@ -18,9 +18,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.Log;
+import android.util.SparseArray;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
 import dan.dit.gameMemo.dataExchange.Postman;
+import dan.dit.gameMemo.dataExchange.Postman.PostRecipient;
 /*
  * for debugging (multiple logcats)
  * in console window 1: adb -s <device01_serial> logcat -v time TAG:D *:S
@@ -36,6 +38,7 @@ public final class BluetoothExchangeService  implements ExchangeService {
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 	
+    public static final long DEFAULT_TIMEOUT = 5000; //ms
 
     // Name for the SDP record when creating server socket
     private static final String NAME_SECURE = "BluetoothExchangeSecure";
@@ -48,7 +51,11 @@ public final class BluetoothExchangeService  implements ExchangeService {
         UUID.fromString("c354cf51-6033-11e2-bcfd-0800200c9a66");
 
     // Member fields
-    private List<Postman> mDataReceiver;
+    private long mTimeoutDuration = DEFAULT_TIMEOUT;
+    private boolean mIsTimedOut = false;
+    private Timer mTimeoutTimer;
+    private Postman mPostman;
+    private SparseArray<PostRecipient> mRecipients;
     private final BluetoothAdapter mAdapter;
     private final Handler mHandler;
     private AcceptThread mSecureAcceptThread;
@@ -67,7 +74,9 @@ public final class BluetoothExchangeService  implements ExchangeService {
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
         mHandler = handler;
-        mDataReceiver = new LinkedList<Postman>();
+        mPostman = new Postman(this);
+        mRecipients = new SparseArray<PostRecipient>();
+        
     }
 
     /**
@@ -468,19 +477,42 @@ public final class BluetoothExchangeService  implements ExchangeService {
 
 	@Override
 	public void sendData(byte[] data) {
-		write(data);
+		mIsTimedOut = false;
+		write(data); 
 	}
 
 	private void onReadData(byte[] buffer, int bytes) {
-		for (Postman receiver : mDataReceiver) {
-			receiver.onReceiveData(buffer, bytes);
-		}
+		mIsTimedOut = false;
+		mPostman.onReceiveData(buffer, bytes);
 	}
 
 	private void terminateConnection() {
 		if (mState == STATE_CONNECTED || mState == STATE_CONNECTING) {
-			BluetoothExchangeService.this.stop(); // stops threads
+			BluetoothExchangeService.this.start(); // stops and restart threads
 		} // else there is no connection to terminate this service knows about
+	}
+	
+	public void startTimeoutTimer() {
+		mIsTimedOut = false;
+		mTimeoutTimer = new Timer();
+		mTimeoutTimer.scheduleAtFixedRate(new TimerTask() {
+
+			@Override
+			public void run() {
+				if (mIsTimedOut) {
+					mTimeoutTimer.cancel();
+					terminateConnection();
+				} else {
+					mIsTimedOut = true;
+				}
+			}
+			
+		}, 0, mTimeoutDuration / 2);
+	}
+	
+	public void startTimeoutTimer(long timeoutDuration) {
+		mTimeoutDuration = timeoutDuration;
+		startTimeoutTimer();
 	}
 
 	@Override
@@ -495,24 +527,35 @@ public final class BluetoothExchangeService  implements ExchangeService {
 	}
 
 	@Override
-	public synchronized boolean addInputReceiver(Postman postman) {
-		if (postman != null && !mDataReceiver.contains(postman)) {
-			return mDataReceiver.add(postman);
+	public synchronized void onNewPost(int connectionId, final int messageId, final String message) {
+		final PostRecipient receiver = mRecipients.get(connectionId);
+		if (receiver != null) {
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					receiver.receivePost(messageId, message);
+				}
+			}).start();
 		}
-		return false;
 	}
-	
+
 	@Override
-	public synchronized boolean removeInputReceiver(Postman postman) {
-		boolean result = false;
-		if (postman != null) {
-			result = mDataReceiver.remove(postman);
-			if (result) {
-				mHandler.obtainMessage(BluetoothDataExchangeActivity.MESSAGE_EXCHANGE_COMPLETE, postman.getConnectionId(), -1, null).sendToTarget();
-			} else {
-				return false;
-			}
-		}
-		return true;
+	public synchronized void registerRecipient(int connectionId, PostRecipient receiver) {
+		mRecipients.put(connectionId, receiver);
 	}
+
+	@Override
+	public synchronized void unregisterRecipient(PostRecipient receiver) {
+		int index = mRecipients.indexOfValue(receiver);
+		if (index >= 0) {
+			mRecipients.removeAt(index);
+		}
+	}
+
+	@Override
+	public synchronized void sendPost(int connectionId, int messageId, String message) {
+		// must be synchronized so that a message sent by the postman is ensured to be atomic
+		mPostman.sendPost(connectionId, messageId, message);
+	}
+
 }
