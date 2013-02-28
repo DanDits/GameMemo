@@ -116,13 +116,10 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
  		// Must include the _id column for the adapter to work
  		String[] from = new String[] { GameSQLiteHelper.COLUMN_PLAYERS, GameSQLiteHelper.COLUMN_STARTTIME,
  				GameSQLiteHelper.COLUMN_WINNER, GameSQLiteHelper.COLUMN_ID};
- 		// Fields on the UI to which we map
- 		// 'to' array is not really used, i just don't know what the SimpleCursorAdapter constructor expects 
- 		int[] to = new int[] { R.id.tichu_row_team1, R.id.tichu_row_starttime, R.id.tichu_row_team2};
  	 	getLoaderManager().initLoader(0, null, this);
  		
- 		adapter = new TichuGameOverviewAdapter(this.getActivity(), R.layout.tichu_row, null, from,
- 				to);
+ 		adapter = new TichuGameOverviewAdapter(this.getActivity(), R.layout.tichu_game_overview, null, from,
+ 				new int[from.length]);
  		setListAdapter(adapter);
  	}
  	
