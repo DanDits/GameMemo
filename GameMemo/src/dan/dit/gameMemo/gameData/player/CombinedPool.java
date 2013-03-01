@@ -44,9 +44,13 @@ public class CombinedPool {
 	}
 	
 	public Collection<Player> getAll() {
-		LinkedList<Player> players = new LinkedList<Player>();
+		List<Player> players = new LinkedList<Player>();
 		for (PlayerPool pool : mPools) {
-			players.addAll(pool.getAll());
+			for (Player p : pool.getAll()) {
+				if (!players.contains(p)) {
+					players.add(p);
+				}
+			}
 		}
 		return players;
 	}
@@ -81,12 +85,13 @@ public class CombinedPool {
 			return 0;
 		}
 		int count = 0;
-		for (int key : gameKeys) {
-			if (GameKey.isGameSupported(key)) {
-				PlayerPool pool = GameKey.getPool(key);
-				if (mPools.contains(pool)) {
-					if (pool.renamePlayer(key, resolver, player, newName) != null) {
-						count++;
+		for (PlayerPool pool : mPools) {
+			if (pool.contains(player)) {
+				for (int key : gameKeys) {
+					if (GameKey.isGameSupported(key) && GameKey.getPool(key).equals(pool)) {
+						if (pool.renamePlayer(key, resolver, player, newName) != null) {
+							count++;
+						}
 					}
 				}
 			}

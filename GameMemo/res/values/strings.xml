@@ -124,4 +124,6 @@
 	<string name="tichu_game_lock_button_content_description">Start new round, edit selected or leave finished game.</string>
 	<string name="clear">Clear</string>
 	<string name="game_options">Options</string>
+	<string name="today">Today</string>
+	<string name="yesterday">Yesterday</string>
 </resources>

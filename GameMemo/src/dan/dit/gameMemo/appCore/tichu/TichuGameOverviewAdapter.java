@@ -4,7 +4,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Random;
+import java.util.List;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -17,8 +17,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
+import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
+import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.storage.database.GameSQLiteHelper;
+import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
 import dan.dit.gameMemo.util.compression.Compressor;
 
 /**
@@ -32,13 +35,14 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
 	private static final DateFormat DATE_FORMAT = SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM);
 	private static final Calendar CALENDAR_CHECKER1 = Calendar.getInstance();
 	private static final Calendar CALENDAR_CHECKER2 = Calendar.getInstance();
-	private static final Random IMAGE_RANDOM = new Random();
 	private long highlightedGameId = Game.NO_ID;
     private int layout;
+    private Context context;
 
     @SuppressWarnings("deprecation") // needed for support library (cursor loader)
 	public TichuGameOverviewAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
     	super(context, layout, c, from, to);
+    	this.context = context;
     	this.layout = layout;
     }
     
@@ -46,6 +50,7 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
 	public TichuGameOverviewAdapter (Context context, int layout, Cursor c, String[] from, int[] to, int flag) {
         super(context, layout, c, from, to, flag);
         this.layout = layout;
+        this.context = context;
     }
 
     @Override
@@ -87,6 +92,7 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
         String players = c.getString(playersCol);
         long startTime = c.getLong(starttimeCol);
         int winner = c.getInt(winnerCol);
+        long id = c.getLong(idCol);
 
         // prepare information
         Compressor cmp = new Compressor(players);
@@ -99,50 +105,90 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
         boolean hasWinner = winner != Game.WINNER_NONE;
         boolean team1Wins = winner == TichuGame.WINNER_TEAM1;
            
+        // show the start time
         TextView time = (TextView) tichuRow.findViewById(R.id.time);
         time.setText(TIME_FORMAT.format(startDate));
 
+        // display the start date if not on the same day like the previous game, display 'today' or 'yesterday' instead of the current/previous date
+        
+        TextView date = (TextView) tichuRow.findViewById(R.id.date);
         if (!c.isFirst() && c.moveToPrevious()) {
         	Date prevDate = new Date(c.getLong(starttimeCol));
-        	CALENDAR_CHECKER1.setTime(startDate);
-        	CALENDAR_CHECKER2.setTime(prevDate);
-        	boolean sameDay = CALENDAR_CHECKER1.get(Calendar.DAY_OF_YEAR) == CALENDAR_CHECKER2.get(Calendar.DAY_OF_YEAR)
-        			&& CALENDAR_CHECKER1.get(Calendar.YEAR) == CALENDAR_CHECKER2.get(Calendar.YEAR);
-            TextView date = (TextView) tichuRow.findViewById(R.id.date);
-        	if (!sameDay) {
-                date.setText(DATE_FORMAT.format(startDate));
+        	if (!isSameDate(startDate, prevDate)) {
+        		applyDate(date , startDate);
         	} else {
         		date.setText("");
         	}
         	c.moveToNext();
+        } else {
+        	applyDate(date, startDate);
         }
         
+        // show players of the first team
         TextView team1 = (TextView) tichuRow.findViewById(R.id.tichu_overview_team1);
         team1.setText(new StringBuilder(20).append(playerOne).append('\n').append(playerTwo).toString());
 
+        // show players of the second team
         TextView team2 = (TextView) tichuRow.findViewById(R.id.tichu_overview_team2);
         team2.setText(new StringBuilder(20).append(playerThree).append('\n').append(playerFour).toString());
         
-        int team1Image;
-        int team2Image;
+        // show images giving an indication of the game, like the score leader or winner
+        int team1Image = 0;
+        int team2Image = 0;
         if (hasWinner) {
-        	team1Image = team1Wins ? R.drawable.tichu_mahjong_raw : R.drawable.tichu_dog_raw;
-        	team2Image = team1Wins ? R.drawable.tichu_dog_raw : R.drawable.tichu_mahjong_raw;
+        	team1Image = team1Wins ? R.drawable.tichu_mahjong : R.drawable.tichu_dog;
+        	team2Image = team1Wins ? R.drawable.tichu_dog : R.drawable.tichu_mahjong;
         } else {
-        	// maybe load the game if not yet finished (since that will never be too many games) and check wo is currently leading in score and use dragon for leader
-        	boolean dragonLeft = IMAGE_RANDOM.nextBoolean();
-        	team1Image = dragonLeft ? R.drawable.tichu_dragon_translucent : R.drawable.tichu_dragon_translucent;
-        	team2Image = dragonLeft ? R.drawable.tichu_dragon_translucent : R.drawable.tichu_dragon_translucent;
+        	List<Game> game = null;
+			try {
+				game = TichuGame.loadGames(context.getContentResolver(), GameStorageHelper.getUri(GameKey.TICHU, id), false);
+			} catch (CompressedDataCorruptException e) {
+				assert false; // will not throw
+			}
+        	if (game != null && game.size() > 0) {
+        		TichuGame tichuGame = (TichuGame) game.get(0);
+        		if (tichuGame.getScoreTeam1() > tichuGame.getScoreTeam2()) {
+                	team1Image =  R.drawable.tichu_dragon;
+                	team2Image = R.drawable.tichu_phoenix;
+        		} else if (tichuGame.getScoreTeam1() < tichuGame.getScoreTeam2()) {
+                	team1Image =  R.drawable.tichu_phoenix;
+                	team2Image = R.drawable.tichu_dragon;
+        		} else {
+                	team1Image = R.drawable.tichu_dragon;        		
+                	team2Image = R.drawable.tichu_dragon;	
+        		}
+        	}
         }
 		team1.setCompoundDrawablesWithIntrinsicBounds(team1Image, 0, 0, 0);
 		team2.setCompoundDrawablesWithIntrinsicBounds(0, 0, team2Image, 0);
         
-        long id = c.getLong(idCol);
         if (id == highlightedGameId) {
         	tichuRow.setBackgroundResource(R.drawable.tichu_overview_game_selection);
         } else {
         	tichuRow.setBackgroundResource(0);
         }
         
+    }
+    
+    private void applyDate(TextView date, Date startDate) {
+    	Date today = new Date();
+		if (isSameDate(today, startDate)) {
+			date.setText(context.getResources().getString(R.string.today));
+		} else {
+			Calendar yesterday = Calendar.getInstance();
+			yesterday.add(Calendar.DATE, -1);
+			if (isSameDate(yesterday.getTime(), startDate)) {
+    			date.setText(context.getResources().getString(R.string.yesterday));        				
+			} else {
+                date.setText(DATE_FORMAT.format(startDate));        				
+			}
+		}
+	}
+
+	private static boolean isSameDate(Date first, Date second) {
+    	CALENDAR_CHECKER1.setTime(first);
+    	CALENDAR_CHECKER2.setTime(second);
+    	return CALENDAR_CHECKER1.get(Calendar.DAY_OF_YEAR) == CALENDAR_CHECKER2.get(Calendar.DAY_OF_YEAR)
+    			&& CALENDAR_CHECKER1.get(Calendar.YEAR) == CALENDAR_CHECKER2.get(Calendar.YEAR);
     }
 }
