@@ -10,11 +10,7 @@ import dan.dit.gameMemo.util.compression.Compressor;
 public abstract class PlayerTeam implements Compressible, Iterable<Player> {
 
 	public abstract Player getFirst();
-	/**
-	 * Returns all players of this team. In a player team there are by definition
-	 * no two equal players.
-	 * @return All players of this team.
-	 */
+
 	public abstract List<Player> getPlayers();
 	public abstract int getPlayerCount();
 	public abstract boolean contains(Player p);

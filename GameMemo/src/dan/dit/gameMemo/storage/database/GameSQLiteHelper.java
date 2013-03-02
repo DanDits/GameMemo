@@ -19,6 +19,15 @@ public class GameSQLiteHelper extends SQLiteOpenHelper {
 	public static final String COLUMN_PLAYERS = "players";
 	public static final String COLUMN_ROUNDS = "rounds";
 	public static final String COLUMN_WINNER ="winner";
+	
+	/*
+	 * Developers note for when adding new columns:
+	 * State in which version the column was added and supply a default value for the column (mostly not null).
+	 * Make a constraint for this column.
+	 * Make the default creation string create this column.
+	 * Ensure that all tables that this helper invokes onUpgrade/onDowngrade on handle this version
+	 * change and alter the table accordingly.
+	 */
 	/**
 	 * Added with version 2. Can hold general information not belonging to certain rounds about a game as required by the game.
 	 */

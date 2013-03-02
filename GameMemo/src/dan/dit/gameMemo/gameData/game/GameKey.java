@@ -7,7 +7,10 @@ import android.content.ContentResolver;
 import android.net.Uri;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGameBuilder;
+import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
+import dan.dit.gameMemo.gameData.statistics.GameStatisticBuilder;
+import dan.dit.gameMemo.gameData.statistics.tichu.TichuGameStatisticBuilder;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
 
@@ -27,6 +30,15 @@ public final class GameKey {
 	public static final int[] ALL_GAMES = new int[] {TICHU};
 	
 	private GameKey() {}
+	
+	public static GameStatisticBuilder getStatisticBuilder(int gameKey, List<Player> players) {
+		switch(gameKey) {
+		case GameKey.TICHU:
+			return new TichuGameStatisticBuilder(players);
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);	
+		}
+	}
 	
 	public static int getGameIconId(int gameKey) {
 		switch(gameKey) {

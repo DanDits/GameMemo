@@ -12,8 +12,6 @@ public class PlayerDuo extends PlayerTeam {
 		this.second = second;
 		if (first == null || second == null) {
 			throw new NullPointerException();
-		} else if (first.equals(second)) {
-			throw new IllegalArgumentException("A player cannot make a duo.");
 		}
 	}
 	

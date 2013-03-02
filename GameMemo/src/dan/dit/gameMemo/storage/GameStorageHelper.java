@@ -4,7 +4,7 @@ import android.content.ContentUris;
 import android.net.Uri;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
-import dan.dit.gameMemo.storage.database.tichu.TichuTableContentProvider;
+import dan.dit.gameMemo.storage.database.GamesDBContentProvider;
 
 public final class GameStorageHelper {
 	
@@ -14,7 +14,7 @@ public final class GameStorageHelper {
 	public static Uri getUriAllItems(int gameKey) {
 		switch(gameKey) {
 		case GameKey.TICHU:
-			return TichuTableContentProvider.CONTENT_URI;
+			return GamesDBContentProvider.CONTENT_URI;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
@@ -24,7 +24,7 @@ public final class GameStorageHelper {
 		Uri contentUri;
 		switch(gameKey) {
 		case GameKey.TICHU:
-			contentUri = TichuTableContentProvider.CONTENT_URI;
+			contentUri = GamesDBContentProvider.CONTENT_URI;
 			break;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -49,7 +49,7 @@ public final class GameStorageHelper {
 	public static String getCursorDirType(int gameKey) {
 		switch(gameKey) {
 		case GameKey.TICHU:
-			return TichuTableContentProvider.CONTENT_TYPE;
+			return GamesDBContentProvider.CONTENT_TYPE;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
@@ -58,7 +58,7 @@ public final class GameStorageHelper {
 	public static String getCursorItemType(int gameKey) {
 		switch(gameKey) {
 		case GameKey.TICHU:
-			return TichuTableContentProvider.CONTENT_ITEM_TYPE;
+			return GamesDBContentProvider.CONTENT_ITEM_TYPE;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}

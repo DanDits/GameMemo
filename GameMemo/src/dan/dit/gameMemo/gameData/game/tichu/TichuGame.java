@@ -381,6 +381,8 @@ public class TichuGame extends Game {
 	}
 
 	public void onRenameSuccess(Player newPlayer, String oldName) {
+		// possible scenario: a player is being renamed for a game and now we have two equal players in a team or in a game
+		// reaction: use vogel-strauss algorithm and ignore this.. the user is prompted that this can corrupt games
 		if (firstTeam.contains(oldName)) {
 			boolean firstGotRenamed = firstTeam.getFirst().getName().equalsIgnoreCase(oldName);
 			PlayerDuo newTeam = new PlayerDuo(firstGotRenamed ? newPlayer : firstTeam.getFirst(), firstGotRenamed ? firstTeam.getSecond() : newPlayer);

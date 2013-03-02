@@ -10,8 +10,8 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.widget.ArrayAdapter;
 /**
- * A PlayerPool holds a set of players. Each player instance is contained in none or
- * exactly one pool. A player contained in a pool can be renamed for this pool. To rename a
+ * A PlayerPool holds a set of players. 
+ *  A player contained in a pool can be renamed for this pool. To rename a
  * player for multiple pools use a {@link CombinedPool}.
  * @author Daniel
  *

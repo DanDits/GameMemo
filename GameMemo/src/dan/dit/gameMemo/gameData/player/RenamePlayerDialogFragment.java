@@ -18,10 +18,15 @@ import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 /**
  * This dialog fragment enables the user to rename a player from a list of players to any
- * new valid player name.<br>
- * <b>Requires the hosting activity to implement the {@link RenamePlayerDialogListener} interface.
- * Only players from this pool can be renamed. If the user presses OK, wantsToRename() will be invoked
- * with the selected player and desired name without any validations for any of these values.</b>
+ * new valid player name. After renaming all references to player variables should be considered
+ * out of synch and its better to get the player from the pool.<br>
+ * Supports renaming a player for a certain game only or for all games if the extra RENAME_FOR_ALL_GAMES 
+ * is <code>true</code>.<br>
+ * If the hosting activity implements the {@link RenamePlayerCallback} interface then on user confirmation 
+ * the callback onRenameSuccess will be invoked with the new player and the name of the
+ * (old) player that was renamed.<br>
+ * The new player will be null if renaming for all games. Do not make any assumptions
+ * for the new player being really 'new' or unique in the given or any pool.
  * @author Daniel
  *
  */
@@ -78,7 +83,9 @@ public class RenamePlayerDialogFragment extends DialogFragment {
 				Runnable action = new Runnable() {
 					@Override
 					public void run() {
-						mCallback.onRenameSuccess(mRenameForAll ? null : GameKey.getPool(mGameKey).populatePlayer(newName), toRename.getName());
+						if (mCallback != null) {
+							mCallback.onRenameSuccess(mRenameForAll ? null : GameKey.getPool(mGameKey).populatePlayer(newName), toRename.getName());
+						}
 						Toast.makeText(context, context.getResources().getString(R.string.rename_success), Toast.LENGTH_SHORT).show();
 					}
 				};
@@ -145,6 +152,8 @@ public class RenamePlayerDialogFragment extends DialogFragment {
 	   @Override
 	   public void onAttach(Activity activity) {
 		   super.onAttach(activity);
-		   mCallback = (RenamePlayerCallback) activity;
+		   if (activity instanceof RenamePlayerCallback) {
+			   mCallback = (RenamePlayerCallback) activity;
+		   }
 	   }
 }

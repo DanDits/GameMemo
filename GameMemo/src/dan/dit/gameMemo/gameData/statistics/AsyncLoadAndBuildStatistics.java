@@ -8,9 +8,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
-import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.player.Player;
-import dan.dit.gameMemo.gameData.statistics.tichu.TichuGameStatisticBuilder;
 import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
 
 public class AsyncLoadAndBuildStatistics extends
@@ -28,14 +26,9 @@ public class AsyncLoadAndBuildStatistics extends
 		this.gameKey = gameKey;
 		if (resolver == null || players == null) {
 			throw new NullPointerException("No parameter must be null.");
-		} else if (!isGamekeySupported(gameKey)) {
+		} else if (!GameKey.isGameSupported(gameKey)) {
 			throw new IllegalArgumentException("Gamekey " + gameKey + " not supported.");
 		}
-	}
-	
-	public static boolean isGamekeySupported(int key) {
-		 // add every game key that this class supports, if it supports a game the cases must be added to the methods accordingly
-		return key == GameKey.TICHU;
 	}
 
 	public void addListener(onStatisticBuildCompleteListener listener) {
@@ -52,24 +45,14 @@ public class AsyncLoadAndBuildStatistics extends
 	protected GameStatistic doInBackground(Uri... uri) {
 		List<Game> games = null;
 		try {
-			switch(gameKey) {
-			case GameKey.TICHU:
-				games = TichuGame.loadGames(resolver, uri[0], false);
-				break;
-			}
+			games = GameKey.loadGames(gameKey, resolver, uri[0]);
 		} catch(CompressedDataCorruptException e) {
-			assert false; // will not throw but ignore all any exceptions
 		}
 		publishProgress(70);
-		if (isCancelled()) {
+		if (games == null || games.size() == 0 || isCancelled()) {
 			return null;
 		}
-		GameStatisticBuilder builder = null;
-		switch(gameKey) {
-		case GameKey.TICHU:
-			builder = new TichuGameStatisticBuilder(players);
-			break;
-		}
+		GameStatisticBuilder builder = GameKey.getStatisticBuilder(gameKey, players);
 		if (builder != null) {
 			builder.addGames(games);
 			finishedStat = builder.build();

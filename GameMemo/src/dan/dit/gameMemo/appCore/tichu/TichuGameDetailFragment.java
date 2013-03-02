@@ -235,7 +235,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	}
 	
 	private void synchPlayerNames() {
-		// invoked at start from fillData and
+		// invoked at start from fillData and on rename and if a player changes
 		mPlayer[0].setText(mGame.getTeam1().getFirst().getName());
 		mPlayer[1].setText(mGame.getTeam1().getSecond().getName());
 		mPlayer[2].setText(mGame.getTeam2().getFirst().getName());
@@ -1000,6 +1000,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 
 	public void onRenameSuccess(Player newPlayer, String oldName) {
 		mGame.onRenameSuccess(newPlayer, oldName);
+		synchPlayerNames();
 	}
 
 	@Override
