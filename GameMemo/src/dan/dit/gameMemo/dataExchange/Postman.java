@@ -8,7 +8,7 @@ import android.util.Log;
 public class Postman {
 	private static final String TAG = "GameDataExchange";
 	// states how incoming data is expected for a single message (HEADER=(KEY, ID, SIZE)[, DATA])
-	private static final int HEADER_SIZE = 12; // in bytes, usually a multiple of 4 since data is stored from ints
+	private static final int HEADER_SIZE = 12; // in bytes, here a multiple of 4 since data is stored in ints
 	private static final int DATA_INCOME_STATE_EXPECT_HEADER = 1;
 	private static final int DATA_INCOME_STATE_EXPECT_DATA = 2;
 	
@@ -61,10 +61,11 @@ public class Postman {
 		intToByte(0, header, 8); // default message size is 0
 		if (message != null && message.length() > 0) {
 			//Log.d(TAG, "Sending message : key=" + mGameKey + " and id=" + messageId + ", message size =" + message.length);
-			int messageSize = message.length();
+			byte[] messageInBytes = message.getBytes();
+			int messageSize = messageInBytes.length;
 			intToByte(messageSize, header, 8); // updating actual message size which is >0
 			mTarget.sendData(header); 
-			mTarget.sendData(message.getBytes());
+			mTarget.sendData(messageInBytes);
 		} else {
 			// sending an empty message (only the header)
 			mTarget.sendData(header); 
