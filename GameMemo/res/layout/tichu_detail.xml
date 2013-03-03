@@ -3,6 +3,7 @@
     android:id="@+id/tichu_detail_base_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/tichu_detail_background"
     android:orientation="vertical" >
 
     <RelativeLayout
@@ -197,7 +198,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:cacheColorHint="#fff"
+            android:cacheColorHint="#00000000"
             android:transcriptMode="normal" >
         </ListView>
 

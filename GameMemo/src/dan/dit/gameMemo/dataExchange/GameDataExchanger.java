@@ -26,8 +26,7 @@ import dan.dit.gameMemo.util.compression.Compressor;
 //	-on offer, sending needed part of data that is needed back to service, requesting service to send it
 //	-on request, sending all requested data to service
 //	-on send: simply store given data permanently
-//	-if on request and on send fulfilled, send message to terminate connection
-//	-on terminate, if on request and on send fulfilled, terminate connection
+//	-if on request and on send fulfilled or otherwise finished or cannot continue: unregister from exchanger
 
 public class GameDataExchanger implements PostRecipient {
 	private static final String TAG = "GameDataExchange";
@@ -71,10 +70,6 @@ public class GameDataExchanger implements PostRecipient {
 			return; // i am closed
 		}
 		// receivePost is always invoked in an extra thread
-		processPendingPost(message, messageId);
-	}
-	
-	private void processPendingPost(String message, int messageId) {
 		if (message == null || message.length() == 0) {
 			// handle receiving of no data messages
 			switch(messageId) {
@@ -126,6 +121,9 @@ public class GameDataExchanger implements PostRecipient {
 				break;
 			}
 		}
+		if (isExchangeCompleteCondition()) {
+			close();
+		}
 	}
 
 	
@@ -154,6 +152,9 @@ public class GameDataExchanger implements PostRecipient {
 			}
 		}
 		mService.sendPost(mGameKey, messageId, message);
+		if (isExchangeCompleteCondition()) {
+			close();
+		}
 	}
 	
 	private synchronized boolean isExchangeCompleteCondition() {

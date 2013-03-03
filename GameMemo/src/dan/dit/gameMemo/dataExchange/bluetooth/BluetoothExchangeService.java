@@ -548,6 +548,8 @@ public final class BluetoothExchangeService  implements ExchangeService {
 	public synchronized void unregisterRecipient(PostRecipient receiver) {
 		int index = mRecipients.indexOfValue(receiver);
 		if (index >= 0) {
+			Message msg = mHandler.obtainMessage(BluetoothDataExchangeActivity.MESSAGE_DATA_EXCHANGER_CLOSED, mRecipients.keyAt(index), -1);
+	        mHandler.sendMessage(msg);
 			mRecipients.removeAt(index);
 		}
 	}

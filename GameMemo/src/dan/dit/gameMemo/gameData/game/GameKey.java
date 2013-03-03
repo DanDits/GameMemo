@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.content.ContentResolver;
 import android.net.Uri;
+import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGameBuilder;
 import dan.dit.gameMemo.gameData.player.Player;
@@ -103,5 +104,14 @@ public final class GameKey {
 	
 	public static final boolean isGameSupported(int gameKey) {
 		return gameKey == GameKey.TICHU; // add all supported game keys for the static methods that take a gamekey argument and do not throw on usage
+	}
+
+	public static int getBackgroundResource(int gameKey) {
+		switch (gameKey) {
+		case GameKey.TICHU:
+			return R.drawable.tichu_detail_background;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+		}
 	}
 }

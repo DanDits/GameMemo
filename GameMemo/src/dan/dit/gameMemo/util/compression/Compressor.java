@@ -5,14 +5,15 @@ import java.util.Iterator;
 import java.util.List;
 /**
  * A Compressor is a very simple object that allows 'serialization' of
- * primitive data types by compressing data into a single string. This data
+ * primitive data types by compressing data into a single string as CSV (see http://en.wikipedia.org/wiki/Comma-separated_values).
+ * This data
  * that is appended to the compressor can later be read by a new compressor initialized
- * with the compressed string in the same order. Strings must not be null and of length >= 1, but can contain any data.
+ * with the compressed string in the same order. Strings must not be null, but can contain any data! So there is no special character excluded.
  * <br> Nesting of
  * compressors is easily possible, so strings compressed by a compressor can be appended and later
  * read by another compressor.<br><br>
  * Example:<br>
- * <code>Compressor cmp = new Compressor();<br>cmp.appendData("a");cmp.appendData("b");cmp.appendData(2);<br>
+ * <code>Compressor cmp = new Compressor().appendData("a").appendData("b").appendData(2);<br>
  * String compressed = cmp.compress();<br>
  * Compressor decompressor = new Compressor(compressed);<br>
  * // decompressor.getData(0) equals "a", getData(1) equals "b" and getData(2) equals String.valueOf(2) </code>
@@ -75,38 +76,46 @@ public class Compressor implements Iterable<String>, Compressible {
 
 	/**
 	 * Appends data to the compressor.
-	 * @param dataString The data string to append. Must be of length >= 1.
+	 * @param dataString The data string to append.
 	 * @throws NullPointerException If dataString is <code>null</code>.
+	 * @return this
 	 */
-	public void appendData(String dataString) {
+	public Compressor appendData(String dataString) {
 		if (dataString == null) {
 			throw new NullPointerException("Given String is null.");
 		}
 		data.add(dataString);
+		return this;
 	}
 	
 	/**
 	 * Appends the given int. Equal to appendData(String.valueOf(dataInt)).
 	 * @param dataInt The int to append.
+	 * @return this
 	 */
-	public void appendData(int dataInt) {
+	public Compressor appendData(int dataInt) {
 		data.add(String.valueOf(dataInt));
+		return this;
 	}
 	
 	/**
 	 * Appends the given char. Equal to appendData(String.valueOf(dataChar)).
 	 * @param dataChar The char to append.
+	 * @return this
 	 */
-	public void appendData(char dataChar) {
+	public Compressor appendData(char dataChar) {
 		data.add(String.valueOf(dataChar));
+		return this;
 	}
 	
 	/**
 	 * Appends the given long. Equal to appendData(String.valueOf(dataLong)).
 	 * @param dataLong The long to append.
+	 * @return this
 	 */
-	public void appendData(long dataLong) {
+	public Compressor appendData(long dataLong) {
 		data.add(String.valueOf(dataLong));
+		return this;
 	}
 	
 	/**

@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.DialogFragment;
@@ -15,7 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import dan.dit.gameMemo.R;
-import dan.dit.gameMemo.appCore.GamePlayerSelectionActivity;
+import dan.dit.gameMemo.appCore.GameSetupActivity;
 import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment.CloseDetailViewRequestListener;
 import dan.dit.gameMemo.appCore.tichu.TichuGamesOverviewListFragment.GameSelectionListener;
 import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothDataExchangeActivity;
@@ -33,7 +34,7 @@ import dan.dit.gameMemo.util.ShowStacktraceUncaughtExceptionHandler;
 /**
  * This fragment activity is the home activity for tichu games. It holds
  * a {@link TichuGamesOverviewListFragment} and offers an option menu to start
- * the {@link GamePlayerSelectionActivity}, the {@link TichuGamesStatisticsActivity}
+ * the {@link GameSetupActivity}, the {@link TichuGamesStatisticsActivity}
  * or the {@link BluetoothDataExchangeActivity}.<br>
  * Depending on the layout, it also holds a {@link TichuGameDetailFragment} or starts a {@link TichuGameDetailActivity}
  * when there is a game being selected.
@@ -131,16 +132,16 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 	}
 
 	private void createTichuGame() {
-		Intent i = new Intent(this, GamePlayerSelectionActivity.class);
+		Intent i = new Intent(this, GameSetupActivity.class);
 		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.TICHU);
-		i.putExtra(GamePlayerSelectionActivity.EXTRA_TEAM_MIN_PLAYERS, TICHU_GAME_MIN_PLAYERS);
-		i.putExtra(GamePlayerSelectionActivity.EXTRA_TEAM_MAX_PLAYERS, TICHU_GAME_MAX_PLAYERS);
-		i.putExtra(GamePlayerSelectionActivity.EXTRA_OPTIONS_NUMBER_MAX_VALUES, TICHU_OPTIONS_MAX_NUMBERS);
-		i.putExtra(GamePlayerSelectionActivity.EXTRA_OPTIONS_NUMBER_MIN_VALUES, TICHU_OPTIONS_MIN_NUMBERS);
-		i.putExtra(GamePlayerSelectionActivity.EXTRA_OPTIONS_NUMBER_VALUES, TICHU_OPTIONS_NUMBER);
-		i.putExtra(GamePlayerSelectionActivity.EXTRA_OPTIONS_BOOLEAN_VALUES, TICHU_OPTIONS_BOOLEAN);
-		i.putExtra(GamePlayerSelectionActivity.EXTRA_OPTIONS_NUMBER_NAMES, new String[] {getResources().getString(R.string.tichu_game_score_limit)});
-		i.putExtra(GamePlayerSelectionActivity.EXTRA_OPTIONS_BOOLEAN_NAMES, new String[] {getResources().getString(R.string.tichu_game_mery_rule)});
+		i.putExtra(GameSetupActivity.EXTRA_TEAM_MIN_PLAYERS, TICHU_GAME_MIN_PLAYERS);
+		i.putExtra(GameSetupActivity.EXTRA_TEAM_MAX_PLAYERS, TICHU_GAME_MAX_PLAYERS);
+		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_MAX_VALUES, TICHU_OPTIONS_MAX_NUMBERS);
+		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_MIN_VALUES, TICHU_OPTIONS_MIN_NUMBERS);
+		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES, TICHU_OPTIONS_NUMBER);
+		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_VALUES, TICHU_OPTIONS_BOOLEAN);
+		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_NAMES, new String[] {getResources().getString(R.string.tichu_game_score_limit)});
+		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_NAMES, new String[] {getResources().getString(R.string.tichu_game_mery_rule)});
 		long highlightedId = getHighlightedGame();
 		if (Game.isValidId(highlightedId)) {
 			// extract player data from highlighted game and pass it as a suggestion to the selection activity, this allows simple rematches
@@ -151,7 +152,7 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 					Player curr = players.get(index);
 					playerNames[index] = curr == null ? null : curr.getName();
 				}
-				i.putExtra(GamePlayerSelectionActivity.EXTRA_PLAYER_NAMES, playerNames);
+				i.putExtra(GameSetupActivity.EXTRA_PLAYER_NAMES, playerNames);
 			}
 		}
 		startActivityForResult(i, PLAYER_SELECTION_ACTIVITY);
@@ -188,9 +189,9 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 			if (extras.containsKey(GameStorageHelper.getCursorItemType(GameKey.TICHU))) {
 				selectGame(extras.getLong(GameStorageHelper.getCursorItemType(GameKey.TICHU)));
 			} else {
-				String[] playerNames = extras.getStringArray(GamePlayerSelectionActivity.EXTRA_PLAYER_NAMES);
-				boolean[] boolOptions = extras.getBooleanArray(GamePlayerSelectionActivity.EXTRA_OPTIONS_BOOLEAN_VALUES);
-				int[] numberOptions = extras.getIntArray(GamePlayerSelectionActivity.EXTRA_OPTIONS_NUMBER_VALUES);
+				String[] playerNames = extras.getStringArray(GameSetupActivity.EXTRA_PLAYER_NAMES);
+				boolean[] boolOptions = extras.getBooleanArray(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_VALUES);
+				int[] numberOptions = extras.getIntArray(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES);
 				if (playerNames != null && playerNames.length >= TichuGame.TOTAL_PLAYERS) {
 					extras.putString(TichuGameDetailFragment.EXTRAS_TEAM1_PLAYER_1, playerNames[0]);
 					extras.putString(TichuGameDetailFragment.EXTRAS_TEAM1_PLAYER_2, playerNames[1]);
@@ -214,9 +215,15 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 	}
 	
 	private void showAboutDialog() {
+		String versionName = "";
+		try {
+			versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+		} catch (NameNotFoundException e) {
+			// will not happen since we ask for own own package which exists
+		}
 		new AlertDialog.Builder(this)
 		.setTitle(getResources().getString(R.string.about))
-		.setMessage(getResources().getString(R.string.about_summary))
+		.setMessage(getResources().getString(R.string.about_summary).replace("XXX", versionName))
 		.setIcon(android.R.drawable.ic_dialog_info)
 		.setNeutralButton(android.R.string.ok, null)
 		.show();

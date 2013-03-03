@@ -106,7 +106,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	/**
 	 * The drawable id of the drawable used to symbol no tichu bid.
 	 */
-	public static final int TICHU_BID_NONE_DRAWABLE_ID = R.drawable.tichu_main;
+	public static final int TICHU_BID_NONE_DRAWABLE_ID = R.drawable.tichu_man;
 	
 	/**
 	 * The drawable id of the drawable used to symbol a small lost tichu bid.
@@ -618,7 +618,6 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			}
 			clearFinishers();
 			for (int i = 0; i < tempFin.length; i++) {
-				Log.d("Tichu", "Finisher number " + (i+1) + " is player with id = " + tempFin[i]);
 				if (i >= 2 && mCurrRound.areFirstTwoFinisherInSameTeam()) {
 					break; // we do not want to visualize other team if a team finished first and second
 				} else if (tempFin[i] != TichuRound.FINISHER_POS_UNKNOWN) {

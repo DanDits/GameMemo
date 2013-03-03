@@ -49,7 +49,7 @@
 	<string name="statistics_by_genre">By genre</string>
 	<string name="statistics_by_genre_value_column_descr">Value</string>
 	<string name="data_exchange_button_refresh_devices_list">Refresh</string>
-	<string name="data_exchange_connection_status_title">Status:</string>
+	<string name="data_exchange_connection_status_title">State:</string>
 	<string name="data_exchange_connection_status_none">Idle</string>
 	<string name="data_exchange_connection_status_listen">Waiting</string>
 	<string name="data_exchange_connection_status_connecting">Connecting</string>
@@ -85,7 +85,7 @@
 	<string name="rename_failure">Renaming failed.</string>
 	<string name="help">Help</string>
 	<string name="about">About GameMemo</string>
-	<string name="about_summary">GameMemo Version 1.04 Daniel Dittmar Da.dittmar@t-online.de</string>
+	<string name="about_summary">GameMemo Version XXX Daniel Dittmar Da.dittmar@t-online.de</string>
 	<string name="hints">Hints</string>
 	<string name="hints_message"><Data><![CDATA[<ul>
 	    <li>When starting a game

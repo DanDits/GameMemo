@@ -49,6 +49,7 @@ public final class GameStorageHelper {
 	}
 	
 	public static long getIdFromUri(Uri uri) {
+		// probably the only forgiving method of this class that does not kill stupid requests :D
 		if (uri == null) {
 			return Game.NO_ID;
 		}

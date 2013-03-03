@@ -55,6 +55,8 @@ public class BluetoothDataExchangeActivity extends Activity {
 	// handler message constants
 	public static final int MESSAGE_CONNECTION_STATE_CHANGE = 1;
 	public static final int MESSAGE_TOAST = 2;
+	public static final int MESSAGE_DATA_EXCHANGER_CLOSED = 3;
+	
 	private static final long DEFAULT_EXCHANGE_START_DELAY = 1500; //ms, smaller than timeout of exchange service
 
 	// a hack that the user is not asked twice on activity start to enable discoverability if preference to do so is set
@@ -75,7 +77,7 @@ public class BluetoothDataExchangeActivity extends Activity {
 	public void onCreate(Bundle savedInstanceData) {
 		super.onCreate(savedInstanceData);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-		setContentView(R.layout.data_exchange);
+		setContentView(R.layout.data_exchange_bluetooth);
 		setProgressBarIndeterminateVisibility(false);
 		mBtAdapter = BluetoothAdapter.getDefaultAdapter();
 		Bundle extras = getIntent().getExtras();
@@ -279,6 +281,9 @@ public class BluetoothDataExchangeActivity extends Activity {
         	}
         	// handle messages from the exchange service
             switch (msg.what) {
+            case MESSAGE_DATA_EXCHANGER_CLOSED:
+            	act.onDataExchangerClosed(msg.arg1);
+            	break;
             case MESSAGE_CONNECTION_STATE_CHANGE:
             	if (act.mExchangeService != null 
             			&& msg.arg2 == BluetoothExchangeService.STATE_CONNECTED ) {
@@ -314,11 +319,15 @@ public class BluetoothDataExchangeActivity extends Activity {
         mExchangeService.startTimeoutTimer(BluetoothExchangeService.DEFAULT_TIMEOUT);
     }
     
-    private void onConnectionTerminated() {
+    private void onDataExchangerClosed(int gameKey) {
        	//TODO make a textview that shows a list of all games that are being exchanged:
     	// Tichu: failed  oder Tichu: Sent 10 Received 5
     	// Poker: Sent 5 Received 0
     	//...
+    }
+    
+    private void onConnectionTerminated() {
+    	// TODO probably easiest thing is to invoke onDataExchangerClosed for all exchanger that are still available
 		/*GameDataExchanger exch = mDataExchanger;
 		mDataExchanger = null;
      	Resources res = getResources();        
@@ -389,7 +398,9 @@ public class BluetoothDataExchangeActivity extends Activity {
             	mDevicesArrayAdapter.add(device);
             }
         }
-        if (discover) {
+        if (discover && mExchangeService != null 
+        		&& mExchangeService.getState() != BluetoothExchangeService.STATE_CONNECTED 
+        		&& mExchangeService.getState() != BluetoothExchangeService.STATE_CONNECTING) {
         	doDiscovery();
         }
     }
