@@ -165,7 +165,7 @@ public class TichuRound extends GameRound {
 				return i + 1;
 			}
 		}
-		if (finishers.length > 2 && areFirstTwoFinishersInSameTeam(finishers)) {
+		if (finishers.length >= 2 && areFirstTwoFinishersInSameTeam(finishers)) {
 			return FINISHER_POS_LAST;
 		} else {
 			return FINISHER_POS_UNKNOWN;
@@ -338,6 +338,10 @@ public class TichuRound extends GameRound {
 		assert checkFinisherArray(finishers);
 		return (isInTeam(finishers[0], true) && isInTeam(finishers[1], true))
 				||  (isInTeam(finishers[0], false) && isInTeam(finishers[1], false));
+	}
+	
+	public boolean areFirstTwoFinisherInSameTeam() {
+		return rawScoreTeam1 == 200 || rawScoreTeam2 == 200;
 	}
 	
 	private void checkAndThrowTichuRoundState() throws InadequateRoundInfo {

@@ -295,6 +295,12 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 		}
 	}
 	
+
+	@Override
+	public long getSelectedGameId() {
+		return getHighlightedGame();
+	}
+	
 	private void loadGameDetails(Bundle extras) {
 		if (extras == null) {
 			return;
@@ -361,4 +367,5 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 			mDetailsFragment.playerChosen(chosen);
 		}
 	}
+
 }

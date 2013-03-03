@@ -6,7 +6,8 @@
 .project
 .metadata
 bin/
-bin/**
+GameMemo/bin/
+GameMemo/bin
 gen/
 tmp/
 *.tmp

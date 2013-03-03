@@ -3,11 +3,7 @@ package dan.dit.gameMemo.storage.database;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
-import dan.dit.gameMemo.storage.database.tichu.TichuTable;
-
 import android.content.ContentProvider;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -15,6 +11,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.text.TextUtils;
+import dan.dit.gameMemo.storage.GameStorageHelper;
 
 /**
  * This content provider is used to communicate with {@link GameSQLiteHelper}'s database
@@ -24,172 +21,161 @@ import android.text.TextUtils;
  *
  */
 
-
-//TODO this class needs to be improved to allow a flexible handling of all games and not only tichu games, supporting query/insert/delete/update of all different 
-// games that are stored in a database table
-
 public class GamesDBContentProvider extends ContentProvider {
 	  // database 
 	private GameSQLiteHelper database;
 
-	  // Used for the UriMacher
-	  private static final int TICHU_GAMES = 10;
-	  private static final int TICHU_GAME_ID = 20;
+	// must equal the authority in the manifest file
+	public static final String AUTHORITY = "dan.dit.gameMemo.games_db.contentprovider";
 
-	  private static final String AUTHORITY = "dan.dit.gameMemo.games_db.contentprovider"; // must equal the authority in the manifest file
+	private static final int URI_TYPE_ALL = 0;
+	private static final int URI_TYPE_SINGLE_ID = 1;
+	private static final int URI_COUNT_PER_GAME = 2;
+	private static final UriMatcher sURIMatcher = new UriMatcher(
+			UriMatcher.NO_MATCH);
 
-	  private static final String BASE_PATH = TichuGame.GAME_NAME;
-	  public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY
-	      + "/" + BASE_PATH);
+	public static void registerGame(int gameKey, String path) {
+		sURIMatcher.addURI(AUTHORITY, path, gameKey * URI_COUNT_PER_GAME + URI_TYPE_ALL);
+		sURIMatcher.addURI(AUTHORITY, path + "/#", gameKey
+				* URI_COUNT_PER_GAME + URI_TYPE_SINGLE_ID);
+	}
 
-	  public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
-	      + "/" + TichuGame.GAME_NAME + "s";
-	  public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
-	      + "/" + TichuGame.GAME_NAME;
+	@Override
+	public boolean onCreate() {
+		database = new GameSQLiteHelper(getContext());
+		return false;
+	}
 
-	  private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-	  static {
-	    sURIMatcher.addURI(AUTHORITY, BASE_PATH, TICHU_GAMES);
-	    sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", TICHU_GAME_ID);
-	  }
+	@Override
+	synchronized public Cursor query(Uri uri, String[] projection,
+			String selection, String[] selectionArgs, String sortOrder) {
+		int uriKey = sURIMatcher.match(uri);
+		int uriType = uriKey % URI_COUNT_PER_GAME;
+		int gameKey = uriKey / URI_COUNT_PER_GAME;
+		
+		// Using SQLiteQueryBuilder instead of query() method
+		SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
-	  @Override
-	  public boolean onCreate() {
-	    database = new GameSQLiteHelper(getContext());
-	    return false;
-	  }
+		// Check if the caller has requested a column which does not exists
+		checkColumns(projection, gameKey);
 
-	  @Override
-	  synchronized public Cursor query(Uri uri, String[] projection, String selection,
-	      String[] selectionArgs, String sortOrder) {
+		queryBuilder.setTables(GameStorageHelper.getTableName(gameKey));
+		switch (uriType) {
+		case URI_TYPE_ALL:
+			break;
+		case URI_TYPE_SINGLE_ID:
+			// Adding the ID to the original query
+			queryBuilder.appendWhere(GameSQLiteHelper.COLUMN_ID + "="
+					+ uri.getLastPathSegment());
+			break;
+		default:
+			throw new IllegalArgumentException("Unknown URI: " + uri);
+		}
 
-	    // Using SQLiteQueryBuilder instead of query() method
-	    SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+		SQLiteDatabase db = database.getWritableDatabase();
+		Cursor cursor = queryBuilder.query(db, projection, selection,
+				selectionArgs, null, null, sortOrder);
+		// Make sure that potential listeners are getting notified
+		cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
-	    // Check if the caller has requested a column which does not exists
-	    checkColumns(projection);
+		return cursor;
+	}
 
-	    // Set the table
-	    queryBuilder.setTables(TichuTable.TABLE_TICHU_GAMES);
+	@Override
+	public String getType(Uri uri) {
+		return null;
+	}
 
-	    int uriType = sURIMatcher.match(uri);
-	    switch (uriType) {
-	    case TICHU_GAMES:
-	      break;
-	    case TICHU_GAME_ID:
-	      // Adding the ID to the original query
-	      queryBuilder.appendWhere(GameSQLiteHelper.COLUMN_ID + "="
-	          + uri.getLastPathSegment());
-	      break;
-	    default:
-	      throw new IllegalArgumentException("Unknown URI: " + uri);
-	    }
+	@Override
+	synchronized public Uri insert(Uri uri, ContentValues values) {
+		int uriKey = sURIMatcher.match(uri);
+		int uriType = uriKey % URI_COUNT_PER_GAME;
+		int gameKey = uriKey / URI_COUNT_PER_GAME;
+		SQLiteDatabase sqlDB = database.getWritableDatabase();
+		long id = 0;
+		switch (uriType) {
+		case URI_TYPE_ALL:
+			id = sqlDB.insert(GameStorageHelper.getTableName(gameKey), null, values);
+			break;
+		default:
+			throw new IllegalArgumentException("Unknown URI: " + uri);
+		}
+		getContext().getContentResolver().notifyChange(uri, null);
+		return GameStorageHelper.getUri(gameKey, id);
+	}
 
-	    SQLiteDatabase db = database.getWritableDatabase();
-	    Cursor cursor = queryBuilder.query(db, projection, selection,
-	        selectionArgs, null, null, sortOrder);
-	    // Make sure that potential listeners are getting notified
-	    cursor.setNotificationUri(getContext().getContentResolver(), uri);
+	@Override
+	synchronized public int delete(Uri uri, String selection,
+			String[] selectionArgs) {
+		int uriKey = sURIMatcher.match(uri);
+		int uriType = uriKey % URI_COUNT_PER_GAME;
+		int gameKey = uriKey / URI_COUNT_PER_GAME;
+		SQLiteDatabase sqlDB = database.getWritableDatabase();
+		int rowsDeleted = 0;
+		switch (uriType) {
+		case URI_TYPE_ALL:
+			rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey), selection,
+					selectionArgs);
+			break;
+		case URI_TYPE_SINGLE_ID:
+			String id = uri.getLastPathSegment();
+			if (TextUtils.isEmpty(selection)) {
+				rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey),
+						GameSQLiteHelper.COLUMN_ID + "=" + id, null);
+			} else {
+				rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey),
+						GameSQLiteHelper.COLUMN_ID + "=" + id + " and "
+								+ selection, selectionArgs);
+			}
+			break;
+		default:
+			throw new IllegalArgumentException("Unknown URI: " + uri);
+		}
+		getContext().getContentResolver().notifyChange(uri, null);
+		return rowsDeleted;
+	}
 
-	    return cursor;
-	  }
+	@Override
+	synchronized public int update(Uri uri, ContentValues values,
+			String selection, String[] selectionArgs) {
 
-	  @Override
-	  public String getType(Uri uri) {
-	    return null;
-	  }
+		int uriKey = sURIMatcher.match(uri);
+		int uriType = uriKey % URI_COUNT_PER_GAME;
+		int gameKey = uriKey / URI_COUNT_PER_GAME;
+		SQLiteDatabase sqlDB = database.getWritableDatabase();
+		int rowsUpdated = 0;
+		switch (uriType) {
+		case URI_TYPE_ALL:
+			rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey), values,
+					selection, selectionArgs);
+			break;
+		case URI_TYPE_SINGLE_ID:
+			String id = uri.getLastPathSegment();
+			if (TextUtils.isEmpty(selection)) {
+				rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey),
+						values, GameSQLiteHelper.COLUMN_ID + "=" + id, null);
+			} else {
+				rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey),
+						values, GameSQLiteHelper.COLUMN_ID + "=" + id + " and "
+								+ selection, selectionArgs);
+			}
+			break;
+		default:
+			throw new IllegalArgumentException("Unknown URI: " + uri);
+		}
+		getContext().getContentResolver().notifyChange(uri, null);
+		return rowsUpdated;
+	}
 
-	  @Override
-	  synchronized public Uri insert(Uri uri, ContentValues values) {
-	    int uriType = sURIMatcher.match(uri);
-	    SQLiteDatabase sqlDB = database.getWritableDatabase();
-	    long id = 0;
-	    switch (uriType) {
-	    case TICHU_GAMES:
-	      id = sqlDB.insert(TichuTable.TABLE_TICHU_GAMES, null, values);
-	      break;
-	    default:
-	      throw new IllegalArgumentException("Unknown URI: " + uri);
-	    }
-	    getContext().getContentResolver().notifyChange(uri, null);
-	    return Uri.parse(GamesDBContentProvider.CONTENT_URI + "/" + id);
-	  }
-
-	  @Override
-	  synchronized public int delete(Uri uri, String selection, String[] selectionArgs) {
-	    int uriType = sURIMatcher.match(uri);
-	    SQLiteDatabase sqlDB = database.getWritableDatabase();
-	    int rowsDeleted = 0;
-	    switch (uriType) {
-	    case TICHU_GAMES:
-	      rowsDeleted = sqlDB.delete(TichuTable.TABLE_TICHU_GAMES, selection,
-	          selectionArgs);
-	      break;
-	    case TICHU_GAME_ID:
-	      String id = uri.getLastPathSegment();
-	      if (TextUtils.isEmpty(selection)) {
-	        rowsDeleted = sqlDB.delete(TichuTable.TABLE_TICHU_GAMES,
-	            GameSQLiteHelper.COLUMN_ID + "=" + id, 
-	            null);
-	      } else {
-	        rowsDeleted = sqlDB.delete(TichuTable.TABLE_TICHU_GAMES,
-	            GameSQLiteHelper.COLUMN_ID + "=" + id 
-	            + " and " + selection,
-	            selectionArgs);
-	      }
-	      break;
-	    default:
-	      throw new IllegalArgumentException("Unknown URI: " + uri);
-	    }
-	    getContext().getContentResolver().notifyChange(uri, null);
-	    return rowsDeleted;
-	  }
-
-	  @Override
-	  synchronized public int update(Uri uri, ContentValues values, String selection,
-	      String[] selectionArgs) {
-
-	    int uriType = sURIMatcher.match(uri);
-	    SQLiteDatabase sqlDB = database.getWritableDatabase();
-	    int rowsUpdated = 0;
-	    switch (uriType) {
-	    case TICHU_GAMES:
-	      rowsUpdated = sqlDB.update(TichuTable.TABLE_TICHU_GAMES, 
-	          values, 
-	          selection,
-	          selectionArgs);
-	      break;
-	    case TICHU_GAME_ID:
-	      String id = uri.getLastPathSegment();
-	      if (TextUtils.isEmpty(selection)) {
-	        rowsUpdated = sqlDB.update(TichuTable.TABLE_TICHU_GAMES, 
-	            values,
-	            GameSQLiteHelper.COLUMN_ID + "=" + id, 
-	            null);
-	      } else {
-	        rowsUpdated = sqlDB.update(TichuTable.TABLE_TICHU_GAMES, 
-	            values,
-	            GameSQLiteHelper.COLUMN_ID + "=" + id 
-	            + " and " 
-	            + selection,
-	            selectionArgs);
-	      }
-	      break;
-	    default:
-	      throw new IllegalArgumentException("Unknown URI: " + uri);
-	    }
-	    getContext().getContentResolver().notifyChange(uri, null);
-	    return rowsUpdated;
-	  }
-
-	  private void checkColumns(String[] projection) {
-	    if (projection != null) {
-	      HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
-	      HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(TichuTable.AVAILABLE_COLUMNS));
-	      // Check if all columns which are requested are available
-	      if (!availableColumns.containsAll(requestedColumns)) {
-	        throw new IllegalArgumentException("Unknown columns in projection");
-	      }
-	    }
-	  }
+	private void checkColumns(String[] projection, int gameKey) {
+		if (projection != null) {
+			HashSet<String> requestedColumns = new HashSet<String>(
+					Arrays.asList(projection));
+			// Check if all columns which are requested are available
+			if (!GameStorageHelper.getAvailableColumns(gameKey).containsAll(requestedColumns)) {
+				throw new IllegalArgumentException(
+						"Unknown columns in projection");
+			}
+		}
+	}
 }

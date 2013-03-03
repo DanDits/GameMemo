@@ -45,6 +45,7 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
 	private static final int INFO_ID = Menu.FIRST + 2;
 	private static final int GAMEKEY = GameKey.TICHU;
 	private static final String STORAGE_HIGHLIGHTED_GAME_ID = "STORAGE_HIGHLIGHTED_GAME";
+	// first unfinished games then finished games, most recent games first for both parts
 	private static final String TICHU_GAMES_SORT_ORDER = 
 			"CASE " + GameSQLiteHelper.COLUMN_WINNER 
 			+ " WHEN " + Game.WINNER_NONE + " THEN " + GameSQLiteHelper.COLUMN_STARTTIME + " END DESC, "
@@ -54,6 +55,7 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
 	private GameSelectionListener mGameSelectionListener;
 	
 	public interface GameSelectionListener {
+		long getSelectedGameId();
 		void selectGame(long gameId);
 	}
 	
@@ -183,6 +185,9 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
 		.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
 		    public void onClick(DialogInterface dialog, int whichButton) {
+		    	if (mGameSelectionListener.getSelectedGameId() == gameId) {
+		    		mGameSelectionListener.selectGame(Game.NO_ID);
+		    	}
 	 			Uri uri = GameStorageHelper.getUri(GAMEKEY, gameId);
 	 			getActivity().getContentResolver().delete(uri, null, null);
 		    }})

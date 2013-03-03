@@ -1,35 +1,51 @@
 package dan.dit.gameMemo.storage;
 
+import java.util.Collection;
+
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.net.Uri;
+import android.util.SparseArray;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.storage.database.GamesDBContentProvider;
+import dan.dit.gameMemo.storage.database.tichu.TichuTable;
 
 public final class GameStorageHelper {
 	
 	private GameStorageHelper() {
 	}
 	
-	public static Uri getUriAllItems(int gameKey) {
+	private static final SparseArray<Uri> CONTENT_URIS = new SparseArray<Uri>();
+	static {
+		CONTENT_URIS.put(GameKey.TICHU, Uri.parse("content://" + GamesDBContentProvider.AUTHORITY
+			+ "/" + TichuTable.TABLE_TICHU_GAMES));
+		GamesDBContentProvider.registerGame(GameKey.TICHU, TichuTable.TABLE_TICHU_GAMES);
+	}
+	
+	public static String getTableName(int gameKey) {
 		switch(gameKey) {
 		case GameKey.TICHU:
-			return GamesDBContentProvider.CONTENT_URI;
+			return TichuTable.TABLE_TICHU_GAMES;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 	
-	public static Uri getUri(int gameKey, long id) {
-		Uri contentUri;
-		switch(gameKey) {
-		case GameKey.TICHU:
-			contentUri = GamesDBContentProvider.CONTENT_URI;
-			break;
-		default:
+	public static Uri getUriAllItems(int gameKey) {
+		Uri uri = CONTENT_URIS.get(gameKey);
+		if (uri == null) {
 			throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
-		return ContentUris.withAppendedId(contentUri, id);
+		return uri;
+	}
+	
+	public static Uri getUri(int gameKey, long id) {
+		Uri uri = CONTENT_URIS.get(gameKey);
+		if (uri == null) {
+			throw new IllegalArgumentException("Game not supported: " + gameKey);
+		}
+		return ContentUris.withAppendedId(uri, id);
 	}
 	
 	public static long getIdFromUri(Uri uri) {
@@ -49,7 +65,7 @@ public final class GameStorageHelper {
 	public static String getCursorDirType(int gameKey) {
 		switch(gameKey) {
 		case GameKey.TICHU:
-			return GamesDBContentProvider.CONTENT_TYPE;
+			return ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + TichuTable.TABLE_TICHU_GAMES;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
@@ -58,7 +74,16 @@ public final class GameStorageHelper {
 	public static String getCursorItemType(int gameKey) {
 		switch(gameKey) {
 		case GameKey.TICHU:
-			return GamesDBContentProvider.CONTENT_ITEM_TYPE;
+			return ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +  TichuTable.TABLE_TICHU_GAMES;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);
+		}
+	}
+
+	public static Collection<String> getAvailableColumns(int gameKey) {
+		switch(gameKey) {
+		case GameKey.TICHU:
+			return TichuTable.AVAILABLE_COLUMNS_COLL;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}

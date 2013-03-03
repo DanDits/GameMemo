@@ -604,7 +604,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			mCurrRound = (TichuRound) mGame.getRound(index);
 			setScoreSilent(true, String.valueOf(mCurrRound.getRawScoreTeam1()));
 			setScoreSilent(false, String.valueOf(mCurrRound.getRawScoreTeam2()));
-			int[] tempFin = new int[4];
+			int[] tempFin = new int[TichuGame.TOTAL_PLAYERS];
 			for (int i = 0; i < tempFin.length; i++) {
 				tempFin[i] = TichuRound.FINISHER_POS_UNKNOWN;
 			}
@@ -618,7 +618,10 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			}
 			clearFinishers();
 			for (int i = 0; i < tempFin.length; i++) {
-				if (tempFin[i] != TichuRound.FINISHER_POS_UNKNOWN) {
+				Log.d("Tichu", "Finisher number " + (i+1) + " is player with id = " + tempFin[i]);
+				if (i >= 2 && mCurrRound.areFirstTwoFinisherInSameTeam()) {
+					break; // we do not want to visualize other team if a team finished first and second
+				} else if (tempFin[i] != TichuRound.FINISHER_POS_UNKNOWN) {
 					setNextFinisher(tempFin[i]);
 				}
 			}
@@ -772,7 +775,10 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 				setScoreSilent(true, String.valueOf(newRound.getRawScoreTeam1()));
 				setScoreSilent(false, String.valueOf(newRound.getRawScoreTeam2()));
 				for (int i = TichuGame.PLAYER_ONE_ID;  i < TichuGame.PLAYER_ONE_ID + TichuGame.TOTAL_PLAYERS; i++) {
-					visualizeFinisherPos(i, newRound.getFinisherPos(i));
+					int finisherPos = newRound.getFinisherPos(i);
+					if (finisherPos <= 2 || !newRound.areFirstTwoFinisherInSameTeam()) {
+						visualizeFinisherPos(i, finisherPos);
+					}
 				}
 				mCurrRound = newRound;
 				// no need to revisualize tichus as they do not get changed when a round is created
