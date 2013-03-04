@@ -1,6 +1,8 @@
 package dan.dit.gameMemo.dataExchange.bluetooth;
 
 import java.lang.ref.WeakReference;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import android.app.Activity;
@@ -18,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -37,7 +40,7 @@ import dan.dit.gameMemo.gameData.game.GameKey;
 
 /**
  * Offers an interface to the bluetooth adapter to discover devices, make oneself
- * discoverable and connect to discovered or bounded devices to start a {@link GameDataExchanger}.
+ * discoverable and connect to discovered or bounded devices to start {@link GameDataExchanger}.
  * This uses a {@link BluetoothExchangeService}.
  * @author Daniel
  *
@@ -62,7 +65,6 @@ public class BluetoothDataExchangeActivity extends Activity {
 	// a hack that the user is not asked twice on activity start to enable discoverability if preference to do so is set
 	// the problem is that the check for discoverability is done too fast and the adapter is not yet discoverable so it is asked again
 	private boolean mDoNotAskForDiscoverability; 
-	private int[] mGameKeys;
 	private MenuItem mOptionToggleDiscoverableOnStart;
 	private Button mScanButton;
 	private BluetoothExchangeService mExchangeService;
@@ -70,7 +72,9 @@ public class BluetoothDataExchangeActivity extends Activity {
 	private BluetoothAdapter mBtAdapter;
 	private ArrayAdapter<BluetoothDevice> mDevicesArrayAdapter;
 	private String mLastConnectedDeviceName;
-	private GameDataExchanger[] mDataExchangers;
+	private int[] mGameKeySuggestions; 
+	private List<Integer> mSelectedGames;
+	private SparseArray<GameDataExchanger> mDataExchangers;
 	private boolean mIsStopped;
 	
 	@Override
@@ -81,18 +85,11 @@ public class BluetoothDataExchangeActivity extends Activity {
 		setProgressBarIndeterminateVisibility(false);
 		mBtAdapter = BluetoothAdapter.getDefaultAdapter();
 		Bundle extras = getIntent().getExtras();
-		//TODO only use the given game key(s) as a suggestion and mark them, give possibility to check and uncheck all games in a drop down
-		// and only built data exchangers for checked games
+
 		if (savedInstanceData != null) {
-			this.mGameKeys = savedInstanceData.getIntArray(GameKey.EXTRA_GAMEKEY);
-			if (mGameKeys == null) {
-				this.mGameKeys = new int[] {savedInstanceData.getInt(GameKey.EXTRA_GAMEKEY)};
-			}
+			mGameKeySuggestions = savedInstanceData.getIntArray(GameKey.EXTRA_GAMEKEY);
 		} else if (extras != null) {
-			this.mGameKeys = extras.getIntArray(GameKey.EXTRA_GAMEKEY);
-			if (mGameKeys == null) {
-				this.mGameKeys = new int[] {extras.getInt(GameKey.EXTRA_GAMEKEY)};
-			}
+			mGameKeySuggestions = extras.getIntArray(GameKey.EXTRA_GAMEKEY);
 		} else {
 			// no game key, what do you want to exchange dude?
 			mReceiver = null;
@@ -100,7 +97,7 @@ public class BluetoothDataExchangeActivity extends Activity {
 			finish();
 			return;
 		}
-        mDataExchangers = new GameDataExchanger[mGameKeys.length];
+		
         // If the adapter is null, then Bluetooth is not supported
         if (mBtAdapter == null) {
             Toast.makeText(this, getResources().getString(R.string.bluetooth_not_available), Toast.LENGTH_LONG).show();
@@ -108,7 +105,18 @@ public class BluetoothDataExchangeActivity extends Activity {
             finish();
             return;
         }
-        
+        int[] allGames = GameKey.ALL_GAMES;
+        if (mGameKeySuggestions == null) {
+        	mGameKeySuggestions = new int[allGames.length];
+        	System.arraycopy(allGames, 0, mGameKeySuggestions, 0, allGames.length);
+        }
+		//TODO only use the given game key(s) as a suggestion and mark them, give possibility to check and uncheck all games in a drop down
+		// and only built data exchangers for checked games
+        mDataExchangers = new SparseArray<GameDataExchanger>(allGames.length);
+        mSelectedGames = new LinkedList<Integer>();
+        for (int gameKey : mGameKeySuggestions) {
+        	mSelectedGames.add(gameKey);
+        }
         
 		// Initialize the button to perform device discovery
         mScanButton = (Button) findViewById(R.id.data_exchange_refresh);
@@ -220,7 +228,7 @@ public class BluetoothDataExchangeActivity extends Activity {
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putIntArray(GameKey.EXTRA_GAMEKEY, mGameKeys);
+		outState.putIntArray(GameKey.EXTRA_GAMEKEY, mGameKeySuggestions);
 	}
 	    
 	private void setupExchangeService() {
@@ -311,10 +319,11 @@ public class BluetoothDataExchangeActivity extends Activity {
         Toast.makeText(this, 
         		getResources().getString(R.string.data_exchange_connected_to)
                        + mLastConnectedDeviceName, Toast.LENGTH_SHORT).show();
-
-        for (int i = 0; i < mGameKeys.length; i++) {
-        	mDataExchangers[i] = new GameDataExchanger(getContentResolver(), mExchangeService, mGameKeys[i]);
-        	mDataExchangers[i].startExchange(DEFAULT_EXCHANGE_START_DELAY);
+        mDataExchangers.clear();
+        for (int gameKey : mSelectedGames) {
+        	GameDataExchanger exchanger = new GameDataExchanger(getContentResolver(), mExchangeService, gameKey);
+        	mDataExchangers.put(gameKey, exchanger);
+        	exchanger.startExchange(DEFAULT_EXCHANGE_START_DELAY);
         }
         mExchangeService.startTimeoutTimer(BluetoothExchangeService.DEFAULT_TIMEOUT);
     }
@@ -363,7 +372,7 @@ public class BluetoothDataExchangeActivity extends Activity {
     	mDevicesArrayAdapter = new DevicesAdapter(this, R.layout.data_exchange_bluetooth_device);
 
         // Find and set up the ListView for paired devices
-        ListView pairedListView = (ListView) findViewById(R.id.data_exchange_devices);
+        ListView pairedListView = (ListView) findViewById(R.string.data_exchange_bluetooth_no_devices); //TODO this is terrible terrible wrong and will throw an exception if ever invoked, so change it asap
         
         // if no devices found show this in a text
     	TextView emptyView = new TextView(this);

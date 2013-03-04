@@ -33,12 +33,12 @@
         </activity>
         <activity
             android:name=".appCore.tichu.TichuGameDetailActivity"
-            android:configChanges="orientation|screenSize"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" >
         </activity>
         <activity
             android:name=".appCore.GameSetupActivity"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" >
+            android:windowSoftInputMode="stateAlwaysHidden" >
         </activity>
         <activity
             android:name=".util.DebugShowStacktraceActivity">
@@ -48,7 +48,7 @@
         </activity>
         <activity
             android:name=".dataExchange.bluetooth.BluetoothDataExchangeActivity"
-            android:configChanges="orientation|screenSize">
+            android:configChanges="keyboardHidden|orientation|screenSize">
         </activity>
           <provider
      		 android:name=".storage.database.GamesDBContentProvider"

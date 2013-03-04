@@ -80,9 +80,8 @@
                 android:maxLines="1"
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
-                android:text="@string/default_player_name" 
-                android:textColor="@android:color/black"
-                android:background="@drawable/tichu_player_button"/>
+                android:text="@string/default_player_name"
+                android:textColor="@android:color/black" />
 
             <Button
                 android:id="@+id/tichu_game_player2"
@@ -93,9 +92,8 @@
                 android:maxLines="1"
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
-                android:text="@string/default_player_name" 
-                android:textColor="@android:color/black"
-                android:background="@drawable/tichu_player_button" />
+                android:text="@string/default_player_name"
+                android:textColor="@android:color/black" />
 
             <View
        			android:layout_width="@dimen/tichu_detail_separator_line_width"
@@ -111,9 +109,8 @@
                 android:maxLines="1"
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
-                android:text="@string/default_player_name" 
-                android:textColor="@android:color/black"
-                android:background="@drawable/tichu_player_button" />
+                android:text="@string/default_player_name"
+                android:textColor="@android:color/black" />
 
             <Button
                 android:id="@+id/tichu_game_player4"
@@ -124,9 +121,9 @@
                 android:maxLines="1"
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
-                android:text="@string/default_player_name" 
-                android:textColor="@android:color/black"
-                android:background="@drawable/tichu_player_button" />
+                android:text="@string/default_player_name"
+                android:textColor="@android:color/black" />
+
         </LinearLayout>
 
         <LinearLayout

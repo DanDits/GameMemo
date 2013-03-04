@@ -243,7 +243,7 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 	
 	private void openDataExchangerBluetooth() {
 		Intent i = new Intent(this, BluetoothDataExchangeActivity.class);
-		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.TICHU);
+		i.putExtra(GameKey.EXTRA_GAMEKEY, new int[] {GameKey.TICHU});
 		startActivity(i);
 	}
 	

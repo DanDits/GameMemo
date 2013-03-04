@@ -60,7 +60,12 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
 
         final LayoutInflater inflater = LayoutInflater.from(context);
         View v = inflater.inflate(layout, parent, false);
-
+        ViewHolder holder = new ViewHolder();
+        holder.team1 = (TextView) v.findViewById(R.id.tichu_overview_team1);
+        holder.team2 = (TextView) v.findViewById(R.id.tichu_overview_team2);
+        holder.time = (TextView) v.findViewById(R.id.time);
+        holder.date = (TextView) v.findViewById(R.id.date);
+        v.setTag(holder);
         updateViewInfo(v, c);
 
         return v;
@@ -104,33 +109,28 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
         Date startDate = new Date(startTime);
         boolean hasWinner = winner != Game.WINNER_NONE;
         boolean team1Wins = winner == TichuGame.WINNER_TEAM1;
-           
+        ViewHolder holder = (ViewHolder) tichuRow.getTag();
         // show the start time
-        TextView time = (TextView) tichuRow.findViewById(R.id.time);
-        time.setText(TIME_FORMAT.format(startDate));
+        holder.time.setText(TIME_FORMAT.format(startDate));
 
         // display the start date if not on the same day like the previous game, display 'today' or 'yesterday' instead of the current/previous date
-        
-        TextView date = (TextView) tichuRow.findViewById(R.id.date);
         if (!c.isFirst() && c.moveToPrevious()) {
         	Date prevDate = new Date(c.getLong(starttimeCol));
         	if (!isSameDate(startDate, prevDate)) {
-        		applyDate(date , startDate);
+        		applyDate(holder.date , startDate);
         	} else {
-        		date.setText("");
+        		holder.date.setText("");
         	}
         	c.moveToNext();
         } else {
-        	applyDate(date, startDate);
+        	applyDate(holder.date, startDate);
         }
         
         // show players of the first team
-        TextView team1 = (TextView) tichuRow.findViewById(R.id.tichu_overview_team1);
-        team1.setText(new StringBuilder(20).append(playerOne).append('\n').append(playerTwo).toString());
+        holder.team1.setText(new StringBuilder(20).append(playerOne).append('\n').append(playerTwo).toString());
 
         // show players of the second team
-        TextView team2 = (TextView) tichuRow.findViewById(R.id.tichu_overview_team2);
-        team2.setText(new StringBuilder(20).append(playerThree).append('\n').append(playerFour).toString());
+        holder.team2.setText(new StringBuilder(20).append(playerThree).append('\n').append(playerFour).toString());
         
         // show images giving an indication of the game, like the score leader or winner
         int team1Image = 0;
@@ -159,11 +159,11 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
         		}
         	}
         }
-		team1.setCompoundDrawablesWithIntrinsicBounds(team1Image, 0, 0, 0);
-		team2.setCompoundDrawablesWithIntrinsicBounds(0, 0, team2Image, 0);
+        holder.team1.setCompoundDrawablesWithIntrinsicBounds(team1Image, 0, 0, 0);
+        holder.team2.setCompoundDrawablesWithIntrinsicBounds(0, 0, team2Image, 0);
         
         if (id == highlightedGameId) {
-        	tichuRow.setBackgroundResource(R.drawable.tichu_overview_game_selection);
+        	tichuRow.setBackgroundResource(R.drawable.tichu_overview_game_selected);
         } else {
         	tichuRow.setBackgroundResource(0);
         }
@@ -191,4 +191,11 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
     	return CALENDAR_CHECKER1.get(Calendar.DAY_OF_YEAR) == CALENDAR_CHECKER2.get(Calendar.DAY_OF_YEAR)
     			&& CALENDAR_CHECKER1.get(Calendar.YEAR) == CALENDAR_CHECKER2.get(Calendar.YEAR);
     }
+	
+	private static class ViewHolder {
+		 TextView team1;
+		 TextView team2;
+		 TextView date;
+		 TextView time;
+	}
 }

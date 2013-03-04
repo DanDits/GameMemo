@@ -5,16 +5,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <ListView
-        android:id="@+id/data_exchange_devices"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/data_exchange_refresh"
-        android:dividerHeight="5dp"
-        android:drawSelectorOnTop="true" >
-    </ListView>
-
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
@@ -35,5 +25,13 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/data_exchange_connection_status_text"
         android:text="@string/data_exchange_button_refresh_devices_list" />
+
+    <ExpandableListView
+        android:id="@+id/expandableListView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/data_exchange_refresh" >
+    </ExpandableListView>
 
 </RelativeLayout>

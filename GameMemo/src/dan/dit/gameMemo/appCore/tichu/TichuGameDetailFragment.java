@@ -1,11 +1,11 @@
 package dan.dit.gameMemo.appCore.tichu;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import android.graphics.PorterDuff;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -40,8 +40,8 @@ import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.tichu.TichuBidType;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.game.tichu.TichuRound;
-import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment;
+import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerDuo;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
@@ -128,7 +128,8 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	private static final String STORAGE_FINISHERS_LIST = "STORAGE_FINISHERS_LIST";
 	private static final String STORAGE_BIDS_LIST = "STORAGE_BIDS_LIST";
 
-	private static final int[] PLAYER_FINISHER_POS_COLOR = new int[] {0xFF58FC1C, 0xFFB2FC1C,0xFFE2F41C, 0xFFF4B71C};
+	private static final int[] PLAYER_FINISHER_POS_DRAWABLE_ID = new int[] {R.drawable.tichu_player_button_first, 
+		R.drawable.tichu_player_button_second,R.drawable.tichu_player_button_third, R.drawable.tichu_player_button_fourth};
 
 	
 	// references the UI elements or listeners 
@@ -315,14 +316,6 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			// no round selected, lets restore fields from bundle
 			setScoreSilent(true, savedInstanceState.getString(STORAGE_TEXT_SCORE_TEAM1));
 			setScoreSilent(false, savedInstanceState.getString(STORAGE_TEXT_SCORE_TEAM2));
-			String storedBids = savedInstanceState.getString(STORAGE_BIDS_LIST);
-			if (storedBids != null) {
-				int id = TichuGame.PLAYER_ONE_ID;
-				for (String bidKey : new Compressor(storedBids)) {
-					setTichuBid(id, TichuBidType.getFromKey(bidKey), true);
-					id++;
-				}
-			}
 			String storedFinishers = savedInstanceState.getString(STORAGE_FINISHERS_LIST);
 			if (storedFinishers != null) {
 				for (String finisher : new Compressor(storedFinishers)) {
@@ -333,6 +326,14 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 					if (nextFinisherId >= TichuGame.PLAYER_ONE_ID && nextFinisherId <= TichuGame.PLAYER_FOUR_ID) {
 						setNextFinisher(nextFinisherId);
 					}
+				}
+			}
+			String storedBids = savedInstanceState.getString(STORAGE_BIDS_LIST);
+			if (storedBids != null) {
+				int id = TichuGame.PLAYER_ONE_ID;
+				for (String bidKey : new Compressor(storedBids)) {
+					setTichuBid(id, TichuBidType.getFromKey(bidKey), false);
+					id++;
 				}
 			}
 		}
@@ -441,7 +442,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 				}
 				TichuBidType type = (mBids[playerId - TichuGame.PLAYER_ONE_ID] == TichuBidType.NONE) ? TichuBidType.SMALL : 
 					((mBids[playerId - TichuGame.PLAYER_ONE_ID] == TichuBidType.SMALL) ? TichuBidType.BIG : TichuBidType.NONE);
-				TichuGameDetailFragment.this.setTichuBid(playerId, type, true);
+				TichuGameDetailFragment.this.setTichuBid(playerId, type, false);
 				TichuGameDetailFragment.this.onRoundDataChange();
 			}
 			
@@ -590,38 +591,39 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			makeUserInputAvailable(!mGame.isFinished());
 			setScoreSilent(true, "");
 			setScoreSilent(false, "");
+			clearFinishers();
 			for (int i = TichuGame.PLAYER_ONE_ID; i < TichuGame.PLAYER_ONE_ID
 					+ TichuGame.TOTAL_PLAYERS; i++) {
-				setTichuBid(i, TichuBidType.NONE, true);
+				setTichuBid(i, TichuBidType.NONE, false);
 			}
-			clearFinishers();
 			mStateMachine.updateUI();
 		} else {
-			// existing round that can be edited
+			// existing round (that can be edited)
 			makeUserInputAvailable(true);
 			mCurrRoundIndex = index;
 			mAdapter.setMarkedRow(mCurrRoundIndex);
 			mCurrRound = (TichuRound) mGame.getRound(index);
+			// scores
 			setScoreSilent(true, String.valueOf(mCurrRound.getRawScoreTeam1()));
 			setScoreSilent(false, String.valueOf(mCurrRound.getRawScoreTeam2()));
+			// finishers
 			int[] tempFin = new int[TichuGame.TOTAL_PLAYERS];
-			for (int i = 0; i < tempFin.length; i++) {
-				tempFin[i] = TichuRound.FINISHER_POS_UNKNOWN;
-			}
+			Arrays.fill(tempFin, TichuRound.FINISHER_POS_UNKNOWN);
+			clearFinishers();
 			for (int i = TichuGame.PLAYER_ONE_ID; i < TichuGame.PLAYER_ONE_ID
 					+ TichuGame.TOTAL_PLAYERS; i++) {
-				setTichuBid(i, mCurrRound.getTichuBid(i).getType(), true);
 				int pos = mCurrRound.getFinisherPos(i);
+				visualizeFinisherPos(i, pos); // call before setTichuBid so bid visualization is not overwritten (mFinisher is not yet set here)
+				setTichuBid(i, mCurrRound.getTichuBid(i).getType(), pos == 1);
 				if (pos != TichuRound.FINISHER_POS_UNKNOWN) {
 					tempFin[pos - 1] = i;
 				}
 			}
-			clearFinishers();
+			// have to add positions afterwards since we have a list and not an array..
 			for (int i = 0; i < tempFin.length; i++) {
-				if (i >= 2 && mCurrRound.areFirstTwoFinisherInSameTeam()) {
-					break; // we do not want to visualize other team if a team finished first and second
-				} else if (tempFin[i] != TichuRound.FINISHER_POS_UNKNOWN) {
-					setNextFinisher(tempFin[i]);
+				if (tempFin[i] != TichuRound.FINISHER_POS_UNKNOWN 
+						&& (i < 2 || !mCurrRound.areFirstTwoFinisherInSameTeam())) {
+					mFinisher.add(Integer.valueOf(tempFin[i]));
 				}
 			}
 			mStateMachine.updateUI();
@@ -658,22 +660,28 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		}
 	}
 
-	private void setTichuBid(int playerId, TichuBidType type, boolean silent) {
+	private void setTichuBid(int playerId, TichuBidType type, boolean isWonSuggestion) {
 		if (type == null) {
 			return;
 		}
 		ImageButton view = mPlayerTichu[playerId - TichuGame.PLAYER_ONE_ID];
 		mBids[playerId - TichuGame.PLAYER_ONE_ID] = type;
-		view.setImageResource(type == TichuBidType.NONE ? TICHU_BID_NONE_DRAWABLE_ID :
-			(type == TichuBidType.SMALL ? TICHU_BID_SMALL_DRAWABLE_ID : TICHU_BID_BIG_DRAWABLE_ID));
+		int id = TICHU_BID_NONE_DRAWABLE_ID;
+		boolean won = isWonSuggestion || (mFinisher.size() > 0 && mFinisher.get(0) == playerId);
+		if (type == TichuBidType.SMALL) {
+			id = won ? TICHU_BID_SMALL_DRAWABLE_ID : TICHU_BID_SMALL_LOST_DRAWABLE_ID;
+		} else if (type == TichuBidType.BIG) {
+			id = won ? TICHU_BID_BIG_DRAWABLE_ID : TICHU_BID_BIG_LOST_DRAWABLE_ID;
+		}
+		view.setImageResource(id);
 	}
 	
 	private void clearFinishers() {
 		// clear from end, not important but so we unroll the process
+		mFinisher.clear();
 		for (int i = TichuGame.PLAYER_FOUR_ID; i >= TichuGame.PLAYER_ONE_ID; i--) {
 			visualizeFinisherPos(i, TichuRound.FINISHER_POS_UNKNOWN);
 		}
-		mFinisher.clear();
 	}
 	
 	private void setNextFinisher(int playerId) {
@@ -698,31 +706,13 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		assert playerId >= TichuGame.PLAYER_ONE_ID && playerId < TichuGame.PLAYER_ONE_ID + TichuGame.TOTAL_PLAYERS;
 		assert pos == TichuRound.FINISHER_POS_UNKNOWN || (pos > 0 && pos <= TichuRound.FINISHER_POS_LAST);
 		boolean clear = pos == TichuRound.FINISHER_POS_UNKNOWN;
-		String posString = clear ? "" : String.valueOf(pos) + ".";
 		Button button = mPlayer[playerId - TichuGame.PLAYER_ONE_ID];
-		String buttonText;
-		switch(playerId) {
-		case TichuGame.PLAYER_ONE_ID:
-			buttonText = posString+ mGame.getTeam1().getFirst();
-			break;
-		case TichuGame.PLAYER_TWO_ID:
-			buttonText = posString+ mGame.getTeam1().getSecond();
-			break;
-		case TichuGame.PLAYER_THREE_ID:
-			buttonText = posString+ mGame.getTeam2().getFirst();
-			break;
-		case TichuGame.PLAYER_FOUR_ID:
-			buttonText = posString+ mGame.getTeam2().getSecond();
-			break;
-		default:
-			throw new IllegalArgumentException("Invalid player id " + playerId);
-		}
-		button.setText(buttonText);
 		if (clear) {
-			button.getBackground().clearColorFilter();
+			button.setBackgroundResource(R.drawable.tichu_player_button_none);
 		} else if (button.getBackground() != null) {
-			button.getBackground().setColorFilter(PLAYER_FINISHER_POS_COLOR[pos - 1], PorterDuff.Mode.LIGHTEN);
+			button.setBackgroundResource(PLAYER_FINISHER_POS_DRAWABLE_ID[pos - 1]);
 		}
+		setTichuBid(playerId, mBids[playerId - TichuGame.PLAYER_ONE_ID], false);
 	}
 
 	private void makeUserInputAvailable(boolean available) {
@@ -775,9 +765,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 				setScoreSilent(false, String.valueOf(newRound.getRawScoreTeam2()));
 				for (int i = TichuGame.PLAYER_ONE_ID;  i < TichuGame.PLAYER_ONE_ID + TichuGame.TOTAL_PLAYERS; i++) {
 					int finisherPos = newRound.getFinisherPos(i);
-					if (finisherPos <= 2 || !newRound.areFirstTwoFinisherInSameTeam()) {
-						visualizeFinisherPos(i, finisherPos);
-					}
+					visualizeFinisherPos(i, finisherPos);
 				}
 				mCurrRound = newRound;
 				// no need to revisualize tichus as they do not get changed when a round is created

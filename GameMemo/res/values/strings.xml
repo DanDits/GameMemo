@@ -63,8 +63,8 @@
 	<string name="data_exchange_bluetooth_not_enabled_leaving">Bluetooth not enabled.</string>
 	<string name="bluetooth_not_available">Bluetooth is not available</string>
 	<string name="open_data_exchanger_bluetooth">Exchange data</string>
-	<string name="data_exchange_bluetooth_button_ensure_discoverable">Ensure discoverability</string>
-	<string name="data_exchange_bluetooth_make_discoverable_on_start">Make discoverable on start</string>
+	<string name="data_exchange_bluetooth_button_ensure_discoverable">Ensure discoverable</string>
+	<string name="data_exchange_bluetooth_make_discoverable_on_start">Start discoverable</string>
 	<string name="confirm_delete">Confirm delete</string>
 	<string name="confirm_delete_tichu_game">Do you really want to delete this game?</string>
 	<string name="data_exchange_complete">Data exchange complete.</string>
