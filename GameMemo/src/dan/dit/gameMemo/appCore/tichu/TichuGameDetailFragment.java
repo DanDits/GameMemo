@@ -28,6 +28,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -871,11 +872,13 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 				mGame.addRound(mCurrRound);
 				fillRoundData();
 				selectRound(-1);
+				hideSoftKeyboard();
 				break;
 			case STATE_OLD_ROUND_EDITED:
 				mGame.updateRound(mCurrRoundIndex, mCurrRound);
 				fillRoundData();
 				selectRound(-1);
+				hideSoftKeyboard();
 				break;
 			case STATE_OLD_ROUND_SELECTED:
 				selectRound(-1);
@@ -954,6 +957,13 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		}
 	}
 
+	private void hideSoftKeyboard() {
+		InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+			      Context.INPUT_METHOD_SERVICE);
+		
+			imm.hideSoftInputFromWindow(mScoreTeam1.hasFocus() ? mScoreTeam1.getWindowToken() : mScoreTeam2.getWindowToken(), 0);
+	}
+	
 	@Override
 	public void onPause() {
 		super.onPause();

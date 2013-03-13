@@ -30,7 +30,7 @@
     <string name="game_detail_option_show_tichus">Show tichus</string>
     <string name="tichu_game_tichu_round_bid_image_content_description">Visualizes tichu bid for player</string>
     <string name="tichu_game_failed_loading">Failed loading game.</string>
-    <string name ="TichuTableAccessPermissionDescription">Access to tichu games database table</string>
+    <string name ="GamesDBAccessPermissionDescription">Access to games database table</string>
     <string name ="show_statistics">Stats</string>
     <string name="statistics_games_played_descr">Games played</string>
     <string name="statistics_games_won_descr">Games won</string>
@@ -85,7 +85,7 @@
 	<string name="rename_failure">Renaming failed.</string>
 	<string name="help">Help</string>
 	<string name="about">About GameMemo</string>
-	<string name="about_summary">GameMemo Version XXX Daniel Dittmar Da.dittmar@t-online.de</string>
+	<string name="about_summary">GameMemo Version %d Daniel Dittmar Da.dittmar@t-online.de</string>
 	<string name="hints">Hints</string>
 	<string name="hints_message"><Data><![CDATA[<ul>
 	    <li>When starting a game

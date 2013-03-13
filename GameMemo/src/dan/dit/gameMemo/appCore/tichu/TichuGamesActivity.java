@@ -223,7 +223,7 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 		}
 		new AlertDialog.Builder(this)
 		.setTitle(getResources().getString(R.string.about))
-		.setMessage(getResources().getString(R.string.about_summary).replace("XXX", versionName))
+		.setMessage(getResources().getString(R.string.about_summary).replaceFirst("%d", versionName))// %d matches literally
 		.setIcon(android.R.drawable.ic_dialog_info)
 		.setNeutralButton(android.R.string.ok, null)
 		.show();

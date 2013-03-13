@@ -1,8 +1,5 @@
 package dan.dit.gameMemo.dataExchange.bluetooth;
 
-import java.lang.ref.WeakReference;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import android.app.Activity;
@@ -17,10 +14,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
-import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -36,7 +29,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.dataExchange.GameDataExchanger;
-import dan.dit.gameMemo.gameData.game.GameKey;
 
 /**
  * Offers an interface to the bluetooth adapter to discover devices, make oneself
@@ -45,7 +37,7 @@ import dan.dit.gameMemo.gameData.game.GameKey;
  * @author Daniel
  *
  */
-public class BluetoothDataExchangeActivity extends Activity {
+public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 	private static final String TAG = "GameDataExchange";
 	private static final String PREFERENCES_ALWAYS_REQUEST_DISCOVERABLE_ON_START= "dan.dit.gameMemo.PREFERENCE_REQUEST_DISCOVERABLE_ON_START";
 	private static final int REQUEST_ENABLE_BT = 1;
@@ -55,12 +47,6 @@ public class BluetoothDataExchangeActivity extends Activity {
 	public static final boolean DEFAULT_OPTION_MAKE_DISCOVERABLE_ON_START = true;
 	public static final boolean DEFAULT_CONNECTIVITY_IS_SECURE = true;
 	
-	// handler message constants
-	public static final int MESSAGE_CONNECTION_STATE_CHANGE = 1;
-	public static final int MESSAGE_TOAST = 2;
-	public static final int MESSAGE_DATA_EXCHANGER_CLOSED = 3;
-	
-	private static final long DEFAULT_EXCHANGE_START_DELAY = 1500; //ms, smaller than timeout of exchange service
 
 	// a hack that the user is not asked twice on activity start to enable discoverability if preference to do so is set
 	// the problem is that the check for discoverability is done too fast and the adapter is not yet discoverable so it is asked again
@@ -72,9 +58,6 @@ public class BluetoothDataExchangeActivity extends Activity {
 	private BluetoothAdapter mBtAdapter;
 	private ArrayAdapter<BluetoothDevice> mDevicesArrayAdapter;
 	private String mLastConnectedDeviceName;
-	private int[] mGameKeySuggestions; 
-	private List<Integer> mSelectedGames;
-	private SparseArray<GameDataExchanger> mDataExchangers;
 	private boolean mIsStopped;
 	
 	@Override
@@ -84,19 +67,6 @@ public class BluetoothDataExchangeActivity extends Activity {
 		setContentView(R.layout.data_exchange_bluetooth);
 		setProgressBarIndeterminateVisibility(false);
 		mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-		Bundle extras = getIntent().getExtras();
-
-		if (savedInstanceData != null) {
-			mGameKeySuggestions = savedInstanceData.getIntArray(GameKey.EXTRA_GAMEKEY);
-		} else if (extras != null) {
-			mGameKeySuggestions = extras.getIntArray(GameKey.EXTRA_GAMEKEY);
-		} else {
-			// no game key, what do you want to exchange dude?
-			mReceiver = null;
-			setResult(RESULT_CANCELED);
-			finish();
-			return;
-		}
 		
         // If the adapter is null, then Bluetooth is not supported
         if (mBtAdapter == null) {
@@ -105,19 +75,7 @@ public class BluetoothDataExchangeActivity extends Activity {
             finish();
             return;
         }
-        int[] allGames = GameKey.ALL_GAMES;
-        if (mGameKeySuggestions == null) {
-        	mGameKeySuggestions = new int[allGames.length];
-        	System.arraycopy(allGames, 0, mGameKeySuggestions, 0, allGames.length);
-        }
-		//TODO only use the given game key(s) as a suggestion and mark them, give possibility to check and uncheck all games in a drop down
-		// and only built data exchangers for checked games
-        mDataExchangers = new SparseArray<GameDataExchanger>(allGames.length);
-        mSelectedGames = new LinkedList<Integer>();
-        for (int gameKey : mGameKeySuggestions) {
-        	mSelectedGames.add(gameKey);
-        }
-        
+
 		// Initialize the button to perform device discovery
         mScanButton = (Button) findViewById(R.id.data_exchange_refresh);
         mScanButton.setOnClickListener(new OnClickListener() {
@@ -224,19 +182,13 @@ public class BluetoothDataExchangeActivity extends Activity {
 			}
 		}
 	}
-	
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		outState.putIntArray(GameKey.EXTRA_GAMEKEY, mGameKeySuggestions);
-	}
 	    
 	private void setupExchangeService() {
         // Initialize the BluetoothExchangeService to perform bluetooth connections
 		if (mExchangeService != null) {
 			return;
 		}
-		mExchangeService = new BluetoothExchangeService(this, new DataExchangeHandler(this));
+		mExchangeService = new BluetoothExchangeService(this, mHandler);
 		setConnectionStatusText(mExchangeService.getState());
 	}
 	
@@ -257,7 +209,7 @@ public class BluetoothDataExchangeActivity extends Activity {
         if (mExchangeService != null) mExchangeService.stop();
     }
 
-	private void setConnectionStatusText(int status) {
+	protected void setConnectionStatusText(int status) {
 		switch (status) {
 		case BluetoothExchangeService.STATE_NONE:
 			mConnectionStatusText.setText(getResources().getString(R.string.data_exchange_connection_status_none));
@@ -274,68 +226,30 @@ public class BluetoothDataExchangeActivity extends Activity {
 		}
 	}
 	
-	 // The Handler that gets information back from the BluetoothChatService
-    private static class DataExchangeHandler extends Handler {
-		WeakReference<BluetoothDataExchangeActivity> mAct;
-    	public DataExchangeHandler(BluetoothDataExchangeActivity pAct) {
-    		mAct = new WeakReference<BluetoothDataExchangeActivity>(pAct);
-    	}
-        @Override
-        public void handleMessage(Message msg) {
-        	BluetoothDataExchangeActivity act = mAct.get();
-        	if (act == null) {
-        		Log.e(TAG, "REFERENCE TO ACTIVITY GOT LOST FOR MESSAGE " + msg);
-        		return;
-        	}
-        	// handle messages from the exchange service
-            switch (msg.what) {
-            case MESSAGE_DATA_EXCHANGER_CLOSED:
-            	act.onDataExchangerClosed(msg.arg1);
-            	break;
-            case MESSAGE_CONNECTION_STATE_CHANGE:
-            	if (act.mExchangeService != null 
-            			&& msg.arg2 == BluetoothExchangeService.STATE_CONNECTED ) {
-            		// we lost a previous connection 
-            		act.onConnectionTerminated();
-            	}
-            	if (act.mExchangeService != null && msg.arg1 == BluetoothExchangeService.STATE_CONNECTED) {
-            		// we are now connected to a remote device
-            		BluetoothDevice connectedTo = (BluetoothDevice) msg.obj;
-                   act.onNewConnection(connectedTo);
-            	}
-            	act.setConnectionStatusText(msg.arg1);
-                break;
-            case MESSAGE_TOAST:
-                Toast.makeText(act.getApplicationContext(),act.getApplicationContext().getResources().getString(msg.arg1),
-                               Toast.LENGTH_SHORT).show();
-                break;
-            }
-        }
-    };
+	 
     
-    private void onNewConnection(BluetoothDevice device) {
+    protected void onNewConnection(Object device) {
+    	if (!(device instanceof BluetoothDevice)) {
+    		return;
+    	}
+    	super.onNewConnection(device);
+    	BluetoothDevice btDevice = (BluetoothDevice) device;
     	 // save the connected device's name
-        mLastConnectedDeviceName = device.getName();
+        mLastConnectedDeviceName = btDevice.getName();
         Toast.makeText(this, 
         		getResources().getString(R.string.data_exchange_connected_to)
                        + mLastConnectedDeviceName, Toast.LENGTH_SHORT).show();
-        mDataExchangers.clear();
-        for (int gameKey : mSelectedGames) {
-        	GameDataExchanger exchanger = new GameDataExchanger(getContentResolver(), mExchangeService, gameKey);
-        	mDataExchangers.put(gameKey, exchanger);
-        	exchanger.startExchange(DEFAULT_EXCHANGE_START_DELAY);
-        }
-        mExchangeService.startTimeoutTimer(BluetoothExchangeService.DEFAULT_TIMEOUT);
+       
     }
     
-    private void onDataExchangerClosed(int gameKey) {
+    protected void onDataExchangerClosed(int gameKey) {
        	//TODO make a textview that shows a list of all games that are being exchanged:
     	// Tichu: failed  oder Tichu: Sent 10 Received 5
     	// Poker: Sent 5 Received 0
     	//...
     }
     
-    private void onConnectionTerminated() {
+    protected void onConnectionTerminated() {
     	// TODO probably easiest thing is to invoke onDataExchangerClosed for all exchanger that are still available
 		/*GameDataExchanger exch = mDataExchanger;
 		mDataExchanger = null;
@@ -368,6 +282,7 @@ public class BluetoothDataExchangeActivity extends Activity {
     }
     
     private void initDeviceList() {
+    	//TODO make this and refreshDeviceList work together with DataEchangeActivitys expendable list view which also displays the games somehow
     	  // Initialize array adapter for paired and newly discovered devices
     	mDevicesArrayAdapter = new DevicesAdapter(this, R.layout.data_exchange_bluetooth_device);
 

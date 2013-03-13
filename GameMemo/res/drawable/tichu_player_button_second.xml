@@ -4,7 +4,7 @@
         android:drawable="@drawable/tichu_player_button_second_bg" />
     <item
         android:top="-3px">
-      <bitmap android:src="@drawable/tichu_second"
+      <bitmap android:src="@drawable/game_second"
         android:gravity="center_horizontal|top" />
     </item>
     

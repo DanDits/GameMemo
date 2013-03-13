@@ -73,7 +73,7 @@
 	<string name="data_exchange_games_received">Spiele empfangen:</string>
 	<string name="data_exchange_games_sent">Spiele gesendet:</string>
 	<string name="bluetooth_devices_state_bonded">Gekoppelt</string>
-    <string name ="TichuTableAccessPermissionDescription">Zugriff auf die TichuTable Datenbank</string>
+    <string name ="GamesDBAccessPermissionDescription">Zugriff auf die Spiele Datenbank</string>
 	<string name="bluetooth_confirm_turn_off_title">Bluetooth ausschalten?</string>
 	<string name="bluetooth_confirm_turn_off">Willst du Bluetooth ausschalten?</string>
 	<string name="bluetooth_leave_enabled">Eingeschaltet lassen</string>

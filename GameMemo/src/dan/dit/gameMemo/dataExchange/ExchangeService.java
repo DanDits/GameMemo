@@ -31,6 +31,8 @@ public interface ExchangeService  {
 	 * Flushes the OutputStream. Call this after a coherent block of data
 	 * was sent to the exchange service to make sure it is sent to the target.
 	 */
-	void flush();	
+	void flush();
+
+	void startTimeoutTimer(long defaultTimeout);	
 
 }

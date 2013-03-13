@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dan.dit.gameMemo"
-    android:versionCode="2"
-    android:versionName="1.05" 
+    android:versionCode="3"
+    android:versionName="1.06" 
     android:installLocation="auto">
 	
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="15" />
+        android:targetSdkVersion="16" />
 	<permission 
-   		    android:description="@string/TichuTableAccessPermissionDescription"
-   		    android:label="Tichu games access"
-   		    android:name="TichuGames"
+   		    android:description="@string/GamesDBAccessPermissionDescription"
+   		    android:label="Games access"
+   		    android:name="dan.dit.gameMemo.GamesDBAccess"
    		    android:protectionLevel="signature">
     </permission>
     <uses-feature android:name="android.hardware.bluetooth" android:required="false"/>
@@ -34,11 +34,11 @@
         <activity
             android:name=".appCore.tichu.TichuGameDetailActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" >
+            android:windowSoftInputMode="stateAlwaysHidden|adjustPan" >
         </activity>
         <activity
             android:name=".appCore.GameSetupActivity"
-            android:windowSoftInputMode="stateAlwaysHidden" >
+            android:windowSoftInputMode="stateAlwaysHidden|adjustPan" >
         </activity>
         <activity
             android:name=".util.DebugShowStacktraceActivity">
@@ -53,7 +53,7 @@
           <provider
      		 android:name=".storage.database.GamesDBContentProvider"
       		 android:authorities="dan.dit.gameMemo.games_db.contentprovider" 
-      		 android:permission="GamesStorageAndExchange"
+      		 android:permission="dan.dit.gameMemo.GamesDBAccess"
       		 android:exported="true">
    		</provider>
    		

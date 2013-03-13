@@ -150,8 +150,8 @@ public class TichuGameRoundAdapter extends ArrayAdapter<GameRound> {
 		TextView team1Score = (TextView) row.findViewById(R.id.team1_score);
 		TextView team2Score= (TextView) row.findViewById(R.id.team2_score);
 
-		// if wanted show delta, but not for the first round
-		if (showDelta && position > 0) {
+		// if last round or if wanted show delta, but not for the first round
+		if ((position == game.getRoundCount() - 1 || showDelta) && position > 0) {
 			int delta1 = game.getScoreUpToRound(position, true) - game.getScoreUpToRound(position - 1, true);
 			team1Delta.setText((delta1 >= 0) ? ("+" + String.valueOf(delta1)) : String.valueOf(delta1));
 			int delta2 = game.getScoreUpToRound(position, false) - game.getScoreUpToRound(position - 1, false);
@@ -166,9 +166,13 @@ public class TichuGameRoundAdapter extends ArrayAdapter<GameRound> {
 			// highlight last round score specially, since it is the current score
 			team1Score.setPaintFlags(team1Score.getPaintFlags() | Paint.FAKE_BOLD_TEXT_FLAG);
 			team2Score.setPaintFlags(team2Score.getPaintFlags() | Paint.FAKE_BOLD_TEXT_FLAG);
+			team1Delta.setPaintFlags(team1Score.getPaintFlags() | Paint.FAKE_BOLD_TEXT_FLAG);
+			team2Delta.setPaintFlags(team2Score.getPaintFlags() | Paint.FAKE_BOLD_TEXT_FLAG);
 		} else {
 			team1Score.setPaintFlags(team1Score.getPaintFlags() & (~Paint.FAKE_BOLD_TEXT_FLAG));
 			team2Score.setPaintFlags(team2Score.getPaintFlags() & (~Paint.FAKE_BOLD_TEXT_FLAG));
+			team1Delta.setPaintFlags(team1Score.getPaintFlags() & (~Paint.FAKE_BOLD_TEXT_FLAG));
+			team2Delta.setPaintFlags(team2Score.getPaintFlags() & (~Paint.FAKE_BOLD_TEXT_FLAG));
 		}
 	}
 }
