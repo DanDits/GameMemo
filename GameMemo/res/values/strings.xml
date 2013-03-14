@@ -6,20 +6,13 @@
     <string name="new_tichu_game">New game</string>
     <string name="menu_delete_game">Delete game</string>
     <string name="menu_info_game">Info</string>
-    <string name="tichu_row_team2_heading">Team 2</string>
-    <string name="tichu_row_team1_heading">Team 1</string>
-    <string name="tichu_row_time_empty">Started</string>
     <string name="game_starttime">Starttime</string>
     <string name="game_runtime">Duration</string>
-    <string name="tichu_row_time_heading">Starttime</string>
     <string name="game_team">Team</string>
     <string name="no_tichu_rounds">No rounds yet</string>
     <string name="default_tichu_round_score"> </string><string name="default_player_name">Player</string>
-    <string name="tichu_team_select_team1">Team 1</string>
-    <string name="tichu_team_select_team2">Team 2</string>
     <string name="game_select_player">Select player</string>
     <string name="tichu_team_select_shuffle">Shuffle</string>
-    <string name="tichu_team_select_add_player">Add</string>
     <string name="game_enter_name">Enter name</string>
     <string name="tichu_team_select_start_game">Start game</string>
     <string name="tichu_game_tichu_button_1_content_description">Toggle tichu bid player 1</string>
@@ -29,7 +22,7 @@
     <string name="game_detail_option_show_delta">Show score delta</string>
     <string name="game_detail_option_show_tichus">Show tichus</string>
     <string name="tichu_game_tichu_round_bid_image_content_description">Visualizes tichu bid for player</string>
-    <string name="tichu_game_failed_loading">Failed loading game.</string>
+    <string name="game_failed_loading">Failed loading game.</string>
     <string name ="GamesDBAccessPermissionDescription">Access to games database table</string>
     <string name ="show_statistics">Stats</string>
     <string name="statistics_games_played_descr">Games played</string>
@@ -54,18 +47,19 @@
 	<string name="data_exchange_connection_status_listen">Waiting</string>
 	<string name="data_exchange_connection_status_connecting">Connecting</string>
 	<string name="data_exchange_connection_status_connected">Connected</string>
-	<string name="data_exchange_connected_to">Connected to </string>
+	<string name="data_exchange_connected_to">Connected to %1$s</string>
 	<string name="data_exchange_status_synchronizing_failed">Failed</string>
+	<string name="data_exchange_finished">Synced %1$d games with %2$s</string>
 	<string name="data_exchange_bluetooth_no_devices">No devices</string>
-	<string name="bluetooth_unable_to_connect">Unable to connect to device.</string>
-	<string name="data_exchange_bluetooth_not_enabled_leaving">Bluetooth not enabled.</string>
+	<string name="bluetooth_unable_to_connect">Unable to connect to device</string>
+	<string name="data_exchange_bluetooth_not_enabled_leaving">Bluetooth is required</string>
 	<string name="bluetooth_not_available">Bluetooth is not available</string>
 	<string name="open_data_exchanger_bluetooth">Exchange data</string>
 	<string name="data_exchange_bluetooth_button_ensure_discoverable">Ensure discoverable</string>
 	<string name="data_exchange_bluetooth_make_discoverable_on_start">Start discoverable</string>
 	<string name="confirm_delete">Confirm delete</string>
 	<string name="confirm_delete_tichu_game">Do you really want to delete this game?</string>
-	<string name="data_exchange_games_received_sent">Received %1$d  Sent %2$d </string>
+	<string name="data_exchange_games_received_sent">Received %1$d / Sent %2$d</string>
 	<string name="bluetooth_devices_state_bonded">Bonded</string>
 	<string name="bluetooth_confirm_turn_off_title">Turn off bluetooth?</string>
 	<string name="bluetooth_confirm_turn_off">Do you want to turn off bluetooth?</string>
@@ -81,7 +75,7 @@
 	<string name="rename_failure">Renaming failed.</string>
 	<string name="help">Help</string>
 	<string name="about">About GameMemo</string>
-	<string name="about_summary">GameMemo Version %1$d Daniel Dittmar Da.dittmar@t-online.de</string>
+	<string name="about_summary">GameMemo version %1$s Daniel Dittmar Da.dittmar@t-online.de</string>
 	<string name="hints">Hints</string>
 	<string name="hints_message"><Data><![CDATA[<ul>
 	    <li>When starting a game
@@ -122,6 +116,6 @@
 	<string name="game_options">Options</string>
 	<string name="today">Today</string>
 	<string name="yesterday">Yesterday</string>
-	<string name="show_games_selection">Games selected</string>
+	<string name="games_selected">Games selected %1$d/%2$d</string>
 	<string name="games_selection_title">Games to exchange</string>
 </resources>

@@ -18,7 +18,7 @@
         android:id="@+id/team1_delta"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="3"
+        android:layout_weight="4"
         android:gravity="right"
         android:textSize="12sp" />
 
@@ -59,7 +59,7 @@
         android:id="@+id/team2_delta"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="3"
+        android:layout_weight="4"
         android:gravity="right"
         android:textSize="12sp" />
 

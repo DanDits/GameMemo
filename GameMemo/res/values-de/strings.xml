@@ -6,8 +6,8 @@
     <string name="new_tichu_game">Neues Spiel</string>
     <string name="menu_delete_game">Löschen</string>
     <string name="menu_info_game">Info</string>
-    <string name="tichu_row_team2_heading">Team 2</string>
     <string name="tichu_row_team1_heading">Team 1</string>
+    <string name="tichu_row_team2_heading">Team 2</string>
     <string name="tichu_row_time_empty">Startzeit</string>
     <string name="tichu_row_time_heading">Startzeit</string>
     <string name="game_starttime">Startzeit</string>
@@ -29,7 +29,7 @@
     <string name="game_detail_option_show_delta">Zeige Punktedelta</string>
     <string name="game_detail_option_show_tichus">Zeige Tichus</string>
     <string name="tichu_game_tichu_round_bid_image_content_description">Visualisiert Tichu Ansage in einer Runde</string>
-    <string name="tichu_game_failed_loading">Tichu Spiel konnte nicht geladen werden.</string>
+    <string name="game_failed_loading">Spiel konnte nicht geladen werden.</string>
     <string name ="show_statistics">Statistik</string>
     <string name="statistics_games_played_descr">Gespielte Spiele</string>
     <string name="statistics_games_won_descr">Gewonnene Spiele</string>
@@ -53,22 +53,19 @@
 	<string name="data_exchange_connection_status_listen">Wartend</string>
 	<string name="data_exchange_connection_status_connecting">Verbinden</string>
 	<string name="data_exchange_connection_status_connected">Verbunden</string>
-	<string name="data_exchange_connected_to">Verbunden mit </string>
-	<string name="data_exchange_status_synchronizing_with">Synchronisiere mit:</string>
-	<string name="data_exchange_status_synchronized_with">Synchronisiert mit:</string>
-	<string name="data_exchange_status_synchronizing_failed">Synchronisation fehlgeschlagen</string>
+	<string name="data_exchange_connected_to">Verbunden mit %1$s</string>
+	<string name="data_exchange_status_synchronizing_failed">Fehlgeschlagen</string>
 	<string name="data_exchange_bluetooth_no_devices">Keine Geräte</string>
-	<string name="bluetooth_unable_to_connect">Verbinden mit Gerät fehlgeschlagen.</string>
-	<string name="data_exchange_bluetooth_not_enabled_leaving">Bluetooth nicht verfügbar; Abbruch.</string>
-	<string name="bluetooth_not_available">Bluetooth ist nicht verfübar.</string>
+	<string name="bluetooth_unable_to_connect">Verbinden mit Gerät fehlgeschlagen</string>
+	<string name="data_exchange_bluetooth_not_enabled_leaving">Bluetooth benötigt</string>
+	<string name="bluetooth_not_available">Bluetooth ist nicht verfügbar</string>
+	<string name="data_exchange_finished">%1$d Spiele synchronisiert mit %2$s</string>
 	<string name="open_data_exchanger_bluetooth">Spieldatenaustausch</string>
 	<string name="data_exchange_bluetooth_button_ensure_discoverable">Auffindbar machen</string>
 	<string name="data_exchange_bluetooth_make_discoverable_on_start">Auffindbar starten</string>
 	<string name="confirm_delete">Löschen bestätigen</string>
-	<string name="confirm_delete_tichu_game">Willst du dieses Spiel wirklich löschen?</string>
-	<string name="data_exchange_complete">Datenaustausch beendet.</string>
-	<string name="data_exchange_games_received">Spiele empfangen:</string>
-	<string name="data_exchange_games_sent">Spiele gesendet:</string>
+	<string name="confirm_delete_tichu_game">Dieses Spiel wirklich löschen?</string>
+	<string name="data_exchange_games_received_sent">Empfangen %1$d / Gesendet %2$d</string>
 	<string name="bluetooth_devices_state_bonded">Gekoppelt</string>
     <string name ="GamesDBAccessPermissionDescription">Zugriff auf die Spiele Datenbank</string>
 	<string name="bluetooth_confirm_turn_off_title">Bluetooth ausschalten?</string>
@@ -85,6 +82,7 @@
 	<string name="rename_failure">Umbenennen fehlgeschlagen.</string>
 	<string name="help">Hilfe</string>
 	<string name="about">Über GameMemo</string>
+	<string name="about_summary">GameMemo Version %1$s Daniel Dittmar Da.dittmar@t-online.de</string>
 	<string name="hints">Hinweise</string>
 	<string name="hints_message"><Data><![CDATA[ 
 	    <ul>
@@ -128,6 +126,6 @@
 	<string name="game_options">Optionen</string>
 	<string name="today">Heute</string>
 	<string name="yesterday">Gestern</string>
-	<string name="show_games_selection">Gewählte Spiele</string>
+	<string name="games_selected">Gewählte Spiele %1$d/%2$d</string>
 	<string name="games_selection_title">Spiele zum Tauschen</string>
 </resources>

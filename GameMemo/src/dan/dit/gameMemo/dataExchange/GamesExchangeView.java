@@ -11,11 +11,15 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import dan.dit.gameMemo.R;
 
-
+/**
+ * A view that holds some components to visualize the progress of a games exchange
+ * and enable the user to select games to exchange.
+ * @author Daniel
+ *
+ */
 public class GamesExchangeView extends LinearLayout {
 	private ProgressBar mProgress;
 	private Button mShowGames;
-	private CharSequence mShowGamesBaseText;
 	
 	public GamesExchangeView(Context context) {
 		super(context);
@@ -37,7 +41,6 @@ public class GamesExchangeView extends LinearLayout {
 		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View child = inflater.inflate(R.layout.games_exchange_overview, this, true);
 		mShowGames = (Button) child.findViewById(R.id.open_games_overview);
-		mShowGamesBaseText = mShowGames.getText();
 		mProgress = (ProgressBar) child.findViewById(R.id.exchange_progress);
 	}
 	
@@ -62,7 +65,7 @@ public class GamesExchangeView extends LinearLayout {
 	}
 
 	public void setSelectedGamesCount(int selected, int total) {
-		mShowGames.setText(mShowGamesBaseText + " " + selected + "/" + total);
+		mShowGames.setText(getContext().getResources().getString(R.string.games_selected, selected, total));
 	}
 
 

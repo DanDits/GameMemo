@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -30,9 +31,14 @@ import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.GamesExchangeView;
 
 /**
+ * A special implementation of a {@link DataExchangeActivity}.
  * Offers an interface to the bluetooth adapter to discover devices, make oneself
  * discoverable and connect to discovered or bounded devices.
- * This uses a {@link BluetoothExchangeService}.
+ * This uses a {@link BluetoothExchangeService} for wireless communication over bluetooth.
+ * <br>On startup if bluetooth is not enabled the user is asked to do so, also if wanted he
+ * is asked to become discoverable to other devices. This can also be done in the menu manually.<br>
+ * Also offers a possibility to refresh the devices list, fetching already bonded devices and discovering new
+ * ones.
  * @author Daniel
  *
  */
@@ -41,14 +47,17 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 	private static final int REQUEST_ENABLE_BT = 1;
 	private static final int REQUEST_DISCOVERABLE_BT = 2;
 	
-	// options that could later maybe be made configurable by the user in the context menu
-	public static final boolean DEFAULT_OPTION_MAKE_DISCOVERABLE_ON_START = true;
-	public static final boolean DEFAULT_CONNECTIVITY_IS_SECURE = true;
+	// the default option for the preference to make discoverable when enabling bluetooth on start
+	public static final boolean DEFAULT_OPTION_MAKE_DISCOVERABLE_ON_START = true; 
+	// insecure bluetooth connections require API level 10!
+	public static final boolean DEFAULT_CONNECTIVITY_IS_SECURE = true; 
 	
 
 	// a hack that the user is not asked twice on activity start to enable discoverability if preference to do so is set
 	// the problem is that the check for discoverability is done too fast and the adapter is not yet discoverable so it is asked again
 	private boolean mDoNotAskForDiscoverability; 
+	
+	// ui component references
 	private MenuItem mOptionToggleDiscoverableOnStart;
 	private BluetoothExchangeService mExchangeService;
 	private TextView mConnectionStatusText;
@@ -227,18 +236,39 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
     	 // save the connected device's name
         mLastConnectedDeviceName = btDevice.getName();
         Toast.makeText(this, 
-        		getResources().getString(R.string.data_exchange_connected_to)
-                       + mLastConnectedDeviceName, Toast.LENGTH_SHORT).show();
+        		getResources().getString(R.string.data_exchange_connected_to, 
+        				mLastConnectedDeviceName), Toast.LENGTH_SHORT).show();
        
     }
     
     @Override
-    protected void onConnectionTerminated() {
-    	super.onConnectionTerminated();
+    protected void onConnectionTerminated(int successfullyExchanged) {
+    	super.onConnectionTerminated(successfullyExchanged);
+    	Toast.makeText(this, getResources().getString(R.string.data_exchange_finished, 
+    			successfullyExchanged, mLastConnectedDeviceName), 
+    			Toast.LENGTH_LONG).show();
 		if (mIsStopped && mExchangeService != null) {
 			// connection finished and activity is stopped, stop exchange service
 			mExchangeService.stop();
 		}
+    }
+    
+    private static class DevicesAdapter extends ArrayAdapter<BluetoothDevice> {
+    	private Context context;
+    	public DevicesAdapter(Context context, int textViewResourceId) {
+    		super(context, textViewResourceId);
+    		this.context = context;
+    	}
+
+    	@Override
+    	public View getView(int position, View convertView, ViewGroup parent) {
+    		View row = super.getView(position, convertView, parent);
+    		BluetoothDevice device = (BluetoothDevice) getItem(position);
+    		String bondState = device.getBondState() == BluetoothDevice.BOND_NONE ? "" 
+    				: (" (" + context.getResources().getString(R.string.bluetooth_devices_state_bonded) + ")");
+    		((TextView) row).setText(device.getAddress() + " " + device.getName() +  bondState);
+    		return row;
+    	}
     }
     
     private void initDeviceList() {

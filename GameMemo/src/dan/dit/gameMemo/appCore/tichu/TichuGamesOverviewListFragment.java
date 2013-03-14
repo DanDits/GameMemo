@@ -161,7 +161,7 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
 		try {
 			games = GameKey.loadGames(GAMEKEY, getActivity().getContentResolver(), GameStorageHelper.getUri(GAMEKEY, gameId));
 		} catch (CompressedDataCorruptException e) {
-			Toast.makeText(getActivity(), res.getString(R.string.tichu_game_failed_loading), Toast.LENGTH_SHORT).show();
+			Toast.makeText(getActivity(), res.getString(R.string.game_failed_loading), Toast.LENGTH_SHORT).show();
 		}
 		if (games != null && games.size() > 0) {
 			String formattedInfo = games.get(0).getFormattedInfo(res);

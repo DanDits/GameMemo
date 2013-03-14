@@ -11,6 +11,13 @@ import android.widget.Toast;
 import dan.dit.gameMemo.dataExchange.GamesOverviewDialog.GamesOverviewDialogCallback;
 import dan.dit.gameMemo.gameData.game.GameKey;
 
+/**
+ * An abstract activity for {@link ExchangeService}s to exchange game data. Offers various methods
+ * that may be hooked for different events of the exchange. The way to establish and present the connection is left
+ * for the subclass.
+ * @author Daniel
+ *
+ */
 public abstract class DataExchangeActivity extends FragmentActivity implements
 		GamesOverviewDialogCallback {
 	private static final String TAG = DataExchangeActivity.class.getName();
@@ -26,6 +33,7 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 	protected ExchangeService mExchangeService;
 	protected Handler mHandler;
 
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Bundle extras = getIntent().getExtras();
@@ -72,7 +80,7 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 				act.setConnectionStatusText(msg.arg1);
 				break;
 			case MESSAGE_CONNECTION_LOST:
-				act.onConnectionTerminated();
+				act.onConnectionTerminated(act.mManager.getSuccessfullyExchangedGames());
 				break;
 			case MESSAGE_NEW_CONNECTION:
 				act.onNewConnection(msg.obj);
@@ -95,18 +103,39 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 		}
 	};
 
+	/**
+	 * A data exchanger was closed and unregistered from the ExchangeService. This can
+	 * happen during the connection or afterwards. Offers visual feedback for this progress.
+	 * @param gameKey The game key of the closed data exchanger.
+	 */
 	protected void onDataExchangerClosed(int gameKey) {
 		mManager.finishedDataExchanger(); // for visual feedback only
 	}
 
-	protected void onConnectionTerminated() {
+	/**
+	 * The connection got terminated. This will close all pending data exchangers. Presentation
+	 * of this termination is left to the subclass. Do not forget to call the parent method.
+	 * @param successfullyExchanged The amount of successfully exchanged game types.
+	 */
+	protected void onConnectionTerminated(int successfullyExchanged) {
 		mManager.closeAll();
 	}
 
+	/**
+	 * There is a new connection with the given connection object. The interpretation of the
+	 * object and if there really can be a connection with this object is left to the subclass.
+	 * If this is not the case, do not invoke the parent method.
+	 * @param connectionObject The object (a device,...) a new connection is established with.
+	 */
 	protected void onNewConnection(Object connectionObject) {
 		mManager.startExchange(mExchangeService, getContentResolver());
 	}
 
+	/**
+	 * The connection state changed. The visual representation and interpretation of the state code
+	 * is left to the subclass.
+	 * @param newState The state id of the new state.
+	 */
 	protected abstract void setConnectionStatusText(int newState);
 
 	@Override
@@ -114,6 +143,12 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 		return mManager;
 	}
 	
+	/**
+	 * Sets the games exchange view of the GamesExchangeManager. This is important for visual feedback.
+	 * The manager uses this view to present progress and let the user select game types to exchange. Invoke
+	 * this as soon as possible with a valid view.
+	 * @param view The GamesExchangeView embedded somewhere in the layout of the implementing subclass.
+	 */
 	public void setGamesExchangeView(GamesExchangeView view) {
 		mManager.setGamesExchangeView(view);
 	}

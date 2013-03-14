@@ -558,7 +558,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			fillData();
 			mStateMachine.updateUI();
 		} else {
-			Toast.makeText(getActivity(), getResources().getString(R.string.tichu_game_failed_loading), Toast.LENGTH_LONG).show();
+			Toast.makeText(getActivity(), getResources().getString(R.string.game_failed_loading), Toast.LENGTH_LONG).show();
 			mCloseRequestListener.closeDetailView(true); // nothing to show here
 		}
 	}

@@ -8,7 +8,15 @@ import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.view.View.OnClickListener;
 import dan.dit.gameMemo.gameData.game.GameKey;
-
+/**
+ * Manages multiple {@link GameDataExchanger}s, a {@link GamesExchangeView}
+ * and interacts with a {@link GamesOverviewDialog} to select a subset of
+ * all available games.<br>
+ * This class is mainly responsible for managing the visualization of the exchange progress
+ * and starting the exchange for the user selected games.
+ * @author Daniel
+ *
+ */
 public class GamesExchangeManager {	
 	public static final long EXCHANGE_START_DELAY = 1500; //ms, must be smaller than timeout duration
 	public static final long TIMEOUT_DURATION = 5000; //ms
@@ -122,6 +130,16 @@ public class GamesExchangeManager {
 		return null;
 	}
 
+	public int getSuccessfullyExchangedGames() {
+		int count = 0;
+		for (GameDataExchanger exchanger : mDataExchangers) {
+			if (exchanger.exchangeFinishedSuccessfully()) {
+				count++;
+			}
+		}
+		return count;
+	}
+	
 	public boolean isSelected(int gameKey) {
 		return mSelectedGames.contains(Integer.valueOf(gameKey));
 	}

@@ -27,7 +27,14 @@ import dan.dit.gameMemo.util.compression.Compressor;
 //	-on request, sending all requested data to service
 //	-on send: simply store given data permanently
 //	-if on request and on send fulfilled or otherwise finished or cannot continue: unregister from exchanger
-
+/**
+ * A GameDataExchanger responsible to exchange data for a specific {@link Game}.
+ * Exchanging means synching the data of the exchanging clients. To keep traffic low, first only
+ * the timestamps of available and requested games are being sent, then the required games themselves.
+ * Fetches the data via the given ContentResolver.
+ * @author Daniel
+ *
+ */
 public class GameDataExchanger implements PostRecipient {
 	private static final String TAG = "GameDataExchange";
 
@@ -40,7 +47,7 @@ public class GameDataExchanger implements PostRecipient {
 	private ContentResolver mContentResolver;
 	private ExchangeService mService; 
 	
-	private int mGameKey;
+	private final int mGameKey;
 	private int mGamesSentCount;
 	private int mGamesReceivedCount;
 	private List<Long> mOwnStarttimes;
@@ -49,7 +56,13 @@ public class GameDataExchanger implements PostRecipient {
 	private boolean mPartnerRequestSatisfied;
 	private boolean mOwnRequestDataReceived;
 
-	
+	/**
+	 * Creates a new GameDataExchanger using the ContentResolver and ExchangeService to fetch
+	 * and sent data for the given game.
+	 * @param resolver The content resolver that must not be <code>null</code> used to load data of the game.
+	 * @param service The ExchangeService that must not be <code>null</code> that data is sent to and received from.
+	 * @param gameKey The gamekey of the game that this exchanger is meant to synchronize.
+	 */
 	public GameDataExchanger(ContentResolver resolver, ExchangeService service, int gameKey) {
 		mContentResolver = resolver;
 		mPartnerRequestSatisfied = mOwnRequestDataReceived = mPartnerOfferReceived = false;
@@ -64,14 +77,28 @@ public class GameDataExchanger implements PostRecipient {
 		}
 	}
 	
+	/**
+	 * Returns the unique and immutable game key of this GameDataExchanger.
+	 * @return
+	 */
 	public final int getGameKey() {
 		return mGameKey;
 	}
 
+	/**
+	 * Checks if this data exchanger is closed.
+	 * @return If this exchanger is closed, it will not be able to receive or sent anything anymore and
+	 * is more or less garbage.
+	 */
 	public boolean isClosed() {
 		return mService == null;
 	}
 	
+	/**
+	 * This is invoked in a new thread! A new message for this game comes in with the given message id.
+	 * @param messageId The id of the message.
+	 * @param message The message itself. Can be empty.
+	 */
 	public synchronized void receivePost(int messageId, String message) {
 		if (isClosed()) {
 			assert false;
@@ -169,6 +196,10 @@ public class GameDataExchanger implements PostRecipient {
 		return mPartnerRequestSatisfied && mOwnRequestDataReceived;
 	}
 	
+	/**
+	 * Closes the data exchanger in a thread safe manner. Any further exchange related methods will fail
+	 * and do nothing.
+	 */
 	public synchronized void close() {
 		if (mService != null) {
 			mService.unregisterRecipient(this);
@@ -292,6 +323,10 @@ public class GameDataExchanger implements PostRecipient {
 		mPartnerRequestSatisfied = true; // even though we do not know if partner received data, it is ok to expect it
 	}
 
+	/**
+	 * Starts the exchange after the given delay.
+	 * @param delay The delay.
+	 */
 	public void startExchange(long delay) {
 		Timer delayedStart = new Timer();
 		delayedStart.schedule(new TimerTask() {
@@ -304,18 +339,36 @@ public class GameDataExchanger implements PostRecipient {
 		}, delay);
 	}
 	
+	/**
+	 * The amount of game objects sent.
+	 * @return The amount of game objects sent.
+	 */
 	public int getGamesSentCount() {
 		return mGamesSentCount;
 	}
 	
+	/**
+	 * The amount of game objects received.
+	 * @return The amount of game objects received.
+	 */
 	public int getGamesReceivedCount() {
 		return mGamesReceivedCount;
 	}
 	
+	/**
+	 * If the exchange finished successfully or if there was an error.
+	 * @return If the exchange finished successfully.
+	 */
 	public boolean exchangeFinishedSuccessfully() {
 		return isExchangeCompleteCondition();
 	}
 	
+	/**
+	 * Parses the compressed starttimes from the String using a {@link Compressor}. See timesToString
+	 * to invert this method.
+	 * @param compressedTimes The compressed starttimes.
+	 * @return A list of all decompressed starttimes.
+	 */
 	public static List<Long> timesFromString(String compressedTimes) {
 		Compressor cmp = new Compressor(compressedTimes);
 		List<Long> startTimes = new ArrayList<Long>(cmp.getSize());
@@ -331,6 +384,12 @@ public class GameDataExchanger implements PostRecipient {
 		return startTimes;
 	}
 
+	/**
+	 * Compresses the given list of starttimes to a string. See timesFromString
+	 * to invert this method.
+	 * @param startTimes The starttimes.
+	 * @return The compressed starttimes.
+	 */
 	public static String timesToString(List<Long> startTimes) {
 		if (startTimes == null || startTimes.size() == 0) {
 			return "";

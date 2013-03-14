@@ -29,6 +29,16 @@ import dan.dit.gameMemo.dataExchange.Postman.PostRecipient;
  * in console window 1: adb -s <device01_serial> logcat -v time TAG:D *:S
  * in console window 2: adb -s <device02_serial> logcat -v time TAG:D *:S
  */
+/**
+ * An {@link ExchangeService} implementation using bluetooth. Each service can
+ * act as a server and client to build the connection, the connection itself is peer to peer.
+ * Informs the given handler about major events like state changes, connections and connection losses.
+ * PostRecipients can register for a specific connection id and will then receive incoming messages for this
+ * connection id. If there is no out or indata for the specified duration, the connection times out. This  will
+ * not unregister remaining recipients!
+ * @author Daniel
+ *
+ */
 @SuppressLint("NewApi")
 public final class BluetoothExchangeService  implements ExchangeService {
     private static final String TAG = "GameDataExchange";
@@ -499,8 +509,16 @@ public final class BluetoothExchangeService  implements ExchangeService {
 		} // else there is no connection to terminate this service knows about
 	}
 	
+	/**
+	 * Starts a timeout timer, cancelling the current one. If there is no in
+	 * or output activity for the given duration, the connection is terminated.
+	 * @param timeoutDuration The maximum duration of silence between the devices that is accepted.
+	 */
 	public void startTimeoutTimer(long timeoutDuration) {
 		mIsTimedOut = false;
+		if (mTimeoutTimer != null) {
+			mTimeoutTimer.cancel();
+		}
 		mTimeoutTimer = new Timer();
 		mTimeoutTimer.scheduleAtFixedRate(new TimerTask() {
 
@@ -517,8 +535,12 @@ public final class BluetoothExchangeService  implements ExchangeService {
 		}, 0, timeoutDuration / 2);
 	}
 	
+	/**
+	 * Cancels the timeout timer.
+	 */
 	public void stopTimeoutTimer() {
 		if (mTimeoutTimer != null) {
+			mIsTimedOut = false;
 			mTimeoutTimer.cancel();
 			mTimeoutTimer = null;
 		}

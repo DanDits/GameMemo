@@ -13,7 +13,6 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +26,15 @@ import android.widget.TextView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.GameKey;
 
-
+/**
+ * A dialog that shows all games in a list, enabling the user to select a subset of the games.
+ * This also displays failure of exchanges for specific games and amounts of received and sent games.
+ * <b>Requires the attaching FragmentActivity to implement {@link GamesOverviewDialogCallback} to return
+ * a valid GamesExchangeManager</b>. From this manager information of games to select and exchange state is collected.
+ * On confirmation or backpress, the game selection of the manager is updated.
+ * @author Daniel
+ *
+ */
 public class GamesOverviewDialog extends DialogFragment {
 	private GamesOverviewDialogCallback mCallback;
 	private ListView mListView;
@@ -35,6 +42,11 @@ public class GamesOverviewDialog extends DialogFragment {
 	private List<Integer> mCurrentlySelectedGames;
 	private List<Integer> mAllGamesList;
 	
+	/**
+	 * Required for the GamesOverviewDialog.
+	 * @author Daniel
+	 *
+	 */
 	public interface GamesOverviewDialogCallback {
 		GamesExchangeManager getManager();
 	}
@@ -100,7 +112,6 @@ public class GamesOverviewDialog extends DialogFragment {
 		 for (int key : mCurrentlySelectedGames) {
 			 selectedGames[index++] = key;
 		 }
-		 Log.d("Tichu", "onConfirmation of gamesoverviewdialog with currently selected keys: " + mCurrentlySelectedGames);
 		 mCallback.getManager().setSelectedGames(selectedGames);
 	 }
 	   
