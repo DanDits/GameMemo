@@ -55,9 +55,7 @@
 	<string name="data_exchange_connection_status_connecting">Connecting</string>
 	<string name="data_exchange_connection_status_connected">Connected</string>
 	<string name="data_exchange_connected_to">Connected to </string>
-	<string name="data_exchange_status_synchronizing_with">Synchronizing with:</string>
-	<string name="data_exchange_status_synchronized_with">Synchronized with:</string>
-	<string name="data_exchange_status_synchronizing_failed">Synchronizing failed</string>
+	<string name="data_exchange_status_synchronizing_failed">Failed</string>
 	<string name="data_exchange_bluetooth_no_devices">No devices</string>
 	<string name="bluetooth_unable_to_connect">Unable to connect to device.</string>
 	<string name="data_exchange_bluetooth_not_enabled_leaving">Bluetooth not enabled.</string>
@@ -67,9 +65,7 @@
 	<string name="data_exchange_bluetooth_make_discoverable_on_start">Start discoverable</string>
 	<string name="confirm_delete">Confirm delete</string>
 	<string name="confirm_delete_tichu_game">Do you really want to delete this game?</string>
-	<string name="data_exchange_complete">Data exchange complete.</string>
-	<string name="data_exchange_games_received">Games received:</string>
-	<string name="data_exchange_games_sent">Games sent:</string>
+	<string name="data_exchange_games_received_sent">Received %1$d  Sent %2$d </string>
 	<string name="bluetooth_devices_state_bonded">Bonded</string>
 	<string name="bluetooth_confirm_turn_off_title">Turn off bluetooth?</string>
 	<string name="bluetooth_confirm_turn_off">Do you want to turn off bluetooth?</string>
@@ -85,7 +81,7 @@
 	<string name="rename_failure">Renaming failed.</string>
 	<string name="help">Help</string>
 	<string name="about">About GameMemo</string>
-	<string name="about_summary">GameMemo Version %d Daniel Dittmar Da.dittmar@t-online.de</string>
+	<string name="about_summary">GameMemo Version %1$d Daniel Dittmar Da.dittmar@t-online.de</string>
 	<string name="hints">Hints</string>
 	<string name="hints_message"><Data><![CDATA[<ul>
 	    <li>When starting a game
@@ -126,4 +122,6 @@
 	<string name="game_options">Options</string>
 	<string name="today">Today</string>
 	<string name="yesterday">Yesterday</string>
+	<string name="show_games_selection">Games selected</string>
+	<string name="games_selection_title">Games to exchange</string>
 </resources>

@@ -20,6 +20,7 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.util.SparseArray;
 import dan.dit.gameMemo.R;
+import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
 import dan.dit.gameMemo.dataExchange.Postman;
 import dan.dit.gameMemo.dataExchange.Postman.PostRecipient;
@@ -38,8 +39,6 @@ public final class BluetoothExchangeService  implements ExchangeService {
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 	
-    public static final long DEFAULT_TIMEOUT = 5000; //ms
-
     // Name for the SDP record when creating server socket
     private static final String NAME_SECURE = "BluetoothExchangeSecure";
     private static final String NAME_INSECURE = "BluetoothExchangeInsecure";
@@ -51,7 +50,6 @@ public final class BluetoothExchangeService  implements ExchangeService {
         UUID.fromString("c354cf51-6033-11e2-bcfd-0800200c9a66");
 
     // Member fields
-    private long mTimeoutDuration = DEFAULT_TIMEOUT;
     private boolean mIsTimedOut = false;
     private Timer mTimeoutTimer;
     private Postman mPostman;
@@ -88,11 +86,19 @@ public final class BluetoothExchangeService  implements ExchangeService {
         mState = state;
 
         // Give the new state to the Handler so the UI Activity can update
-        Message msg = mHandler.obtainMessage(BluetoothDataExchangeActivity.MESSAGE_CONNECTION_STATE_CHANGE, state, oldState);
-        if (mConnectedThread != null && mState == STATE_CONNECTED) {
-        	msg.obj = mConnectedThread.mmSocket.getRemoteDevice();
-        }
+        Message msg = mHandler.obtainMessage(DataExchangeActivity.MESSAGE_CONNECTION_STATE_CHANGE, state, oldState);
         mHandler.sendMessage(msg);
+        if (oldState == STATE_CONNECTED) {
+        	// lost connection
+        	Message lostConnMsg = mHandler.obtainMessage(DataExchangeActivity.MESSAGE_CONNECTION_LOST);
+        	mHandler.sendMessage(lostConnMsg);
+        }
+        if (mConnectedThread != null && mState == STATE_CONNECTED) {
+        	// new connection
+        	Message newConnMsg = mHandler.obtainMessage(DataExchangeActivity.MESSAGE_NEW_CONNECTION);
+        	newConnMsg.obj = mConnectedThread.mmSocket.getRemoteDevice();
+        	mHandler.sendMessage(newConnMsg);
+        }
     }
 
     /**
@@ -113,6 +119,7 @@ public final class BluetoothExchangeService  implements ExchangeService {
         if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
 
         setState(STATE_LISTEN);
+		stopTimeoutTimer();
 
         // Start the thread to listen on a BluetoothServerSocket
         if (mSecureAcceptThread == null) {
@@ -492,7 +499,7 @@ public final class BluetoothExchangeService  implements ExchangeService {
 		} // else there is no connection to terminate this service knows about
 	}
 	
-	public void startTimeoutTimer() {
+	public void startTimeoutTimer(long timeoutDuration) {
 		mIsTimedOut = false;
 		mTimeoutTimer = new Timer();
 		mTimeoutTimer.scheduleAtFixedRate(new TimerTask() {
@@ -507,12 +514,14 @@ public final class BluetoothExchangeService  implements ExchangeService {
 				}
 			}
 			
-		}, 0, mTimeoutDuration / 2);
+		}, 0, timeoutDuration / 2);
 	}
 	
-	public void startTimeoutTimer(long timeoutDuration) {
-		mTimeoutDuration = timeoutDuration;
-		startTimeoutTimer();
+	public void stopTimeoutTimer() {
+		if (mTimeoutTimer != null) {
+			mTimeoutTimer.cancel();
+			mTimeoutTimer = null;
+		}
 	}
 
 	@Override

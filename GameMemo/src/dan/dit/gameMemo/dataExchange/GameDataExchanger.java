@@ -64,8 +64,16 @@ public class GameDataExchanger implements PostRecipient {
 		}
 	}
 	
+	public final int getGameKey() {
+		return mGameKey;
+	}
+
+	public boolean isClosed() {
+		return mService == null;
+	}
+	
 	public synchronized void receivePost(int messageId, String message) {
-		if (mService == null) {
+		if (isClosed()) {
 			assert false;
 			return; // i am closed
 		}
@@ -161,7 +169,7 @@ public class GameDataExchanger implements PostRecipient {
 		return mPartnerRequestSatisfied && mOwnRequestDataReceived;
 	}
 	
-	private void close() {
+	public synchronized void close() {
 		if (mService != null) {
 			mService.unregisterRecipient(this);
 			mService = null;

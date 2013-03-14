@@ -18,27 +18,25 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import dan.dit.gameMemo.R;
-import dan.dit.gameMemo.dataExchange.GameDataExchanger;
+import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
+import dan.dit.gameMemo.dataExchange.GamesExchangeView;
 
 /**
  * Offers an interface to the bluetooth adapter to discover devices, make oneself
- * discoverable and connect to discovered or bounded devices to start {@link GameDataExchanger}.
+ * discoverable and connect to discovered or bounded devices.
  * This uses a {@link BluetoothExchangeService}.
  * @author Daniel
  *
  */
 public class BluetoothDataExchangeActivity extends DataExchangeActivity {
-	private static final String TAG = "GameDataExchange";
 	private static final String PREFERENCES_ALWAYS_REQUEST_DISCOVERABLE_ON_START= "dan.dit.gameMemo.PREFERENCE_REQUEST_DISCOVERABLE_ON_START";
 	private static final int REQUEST_ENABLE_BT = 1;
 	private static final int REQUEST_DISCOVERABLE_BT = 2;
@@ -52,7 +50,6 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 	// the problem is that the check for discoverability is done too fast and the adapter is not yet discoverable so it is asked again
 	private boolean mDoNotAskForDiscoverability; 
 	private MenuItem mOptionToggleDiscoverableOnStart;
-	private Button mScanButton;
 	private BluetoothExchangeService mExchangeService;
 	private TextView mConnectionStatusText;
 	private BluetoothAdapter mBtAdapter;
@@ -76,15 +73,8 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
             return;
         }
 
-		// Initialize the button to perform device discovery
-        mScanButton = (Button) findViewById(R.id.data_exchange_refresh);
-        mScanButton.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-            	refreshDeviceList(true);
-            }
-        });
         mConnectionStatusText = (TextView) findViewById(R.id.data_exchange_connection_status_text);
-        
+        setGamesExchangeView((GamesExchangeView) findViewById(R.id.gamesExchangeView1));
         initDeviceList();
 	}
 	
@@ -209,6 +199,7 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
         if (mExchangeService != null) mExchangeService.stop();
     }
 
+    @Override
 	protected void setConnectionStatusText(int status) {
 		switch (status) {
 		case BluetoothExchangeService.STATE_NONE:
@@ -226,11 +217,10 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 		}
 	}
 	
-	 
-    
+    @Override
     protected void onNewConnection(Object device) {
     	if (!(device instanceof BluetoothDevice)) {
-    		return;
+    		return; // not connected to a bluetooth device, so this is not a new connection
     	}
     	super.onNewConnection(device);
     	BluetoothDevice btDevice = (BluetoothDevice) device;
@@ -242,39 +232,9 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
        
     }
     
-    protected void onDataExchangerClosed(int gameKey) {
-       	//TODO make a textview that shows a list of all games that are being exchanged:
-    	// Tichu: failed  oder Tichu: Sent 10 Received 5
-    	// Poker: Sent 5 Received 0
-    	//...
-    }
-    
+    @Override
     protected void onConnectionTerminated() {
-    	// TODO probably easiest thing is to invoke onDataExchangerClosed for all exchanger that are still available
-		/*GameDataExchanger exch = mDataExchanger;
-		mDataExchanger = null;
-     	Resources res = getResources();        
-		if (exch.exchangeFinishedSuccessfully()) {
-         	mSynchStatusText.setText(res.getString(R.string.data_exchange_status_synchronized_with) 
-            		+ mLastConnectedDeviceName);
-              Toast.makeText(this, 
-              		res.getString(R.string.data_exchange_complete) + " " 
-                             + res.getString(R.string.data_exchange_games_received) + " " + exch.getGamesReceivedCount()
-                             + ", "
-                             + res.getString(R.string.data_exchange_games_sent) + " " + exch.getGamesSentCount(), 
-                             Toast.LENGTH_LONG).show();
-    	} else {
-    		String failedSynch = res.getString(R.string.data_exchange_status_synchronizing_failed);
-    		mSynchStatusText.setText(failedSynch + mLastConnectedDeviceName);
-    		if (exch.getGamesReceivedCount() > 0 || exch.getGamesSentCount() > 0) {
-	                Toast.makeText(this, 
-	                		failedSynch + " " 
-	                               + res.getString(R.string.data_exchange_games_received) + " " + exch.getGamesReceivedCount()
-	                               + ", "
-	                               + res.getString(R.string.data_exchange_games_sent) + " " + exch.getGamesSentCount(), 
-	                               Toast.LENGTH_LONG).show();
-    		}
-    	}*/
+    	super.onConnectionTerminated();
 		if (mIsStopped && mExchangeService != null) {
 			// connection finished and activity is stopped, stop exchange service
 			mExchangeService.stop();
@@ -282,20 +242,19 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
     }
     
     private void initDeviceList() {
-    	//TODO make this and refreshDeviceList work together with DataEchangeActivitys expendable list view which also displays the games somehow
     	  // Initialize array adapter for paired and newly discovered devices
     	mDevicesArrayAdapter = new DevicesAdapter(this, R.layout.data_exchange_bluetooth_device);
 
-        // Find and set up the ListView for paired devices
-        ListView pairedListView = (ListView) findViewById(R.string.data_exchange_bluetooth_no_devices); //TODO this is terrible terrible wrong and will throw an exception if ever invoked, so change it asap
+        // Find and set up the ListView for devices
+        ListView devicesListView = (ListView) findViewById(R.id.bluetooth_devices_list); 
         
         // if no devices found show this in a text
     	TextView emptyView = new TextView(this);
     	emptyView.setText(getResources().getString(R.string.data_exchange_bluetooth_no_devices));
-    	pairedListView.setEmptyView(emptyView);
+    	devicesListView.setEmptyView(emptyView);
     	
-        pairedListView.setAdapter(mDevicesArrayAdapter);
-        pairedListView.setOnItemClickListener(mDeviceClickListener);
+    	devicesListView.setAdapter(mDevicesArrayAdapter);
+    	devicesListView.setOnItemClickListener(mDeviceClickListener);
 
         // Register for broadcasts when a device is discovered
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
@@ -359,8 +318,6 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
             // When discovery is finished, change the Activity title
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 setProgressBarIndeterminateVisibility(false);
-                Button scanButton = (Button) findViewById(R.id.data_exchange_refresh);
-                scanButton.setEnabled(true);
             } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
             	switch (intent.getExtras().getInt(BluetoothAdapter.EXTRA_STATE)) {
             	case BluetoothAdapter.STATE_TURNING_OFF:
@@ -377,7 +334,6 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
     };
 
 	private void doDiscovery() {
-		mScanButton.setEnabled(false);
         // Indicate scanning in the title
         setProgressBarIndeterminateVisibility(true);
 
@@ -455,6 +411,9 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 		case R.id.data_exchange_bluetooth_make_discoverable_on_start:
 			boolean newState = !item.isChecked();
 			setPreferencesMakeDiscoverableOnStart(newState);
+			return true;
+		case R.id.refresh:
+        	refreshDeviceList(true);
 			return true;
         }
         return false;

@@ -15,8 +15,6 @@
     <string name="game_team">Team</string>
     <string name="no_tichu_rounds">Noch keine Runden</string>
     <string name="default_tichu_round_score"> </string><string name="default_player_name">Spieler</string>
-    <string name="tichu_game_lock_round">Speichern</string><string name="tichu_game_lock_game">Beenden</string>
-    <string name="tichu_game_deselect_round">Neue Runde</string>
     <string name="tichu_team_select_team1">Team 1</string>
     <string name="tichu_team_select_team2">Team 2</string>
     <string name="game_enter_name">Name eingeben</string>
@@ -32,7 +30,6 @@
     <string name="game_detail_option_show_tichus">Zeige Tichus</string>
     <string name="tichu_game_tichu_round_bid_image_content_description">Visualisiert Tichu Ansage in einer Runde</string>
     <string name="tichu_game_failed_loading">Tichu Spiel konnte nicht geladen werden.</string>
-    <string name ="tichu_game_lockin_button_empty">"?" : "?"</string>
     <string name ="show_statistics">Statistik</string>
     <string name="statistics_games_played_descr">Gespielte Spiele</string>
     <string name="statistics_games_won_descr">Gewonnene Spiele</string>
@@ -131,4 +128,6 @@
 	<string name="game_options">Optionen</string>
 	<string name="today">Heute</string>
 	<string name="yesterday">Gestern</string>
+	<string name="show_games_selection">Gewählte Spiele</string>
+	<string name="games_selection_title">Spiele zum Tauschen</string>
 </resources>

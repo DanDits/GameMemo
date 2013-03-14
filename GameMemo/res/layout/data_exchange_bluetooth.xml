@@ -19,19 +19,21 @@
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/textView2" />
 
-    <Button
-        android:id="@+id/data_exchange_refresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/data_exchange_connection_status_text"
-        android:text="@string/data_exchange_button_refresh_devices_list" />
-
-    <ExpandableListView
-        android:id="@+id/expandableListView1"
+    <dan.dit.gameMemo.dataExchange.GamesExchangeView
+        android:id="@+id/gamesExchangeView1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/data_exchange_refresh" >
-    </ExpandableListView>
+        android:layout_below="@id/data_exchange_connection_status_text" >
+
+    </dan.dit.gameMemo.dataExchange.GamesExchangeView>
+
+    <ListView
+        android:id="@+id/bluetooth_devices_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/gamesExchangeView1" >
+
+    </ListView>
 
 </RelativeLayout>

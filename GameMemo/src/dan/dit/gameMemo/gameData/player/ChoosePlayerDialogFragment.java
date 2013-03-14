@@ -35,10 +35,6 @@ public class ChoosePlayerDialogFragment extends DialogFragment {
 		void playerChosen(Player chosen);
 	}
 	
-	public ChoosePlayerDialogFragment() {
-		super();
-	}
-	
 	   @Override
 	    public Dialog onCreateDialog(Bundle savedInstanceState) {
 		   View baseView = getActivity().getLayoutInflater().inflate(R.layout.choose_player, null);
