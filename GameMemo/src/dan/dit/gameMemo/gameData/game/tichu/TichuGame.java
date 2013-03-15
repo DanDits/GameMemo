@@ -26,8 +26,8 @@ import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
 import dan.dit.gameMemo.util.compression.Compressor;
 
 public class TichuGame extends Game {
-	public static final int MIN_SCORE_LIMIT = 100;
-	public static final int MAX_SCORE_LIMIT = 3000;
+	public static final int MIN_SCORE_LIMIT = 5;
+	public static final int MAX_SCORE_LIMIT = 10000;
 	public static final int DEFAULT_SCORE_LIMIT = 1000;
 	public static boolean DEFAULT_USE_MERCY_RULE = false;
 	

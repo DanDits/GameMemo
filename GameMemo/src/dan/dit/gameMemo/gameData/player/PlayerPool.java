@@ -100,12 +100,8 @@ public class PlayerPool {
 	
 	public ArrayAdapter<Player> makeAdapter(Context context,
 			List<Player> toFilter) {
-		ArrayAdapter<Player> adapter = makeAdapter(context);
-		if (toFilter != null) {
-			for (Player p : toFilter) {
-				adapter.remove(p);
-			}
-		}
+		PlayerAdapter adapter = (PlayerAdapter) makeAdapter(context);
+		adapter.setFilterPlayers(toFilter);
 		return adapter;
 	}
 

@@ -65,7 +65,7 @@ public class RenamePlayerDialogFragment extends DialogFragment {
 	private void warnAndConsultAboutNameConflict(final Handler handler, final Context context, final Player selected, final String newName) {
 		new AlertDialog.Builder(getActivity())
 			.setTitle(getResources().getString(R.string.rename_conflict_title))
-			.setMessage(getResources().getString(R.string.rename_conflict))
+			.setMessage(getResources().getString(R.string.rename_conflict, newName, selected.getName(), newName))
 			.setIcon(android.R.drawable.ic_dialog_alert)
 			.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 

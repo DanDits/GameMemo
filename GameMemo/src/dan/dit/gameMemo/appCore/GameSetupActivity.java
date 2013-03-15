@@ -200,7 +200,6 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 			 // there is an unfinished game with exactly the selected players, ask if they want to continue this game
 			new AlertDialog.Builder(this)
  			.setTitle(getResources().getString(R.string.unfinished_game_found_title))
- 			.setMessage(getResources().getString(R.string.unfinished_game_found_want_continue))
  			.setIcon(android.R.drawable.ic_dialog_alert)
  			.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
@@ -576,7 +575,6 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 				final TextView currValue = (TextView) numberOptions.findViewById(R.id.curr_number);
 				EditText numberInput = (EditText) numberInputRaw;
 				mOptionNumberFields[i] = numberInput;
-				description.setText(mOptionsNumberNames[i] + " [" + mOptionsNumberMinValues[i] + ", " + mOptionsNumberMaxValues[i] + "]");
 				if (mOptionsNumberMinValues[i] >= 0) {
 					numberInput.setInputType(InputType.TYPE_CLASS_NUMBER);
 				} else {

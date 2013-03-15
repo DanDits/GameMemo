@@ -43,6 +43,7 @@ import dan.dit.gameMemo.dataExchange.GamesExchangeView;
  *
  */
 public class BluetoothDataExchangeActivity extends DataExchangeActivity {
+	private static final String STORAGE_ACTIVITY_ENABLED_BLUETOOTH = "ACTIVITY_ENABLED_BLUETOOTH";
 	private static final String PREFERENCES_ALWAYS_REQUEST_DISCOVERABLE_ON_START= "dan.dit.gameMemo.PREFERENCE_REQUEST_DISCOVERABLE_ON_START";
 	private static final int REQUEST_ENABLE_BT = 1;
 	private static final int REQUEST_DISCOVERABLE_BT = 2;
@@ -65,6 +66,7 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 	private ArrayAdapter<BluetoothDevice> mDevicesArrayAdapter;
 	private String mLastConnectedDeviceName;
 	private boolean mIsStopped;
+	private boolean mActivityEnabledBluetooth;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceData) {
@@ -81,7 +83,9 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
             finish();
             return;
         }
-
+        if (savedInstanceData != null) {
+        	mActivityEnabledBluetooth = savedInstanceData.getBoolean(STORAGE_ACTIVITY_ENABLED_BLUETOOTH);
+        }
         mConnectionStatusText = (TextView) findViewById(R.id.data_exchange_connection_status_text);
         setGamesExchangeView((GamesExchangeView) findViewById(R.id.gamesExchangeView1));
         initDeviceList();
@@ -122,13 +126,12 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 	
 	@Override
 	public void onBackPressed() {
-		if (mBtAdapter != null 
+		if (mBtAdapter != null && mActivityEnabledBluetooth
 				&& (mBtAdapter.getState() == BluetoothAdapter.STATE_ON || mBtAdapter.getState() == BluetoothAdapter.STATE_TURNING_ON)) {
 			// ask user to turn off bluetooth, so he does not forget and can save energy (for planet earth!)
 			// but in any case invoke the default back pressed behavior and let the user leave
 			new AlertDialog.Builder(this)
  			.setTitle(getResources().getString(R.string.bluetooth_confirm_turn_off_title))
- 			.setMessage(getResources().getString(R.string.bluetooth_confirm_turn_off))
  			.setIcon(android.R.drawable.ic_dialog_alert)
  			.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
@@ -148,6 +151,8 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
   				 
   			 })
   			  .show();
+		} else {
+			super.onBackPressed();
 		}
 	}
 	
@@ -348,12 +353,14 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
             // When discovery is finished, change the Activity title
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 setProgressBarIndeterminateVisibility(false);
+            // Bluetooth adapter changes state
             } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
             	switch (intent.getExtras().getInt(BluetoothAdapter.EXTRA_STATE)) {
             	case BluetoothAdapter.STATE_TURNING_OFF:
             		finish();
             		break;
             	case BluetoothAdapter.STATE_ON:
+            		mActivityEnabledBluetooth = true;
         			handleDiscoverability();
                 	refreshDeviceList(true);
         			setupExchangeService();
@@ -420,6 +427,12 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
     	}
         // Attempt to connect to the device
         mExchangeService.connect(device, DEFAULT_CONNECTIVITY_IS_SECURE);
+    }
+    
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+    	super.onSaveInstanceState(outState);
+    	outState.putBoolean(STORAGE_ACTIVITY_ENABLED_BLUETOOTH, mActivityEnabledBluetooth);
     }
 
     @Override

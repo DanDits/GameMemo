@@ -2,6 +2,7 @@ package dan.dit.gameMemo.gameData.player;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.widget.Filter;
 
 
 public class PlayerAdapter extends ArrayAdapter<Player> {
+	private static final int MIN_LENGTH_TO_FILTER_IN_WORD = 2;
 	private Collection<Player> allPlayers = CombinedPool.ALL_POOLS.getAll();
 	public PlayerAdapter(Context context, int resource, int textViewResourceId) {
 		super(context, resource, textViewResourceId);
@@ -28,7 +30,6 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
 				String trimmedConstraint = constraint.toString().trim().toLowerCase(Locale.getDefault());
 				if (trimmedConstraint.length() > 0) {
 					ArrayList<Player> suggestions = new ArrayList<Player>(5); // there will never be many suggested players
-					final int MIN_LENGTH_TO_FILTER_IN_WORD = 3;
 					for (Player curr : allPlayers) {
 						if (curr != null) {
 							String currName = curr.getName().toLowerCase(Locale.getDefault());
@@ -64,4 +65,14 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
 			}
 		}
 	};
+	public void setFilterPlayers(List<Player> toFilter) {
+		if (toFilter != null) {
+			for (Player p : toFilter) {
+				if (p != null) {
+					remove(p);
+					allPlayers.remove(p);
+				}
+			}
+		}
+	}
 }

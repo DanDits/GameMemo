@@ -3,7 +3,7 @@
     <item
         android:id="@+id/new_tichu_game"
         android:showAsAction="ifRoom"
-        android:title="@string/new_tichu_game">
+        android:title="@string/new_tichu_game" android:icon="@drawable/ic_menu_add">
     </item>
     <item
         android:id="@+id/show_statistics"

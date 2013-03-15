@@ -2,13 +2,18 @@ package dan.dit.gameMemo.gameData.player;
 
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -71,6 +76,29 @@ public class ChoosePlayerDialogFragment extends DialogFragment {
 					return false;
 				}
 			});
+	        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+		        mNewName.addTextChangedListener(new TextWatcher() {
+	
+					@Override
+					public void afterTextChanged(Editable arg0) {}
+	
+					@Override
+					public void beforeTextChanged(CharSequence arg0, int arg1,
+							int arg2, int arg3) {}
+	
+					@SuppressLint("NewApi")
+					@Override
+					public void onTextChanged(CharSequence arg0, int arg1,
+							int arg2, int arg3) {
+						if (TextUtils.isEmpty(mNewName.getText())) {
+							mPlayers.setAlpha(1);
+						} else {
+							mPlayers.setAlpha(0.4f);
+						}
+					}
+		        	
+		        });
+	        }
 	        // Use the Builder class for convenient dialog construction
 	        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 	        builder.setTitle(R.string.game_select_player)
