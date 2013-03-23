@@ -157,7 +157,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	
 	// member vars concerning building up a new game round, visualizing and editing rounds
 	private Date mLastRunningTimeUpdate;
-	private boolean mIsImmutable;
+	private boolean mIsLoadedFinishedGame;
 	private TichuGame mGame;
 	private TichuRound mCurrRound;
 	private int mCurrRoundIndex;
@@ -391,7 +391,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 
 			@Override
 			public boolean onLongClick(View v) {
-				if (mIsImmutable) {
+				if (isImmutable()) {
 					return false;
 				}
 				int playerId = TichuGame.PLAYER_ONE_ID;
@@ -550,7 +550,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			assert games.size() == 1;
 			mGame = (TichuGame) games.get(0);
 			// this variable must never ever be changed, consider it to be final
-			mIsImmutable = (saveInstanceState == null) ? (LOADED_FINISHED_GAMES_ARE_IMMUTABLE ? mGame.isFinished() : false)
+			mIsLoadedFinishedGame = (saveInstanceState == null) ? (LOADED_FINISHED_GAMES_ARE_IMMUTABLE ? mGame.isFinished() : false)
 					: saveInstanceState.getBoolean(STORAGE_IS_IMMUTABLE);
 			if (mGame.isFinished()) {
 				mLastRunningTimeUpdate = null; // so we do not update the running time anymore when loading a finished game
@@ -716,15 +716,19 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		setTichuBid(playerId, mBids[playerId - TichuGame.PLAYER_ONE_ID], false);
 	}
 
+	private boolean isImmutable() {
+		return LOADED_FINISHED_GAMES_ARE_IMMUTABLE && mIsLoadedFinishedGame;
+	}
+	
 	private void makeUserInputAvailable(boolean available) {
-		if (available && mIsImmutable && LOADED_FINISHED_GAMES_ARE_IMMUTABLE) {
+		if (available && isImmutable()) {
 			// sorry dude, you cannot edit a loaded finished game which got locked forever
 			available = false;
 		}
 		mScoreTeam1.setEnabled(available);
 		mScoreTeam2.setEnabled(available);
 		for (int i = 0; i < mPlayer.length; i++) {
-			mPlayer[i].setEnabled(available);
+			mPlayer[i].setEnabled(available);			
 			mPlayerTichu[i].setEnabled(available);
 		}
 		// unavailable input must guarantee that applyRoundData cannot get invoked (which is the only place a TichuRound gets created newly)
@@ -936,7 +940,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		}
 		outState.putLong(GameStorageHelper.getCursorItemType(GameKey.TICHU),
 				mGame.getId());
-		outState.putBoolean(STORAGE_IS_IMMUTABLE, mIsImmutable);
+		outState.putBoolean(STORAGE_IS_IMMUTABLE, mIsLoadedFinishedGame);
 		outState.putInt(STORAGE_SELECTED_ROUND, mCurrRoundIndex);
 		if (mCurrRoundIndex == -1) {
 			// if there is no round selected, lets store the data so that it does not get lost for example at screen orientation change

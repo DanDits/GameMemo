@@ -15,7 +15,6 @@ import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameBuilder;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.storage.database.GameSQLiteHelper;
 import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
 import dan.dit.gameMemo.util.compression.Compressor;
 
@@ -259,7 +258,7 @@ public class GameDataExchanger implements PostRecipient {
 		if (mOwnStarttimes == null) {
 			mOwnStarttimes = new ArrayList<Long>();
 			mOwnUnfinishedGamesStarttimes = new ArrayList<Long>();
-			String[] projection = {GameSQLiteHelper.COLUMN_STARTTIME, GameSQLiteHelper.COLUMN_WINNER };
+			String[] projection = {GameStorageHelper.COLUMN_STARTTIME, GameStorageHelper.COLUMN_WINNER };
 			Uri uri = GameStorageHelper.getUriAllItems(mGameKey);
 			if (uri == null) {
 				close(); // game key not supported
@@ -271,9 +270,9 @@ public class GameDataExchanger implements PostRecipient {
 				cursor.moveToFirst();
 				while (!cursor.isAfterLast()) {
 					long startTime = cursor.getLong(cursor
-							.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_STARTTIME));
+							.getColumnIndexOrThrow(GameStorageHelper.COLUMN_STARTTIME));
 					mOwnStarttimes.add(startTime);
-					if (cursor.getInt(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_WINNER)) == Game.WINNER_NONE) {
+					if (cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_WINNER)) == Game.WINNER_NONE) {
 						mOwnUnfinishedGamesStarttimes.add(startTime);
 					}
 					cursor.moveToNext();
@@ -303,6 +302,9 @@ public class GameDataExchanger implements PostRecipient {
 	}
 
 	private synchronized void offerOwnData() {
+		if (isClosed()) {
+			return; // in case exchanger disconnected during the delay
+		}
 		buildOwnStarttimes();
 		String message = timesToString(mOwnStarttimes);
 		sendMessage(MESSAGE_ID_OFFERING_DATA, message);
@@ -327,7 +329,10 @@ public class GameDataExchanger implements PostRecipient {
 	 * Starts the exchange after the given delay.
 	 * @param delay The delay.
 	 */
-	public void startExchange(long delay) {
+	public synchronized void startExchange(long delay) {
+		if (isClosed()) {
+			return;
+		}
 		Timer delayedStart = new Timer();
 		delayedStart.schedule(new TimerTask() {
 

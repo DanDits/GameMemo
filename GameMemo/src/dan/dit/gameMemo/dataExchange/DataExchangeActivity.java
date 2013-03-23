@@ -30,7 +30,6 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 	public static final int MESSAGE_NEW_CONNECTION = 5; // exchange service started a new connection
 	
 	protected GamesExchangeManager mManager;
-	protected ExchangeService mExchangeService;
 	protected Handler mHandler;
 
 	@Override
@@ -128,9 +127,15 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 	 * @param connectionObject The object (a device,...) a new connection is established with.
 	 */
 	protected void onNewConnection(Object connectionObject) {
-		mManager.startExchange(mExchangeService, getContentResolver());
+		mManager.startExchange(getExchangeService(), getContentResolver());
 	}
 
+	/**
+	 * Returns the exchange service.
+	 * @return The exchange service.
+	 */
+	protected abstract ExchangeService getExchangeService();
+	
 	/**
 	 * The connection state changed. The visual representation and interpretation of the state code
 	 * is left to the subclass.

@@ -116,7 +116,7 @@ public class RenamePlayerDialogFragment extends DialogFragment {
 		   View baseView = getActivity().getLayoutInflater().inflate(R.layout.rename_player, null);
 	        mNewName = (EditText) baseView.findViewById(R.id.rename_new_name);
 	        mPlayers = (Spinner) baseView.findViewById(R.id.rename_select_players);
-			mPlayersAdapter = mRenameForAll ? CombinedPool.ALL_POOLS.makeAdapter(getActivity()) : GameKey.getPool(mGameKey).makeAdapter(getActivity());
+			mPlayersAdapter = mRenameForAll ? CombinedPool.ALL_POOLS.makeAdapter(getActivity()) : GameKey.getPool(mGameKey).makeAdapter(getActivity(), false);
 	        mPlayers.setAdapter(mPlayersAdapter);
 	        // Use the Builder class for convenient dialog construction
 	        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());

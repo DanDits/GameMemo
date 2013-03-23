@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
+import dan.dit.gameMemo.dataExchange.ExchangeService;
 import dan.dit.gameMemo.dataExchange.GamesExchangeView;
 
 /**
@@ -478,5 +479,10 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 		SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
 		return sharedPref == null ? DEFAULT_OPTION_MAKE_DISCOVERABLE_ON_START : 
 			sharedPref.getBoolean(PREFERENCES_ALWAYS_REQUEST_DISCOVERABLE_ON_START, DEFAULT_OPTION_MAKE_DISCOVERABLE_ON_START);
+	}
+
+	@Override
+	protected ExchangeService getExchangeService() {
+		return mExchangeService;
 	}
 }

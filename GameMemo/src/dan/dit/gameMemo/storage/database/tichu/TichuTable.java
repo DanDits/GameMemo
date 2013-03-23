@@ -6,6 +6,7 @@ import java.util.HashSet;
 
 import android.database.sqlite.SQLiteDatabase;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
+import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.storage.database.GameSQLiteHelper;
 
 /**
@@ -25,10 +26,10 @@ public class TichuTable {
    * An array of all available columns, querying the content provider with a column not listed here will result in an exception
    * so make sure it contains all general game columns plus the tichu specific columns.
    */
-  public static final String[] AVAILABLE_COLUMNS = { GameSQLiteHelper.COLUMN_PLAYERS,
-	        GameSQLiteHelper.COLUMN_ROUNDS, GameSQLiteHelper.COLUMN_ID, GameSQLiteHelper.COLUMN_STARTTIME,
-	        GameSQLiteHelper.COLUMN_WINNER, GameSQLiteHelper.COLUMN_METADATA, GameSQLiteHelper.COLUMN_RUNTIME,
-	        GameSQLiteHelper.COLUMN_ORIGIN};
+  public static final String[] AVAILABLE_COLUMNS = { GameStorageHelper.COLUMN_PLAYERS,
+	        GameStorageHelper.COLUMN_ROUNDS, GameStorageHelper.COLUMN_ID, GameStorageHelper.COLUMN_STARTTIME,
+	        GameStorageHelper.COLUMN_WINNER, GameStorageHelper.COLUMN_METADATA, GameStorageHelper.COLUMN_RUNTIME,
+	        GameStorageHelper.COLUMN_ORIGIN};
   public static final Collection<String> AVAILABLE_COLUMNS_COLL = new HashSet<String>(
 			Arrays.asList(AVAILABLE_COLUMNS));
   

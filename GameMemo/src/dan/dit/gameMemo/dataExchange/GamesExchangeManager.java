@@ -47,7 +47,7 @@ public class GamesExchangeManager {
 			}
 			
 		});
-		mExchangeView.setSelectedGamesCount(mSelectedGames.size(), GameKey.ALL_GAMES.length);
+		mExchangeView.setSelectedGames(mSelectedGames);
 	}
 	
 	public void setSelectedGames(int[] gamesSuggestions) {
@@ -62,7 +62,7 @@ public class GamesExchangeManager {
 			}
 		}
 		if (mExchangeView != null) {
-			mExchangeView.setSelectedGamesCount(mSelectedGames.size(), GameKey.ALL_GAMES.length);
+			mExchangeView.setSelectedGames(mSelectedGames);
 		}
 	}
 	

@@ -10,7 +10,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.storage.database.GameSQLiteHelper;
 import dan.dit.gameMemo.util.compression.Compressor;
 
 public class Player extends PlayerTeam {	
@@ -93,10 +92,10 @@ public class Player extends PlayerTeam {
 			return false;
 		}
 		
-		String[] projection = { GameSQLiteHelper.COLUMN_ID, GameSQLiteHelper.COLUMN_PLAYERS};
+		String[] projection = { GameStorageHelper.COLUMN_ID, GameStorageHelper.COLUMN_PLAYERS};
 		// get all those games that at least contain a player which has the old name as a substring
 		StringBuilder where = new StringBuilder();
-		where.append(GameSQLiteHelper.COLUMN_PLAYERS);
+		where.append(GameStorageHelper.COLUMN_PLAYERS);
 		where.append(" like ?");
 		String[] selectionArgs = new String[1];
 		selectionArgs[0] = '%' + oldName + '%';
@@ -106,7 +105,7 @@ public class Player extends PlayerTeam {
 			cursor.moveToFirst();
 			// check all candidates: if this player actually participated in this game, change the player data
 			while (!cursor.isAfterLast()) {
-				Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_PLAYERS)));
+				Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
 				Compressor newPlayersdata = new Compressor(playersData.getSize());
 				boolean foundChange = false;
 				for (String playerName : playersData) {
@@ -119,8 +118,8 @@ public class Player extends PlayerTeam {
 				}
 				if (foundChange) {
 					ContentValues values = new ContentValues();
-					values.put(GameSQLiteHelper.COLUMN_PLAYERS, newPlayersdata.compress());
-					long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_ID));
+					values.put(GameStorageHelper.COLUMN_PLAYERS, newPlayersdata.compress());
+					long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
 					Uri uri = GameStorageHelper.getUri(gameKey, id);
 					if (uri != null) {
 						resolver.update(uri, values, null, null);
@@ -135,15 +134,17 @@ public class Player extends PlayerTeam {
 	}
 
 	public static void loadPlayers(int gameKey, PlayerPool pool, ContentResolver resolver) {
-		String[] projection = {GameSQLiteHelper.COLUMN_PLAYERS};
+		String[] projection = {GameStorageHelper.COLUMN_PLAYERS};
 		Cursor cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, null, null,
 				null);
 		if (cursor != null) {
 			cursor.moveToFirst();
 			while (!cursor.isAfterLast()) {
-				Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_PLAYERS)));
+				Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
 				for (String playerName : playersData) {
-					pool.populatePlayer(playerName);
+					if (Player.isValidPlayerName(playerName)) {
+						pool.populatePlayer(playerName);
+					}
 				}
 				cursor.moveToNext();
 			}

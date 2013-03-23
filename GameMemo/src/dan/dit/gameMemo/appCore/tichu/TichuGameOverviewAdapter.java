@@ -20,7 +20,6 @@ import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.storage.database.GameSQLiteHelper;
 import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
 import dan.dit.gameMemo.util.compression.Compressor;
 
@@ -88,10 +87,10 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
 	}
     
     private void updateViewInfo(View tichuRow, Cursor c) {
-        int playersCol = c.getColumnIndex(GameSQLiteHelper.COLUMN_PLAYERS);
-        int starttimeCol = c.getColumnIndex(GameSQLiteHelper.COLUMN_STARTTIME);
-        int winnerCol = c.getColumnIndex(GameSQLiteHelper.COLUMN_WINNER);
-        int idCol = c.getColumnIndex(GameSQLiteHelper.COLUMN_ID);
+        int playersCol = c.getColumnIndex(GameStorageHelper.COLUMN_PLAYERS);
+        int starttimeCol = c.getColumnIndex(GameStorageHelper.COLUMN_STARTTIME);
+        int winnerCol = c.getColumnIndex(GameStorageHelper.COLUMN_WINNER);
+        int idCol = c.getColumnIndex(GameStorageHelper.COLUMN_ID);
 
         // fetching raw information
         String players = c.getString(playersCol);

@@ -232,7 +232,7 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 	private void showHintsDialog() {
 		View hints = getLayoutInflater().inflate(R.layout.tichu_hints, null);
 		WebView hints_list = (WebView) hints.findViewById(R.id.hints_list);
-		hints_list.loadData(getResources().getString(R.string.hints_message), "text/html", null);
+		hints_list.loadDataWithBaseURL(null, getResources().getString(R.string.hints_message), "text/html", "utf-8", null);
 		new AlertDialog.Builder(this)
 		.setTitle(getResources().getString(R.string.hints))
 		.setView(hints)

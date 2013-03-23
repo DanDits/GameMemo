@@ -20,7 +20,7 @@ import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerDuo;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.player.PlayerTeam;
-import dan.dit.gameMemo.storage.database.GameSQLiteHelper;
+import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.storage.database.tichu.TichuTable;
 import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
 import dan.dit.gameMemo.util.compression.Compressor;
@@ -246,8 +246,8 @@ public class TichuGame extends Game {
 	public static List<Game> loadGames(ContentResolver resolver, Uri uri, List<Long> timestamps,
 			boolean throwAtFailure) throws CompressedDataCorruptException {
 		if (timestamps.size() > 0) {
-			StringBuilder selection = new StringBuilder(GameSQLiteHelper.COLUMN_STARTTIME.length() + 10 + timestamps.size() * 15);
-			selection.append(GameSQLiteHelper.COLUMN_STARTTIME);
+			StringBuilder selection = new StringBuilder(GameStorageHelper.COLUMN_STARTTIME.length() + 10 + timestamps.size() * 15);
+			selection.append(GameStorageHelper.COLUMN_STARTTIME);
 			selection.append(" IN (");
 			String[] selectionArgs = new String[timestamps.size()];
 			int index = 0;
@@ -282,15 +282,15 @@ public class TichuGame extends Game {
 			cursor.moveToFirst();
 			while (!cursor.isAfterLast()) {
 				String playerData = cursor.getString(cursor
-						.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_PLAYERS));
+						.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS));
 				String roundsData = cursor.getString(cursor
-						.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_ROUNDS));
-				String metaData = cursor.getString(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_METADATA));
+						.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ROUNDS));
+				String metaData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_METADATA));
 				long startTime = cursor.getLong(cursor
-						.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_STARTTIME));
-				long id = cursor.getLong(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_ID));
-				long runningTime = cursor.getLong(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_RUNTIME));
-				String originData = cursor.getString(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_ORIGIN));
+						.getColumnIndexOrThrow(GameStorageHelper.COLUMN_STARTTIME));
+				long id = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
+				long runningTime = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_RUNTIME));
+				String originData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ORIGIN));
 				
 				GameBuilder builder = new TichuGameBuilder();
 				try {

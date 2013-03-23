@@ -13,8 +13,9 @@
         android:id="@+id/rename_new_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:ems="10"
         android:hint="@string/hint_new_player_name"
-        android:ems="10" >
+        android:inputType="textCapWords" >
 
         <requestFocus />
     </EditText>

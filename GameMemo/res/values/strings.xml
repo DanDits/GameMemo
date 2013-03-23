@@ -114,6 +114,8 @@
 	<string name="game_options">Options</string>
 	<string name="today">Today</string>
 	<string name="yesterday">Yesterday</string>
+	<string name="games_selected_single">%1$s selected</string>
 	<string name="games_selected">Games selected %1$d/%2$d</string>
+	<string name="games_selected_all">All games selected</string>
 	<string name="games_selection_title">Games to exchange</string>
 </resources>

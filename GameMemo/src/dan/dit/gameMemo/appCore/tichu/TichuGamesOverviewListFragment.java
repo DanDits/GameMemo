@@ -27,7 +27,6 @@ import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.storage.database.GameSQLiteHelper;
 import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
 
 /**
@@ -47,9 +46,9 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
 	private static final String STORAGE_HIGHLIGHTED_GAME_ID = "STORAGE_HIGHLIGHTED_GAME";
 	// first unfinished games then finished games, most recent games first for both parts
 	private static final String TICHU_GAMES_SORT_ORDER = 
-			"CASE " + GameSQLiteHelper.COLUMN_WINNER 
-			+ " WHEN " + Game.WINNER_NONE + " THEN " + GameSQLiteHelper.COLUMN_STARTTIME + " END DESC, "
-			+ GameSQLiteHelper.COLUMN_STARTTIME + " DESC";
+			"CASE " + GameStorageHelper.COLUMN_WINNER 
+			+ " WHEN " + Game.WINNER_NONE + " THEN " + GameStorageHelper.COLUMN_STARTTIME + " END DESC, "
+			+ GameStorageHelper.COLUMN_STARTTIME + " DESC";
 
 	private TichuGameOverviewAdapter adapter;
 	private GameSelectionListener mGameSelectionListener;
@@ -116,8 +115,8 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
  	private void fillData() {
  		// Fields from the database (projection)
  		// Must include the _id column for the adapter to work
- 		String[] from = new String[] { GameSQLiteHelper.COLUMN_PLAYERS, GameSQLiteHelper.COLUMN_STARTTIME,
- 				GameSQLiteHelper.COLUMN_WINNER, GameSQLiteHelper.COLUMN_ID};
+ 		String[] from = new String[] { GameStorageHelper.COLUMN_PLAYERS, GameStorageHelper.COLUMN_STARTTIME,
+ 				GameStorageHelper.COLUMN_WINNER, GameStorageHelper.COLUMN_ID};
  	 	getLoaderManager().initLoader(0, null, this);
  		
  		adapter = new TichuGameOverviewAdapter(this.getActivity(), R.layout.tichu_game_overview, null, from,
@@ -196,8 +195,8 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
  	
 	@Override
 		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-			String[] projection = { GameSQLiteHelper.COLUMN_ID, GameSQLiteHelper.COLUMN_PLAYERS, GameSQLiteHelper.COLUMN_STARTTIME,
-					GameSQLiteHelper.COLUMN_WINNER};
+			String[] projection = { GameStorageHelper.COLUMN_ID, GameStorageHelper.COLUMN_PLAYERS, GameStorageHelper.COLUMN_STARTTIME,
+					GameStorageHelper.COLUMN_WINNER};
 			CursorLoader cursorLoader = new CursorLoader(this.getActivity(),
 					GameStorageHelper.getUriAllItems(GAMEKEY), projection, null, null, TICHU_GAMES_SORT_ORDER);
 			return cursorLoader;

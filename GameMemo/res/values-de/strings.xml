@@ -123,7 +123,9 @@
 	<string name="clear">Zurücksetzen</string>
 	<string name="game_options">Optionen</string>
 	<string name="today">Heute</string>
-	<string name="yesterday">Gestern</string>
+	<string name="yesterday">Gestern</string>	
+	<string name="games_selected_single">%1$s gewählt</string>
 	<string name="games_selected">Gewählte Spiele %1$d/%2$d</string>
+	<string name="games_selected_all">Alle Spiele gewählt</string>
 	<string name="games_selection_title">Spiele zum Tauschen</string>
 </resources>

@@ -13,6 +13,32 @@ import dan.dit.gameMemo.storage.database.tichu.TichuTable;
 
 public final class GameStorageHelper {
 	
+	public static final String COLUMN_ID = "_id";
+	public static final String COLUMN_STARTTIME = "sTime";
+	public static final String COLUMN_PLAYERS = "players";
+	public static final String COLUMN_ROUNDS = "rounds";
+	public static final String COLUMN_WINNER ="winner";
+	/*
+	 * Developers note for when adding new columns:
+	 * State in which version the column was added and supply a default value for the column (mostly not null).
+	 * Make a constraint for this column.
+	 * Make the default creation string create this column.
+	 * Ensure that all tables that this helper invokes onUpgrade/onDowngrade on handle this version
+	 * change and alter the table accordingly.
+	 */
+	/**
+	 * Added with version 2. Can hold general information not belonging to certain rounds about a game as required by the game.
+	 */
+	public static final String COLUMN_METADATA ="metaData";
+	/**
+	 * Added with version 2. Holds the time the game has (approximately) been running.
+	 */
+	public static final String COLUMN_RUNTIME ="rTime";
+	/**
+	 * Added with version 2. Holds some hints to where this game games from, the device or author.
+	 */
+	public static final String COLUMN_ORIGIN ="origin";
+
 	private GameStorageHelper() {
 	}
 	

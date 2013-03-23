@@ -1,7 +1,10 @@
 package dan.dit.gameMemo.dataExchange;
 
+import java.util.List;
+
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -10,6 +13,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import dan.dit.gameMemo.R;
+import dan.dit.gameMemo.gameData.game.GameKey;
 
 /**
  * A view that holds some components to visualize the progress of a games exchange
@@ -64,9 +68,17 @@ public class GamesExchangeView extends LinearLayout {
 		mShowGames.setOnClickListener(listener);
 	}
 
-	public void setSelectedGamesCount(int selected, int total) {
-		mShowGames.setText(getContext().getResources().getString(R.string.games_selected, selected, total));
+	public void setSelectedGames(List<Integer> selectedGames) {
+		// only visualize the selection, do nothing else and do not save list of games
+		Resources res = getContext().getResources();
+		mShowGames.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+		if (selectedGames.size() == 1) {
+			mShowGames.setCompoundDrawablesWithIntrinsicBounds(GameKey.getGameIconId(selectedGames.get(0)), 0, 0, 0);
+			mShowGames.setText(res.getString(R.string.games_selected_single, GameKey.getGameName(selectedGames.get(0))));
+		} else if (selectedGames.size() < GameKey.ALL_GAMES.length) {
+			mShowGames.setText(res.getString(R.string.games_selected, selectedGames.size(), GameKey.ALL_GAMES.length));
+		} else if (selectedGames.size() == GameKey.ALL_GAMES.length) {
+			mShowGames.setText(res.getString(R.string.games_selected_all));
+		}
 	}
-
-
 }

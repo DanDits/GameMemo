@@ -65,7 +65,7 @@ public class GamesDBContentProvider extends ContentProvider {
 			break;
 		case URI_TYPE_SINGLE_ID:
 			// Adding the ID to the original query
-			queryBuilder.appendWhere(GameSQLiteHelper.COLUMN_ID + "="
+			queryBuilder.appendWhere(GameStorageHelper.COLUMN_ID + "="
 					+ uri.getLastPathSegment());
 			break;
 		default:
@@ -121,10 +121,10 @@ public class GamesDBContentProvider extends ContentProvider {
 			String id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
 				rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey),
-						GameSQLiteHelper.COLUMN_ID + "=" + id, null);
+						GameStorageHelper.COLUMN_ID + "=" + id, null);
 			} else {
 				rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey),
-						GameSQLiteHelper.COLUMN_ID + "=" + id + " and "
+						GameStorageHelper.COLUMN_ID + "=" + id + " and "
 								+ selection, selectionArgs);
 			}
 			break;
@@ -153,10 +153,10 @@ public class GamesDBContentProvider extends ContentProvider {
 			String id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
 				rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey),
-						values, GameSQLiteHelper.COLUMN_ID + "=" + id, null);
+						values, GameStorageHelper.COLUMN_ID + "=" + id, null);
 			} else {
 				rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey),
-						values, GameSQLiteHelper.COLUMN_ID + "=" + id + " and "
+						values, GameStorageHelper.COLUMN_ID + "=" + id + " and "
 								+ selection, selectionArgs);
 			}
 			break;

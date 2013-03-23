@@ -12,7 +12,6 @@ import android.database.Cursor;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerTeam;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.storage.database.GameSQLiteHelper;
 import dan.dit.gameMemo.util.compression.Compressible;
 import dan.dit.gameMemo.util.compression.Compressor;
 
@@ -183,13 +182,13 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 		}
 
 		ContentValues values = (pValues == null) ? new ContentValues() : pValues;
-		values.put(GameSQLiteHelper.COLUMN_PLAYERS, playerData);
-		values.put(GameSQLiteHelper.COLUMN_ROUNDS, roundsData);
-		values.put(GameSQLiteHelper.COLUMN_STARTTIME, startTime);
-		values.put(GameSQLiteHelper.COLUMN_WINNER, winnerData);
-		values.put(GameSQLiteHelper.COLUMN_METADATA, metaData);
-		values.put(GameSQLiteHelper.COLUMN_RUNTIME, runningTime);
-		values.put(GameSQLiteHelper.COLUMN_ORIGIN, originData);
+		values.put(GameStorageHelper.COLUMN_PLAYERS, playerData);
+		values.put(GameStorageHelper.COLUMN_ROUNDS, roundsData);
+		values.put(GameStorageHelper.COLUMN_STARTTIME, startTime);
+		values.put(GameStorageHelper.COLUMN_WINNER, winnerData);
+		values.put(GameStorageHelper.COLUMN_METADATA, metaData);
+		values.put(GameStorageHelper.COLUMN_RUNTIME, runningTime);
+		values.put(GameStorageHelper.COLUMN_ORIGIN, originData);
 
 		if (!isValidId(mId)) {
 			// New game 
@@ -205,10 +204,10 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 	
 	// players in given team must be pairwise unequal
 	public static long getUnfinishedGame(int gameKey, ContentResolver resolver, List<Player> matchTeam) {
-		String[] projection = { GameSQLiteHelper.COLUMN_ID, GameSQLiteHelper.COLUMN_PLAYERS};
+		String[] projection = { GameStorageHelper.COLUMN_ID, GameStorageHelper.COLUMN_PLAYERS};
 		StringBuilder where = new StringBuilder();
 		// search unfinished games
-		where.append(GameSQLiteHelper.COLUMN_WINNER);
+		where.append(GameStorageHelper.COLUMN_WINNER);
 		where.append(" = ");
 		where.append(Game.WINNER_NONE);
 		/* which contain all of the given players
@@ -219,7 +218,7 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 		String[] selectionArgs = new String[matchTeam.size()];
 		for (Player p : matchTeam) {
 			where.append(" and ");
-			where.append(GameSQLiteHelper.COLUMN_PLAYERS);
+			where.append(GameStorageHelper.COLUMN_PLAYERS);
 			where.append(" like ?");
 			selectionArgs[index] = '%' + p.getName() + '%';
 			index++;
@@ -230,7 +229,7 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 			cursor.moveToFirst();
 			while (!cursor.isAfterLast()) {
 				// check if the game really contains the given players (in arbitrary order)
-				Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_PLAYERS)));
+				Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
 				if (playersData.getSize() == matchTeam.size()) {
 					boolean allPlayersContained = true;
 					for (Player currP : matchTeam) {
@@ -245,7 +244,7 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 						}
 					}
 					if (allPlayersContained) {
-						long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_ID));
+						long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
 						return id;
 					}
 				}
@@ -259,13 +258,13 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 
 	public static long getUnfinishedGame(int gameKey, ContentResolver resolver,
 			long startTime) {
-		String[] projection = { GameSQLiteHelper.COLUMN_ID};
+		String[] projection = { GameStorageHelper.COLUMN_ID};
 		StringBuilder where = new StringBuilder();
-		where.append(GameSQLiteHelper.COLUMN_WINNER);
+		where.append(GameStorageHelper.COLUMN_WINNER);
 		where.append(" = ");
 		where.append(Game.WINNER_NONE);
 		where.append(" and ");
-		where.append(GameSQLiteHelper.COLUMN_STARTTIME);
+		where.append(GameStorageHelper.COLUMN_STARTTIME);
 		where.append(" = ");
 		where.append(String.valueOf(startTime));
 		Cursor cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), null,
@@ -276,7 +275,7 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 			if (cursor.isAfterLast()) {
 				return Game.NO_ID;
 			}
-			long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_ID));
+			long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
 			cursor.close();
 			return id;
 		}
@@ -287,12 +286,12 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 		if (!Game.isValidId(gameId)) {
 			return null;
 		}
-		Cursor cursor = resolver.query(GameStorageHelper.getUri(gameKey, gameId), new String[] {GameSQLiteHelper.COLUMN_PLAYERS}, null, null,
+		Cursor cursor = resolver.query(GameStorageHelper.getUri(gameKey, gameId), new String[] {GameStorageHelper.COLUMN_PLAYERS}, null, null,
 				null);
 		if (cursor != null) {
 			cursor.moveToFirst();
 			if (!cursor.isAfterLast()) {
-				String playerData = cursor.getString(cursor.getColumnIndexOrThrow(GameSQLiteHelper.COLUMN_PLAYERS));
+				String playerData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS));
 				Compressor playerNames = new Compressor(playerData);
 				List<Player> players = new ArrayList<Player>(playerNames.getSize());
 				for (String player : playerNames) {
