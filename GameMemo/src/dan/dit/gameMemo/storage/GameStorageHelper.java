@@ -9,7 +9,7 @@ import android.util.SparseArray;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.storage.database.GamesDBContentProvider;
-import dan.dit.gameMemo.storage.database.tichu.TichuTable;
+import dan.dit.gameMemo.storage.database.TichuTable;
 
 public final class GameStorageHelper {
 	

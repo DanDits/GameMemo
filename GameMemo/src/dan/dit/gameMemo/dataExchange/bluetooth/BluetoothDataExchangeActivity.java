@@ -29,7 +29,6 @@ import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
-import dan.dit.gameMemo.dataExchange.GamesExchangeView;
 
 /**
  * A special implementation of a {@link DataExchangeActivity}.
@@ -88,7 +87,6 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
         	mActivityEnabledBluetooth = savedInstanceData.getBoolean(STORAGE_ACTIVITY_ENABLED_BLUETOOTH);
         }
         mConnectionStatusText = (TextView) findViewById(R.id.data_exchange_connection_status_text);
-        setGamesExchangeView((GamesExchangeView) findViewById(R.id.gamesExchangeView1));
         initDeviceList();
 	}
 	
@@ -193,7 +191,7 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 		if (mExchangeService != null) {
 			return;
 		}
-		mExchangeService = new BluetoothExchangeService(this, mHandler);
+		mExchangeService = new BluetoothExchangeService(mHandler);
 		setConnectionStatusText(mExchangeService.getState());
 	}
 	
@@ -237,6 +235,7 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
     	if (!(device instanceof BluetoothDevice)) {
     		return; // not connected to a bluetooth device, so this is not a new connection
     	}
+        mBtAdapter.cancelDiscovery();
     	super.onNewConnection(device);
     	BluetoothDevice btDevice = (BluetoothDevice) device;
     	 // save the connected device's name

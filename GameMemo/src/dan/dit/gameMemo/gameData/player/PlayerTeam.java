@@ -8,12 +8,21 @@ import dan.dit.gameMemo.util.compression.Compressible;
 import dan.dit.gameMemo.util.compression.Compressor;
 
 public abstract class PlayerTeam implements Compressible, Iterable<Player> {
-
+	protected int mColor = PlayerColors.DEFAULT_COLOR;
+	
 	public abstract Player getFirst();
-
 	public abstract List<Player> getPlayers();
 	public abstract int getPlayerCount();
 	public abstract boolean contains(Player p);
+	
+	public void setColor(int color) {
+		mColor = color;
+	}
+	
+	public int getColor() {
+		return mColor;
+	}
+	
 	@Override
 	public Iterator<Player> iterator() {
 		return getPlayers().iterator();

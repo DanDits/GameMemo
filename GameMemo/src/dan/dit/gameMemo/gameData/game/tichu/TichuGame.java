@@ -21,7 +21,7 @@ import dan.dit.gameMemo.gameData.player.PlayerDuo;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.player.PlayerTeam;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.storage.database.tichu.TichuTable;
+import dan.dit.gameMemo.storage.database.TichuTable;
 import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
 import dan.dit.gameMemo.util.compression.Compressor;
 

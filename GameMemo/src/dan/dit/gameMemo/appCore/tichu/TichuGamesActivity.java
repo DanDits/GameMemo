@@ -20,6 +20,7 @@ import dan.dit.gameMemo.appCore.GameSetupActivity;
 import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment.CloseDetailViewRequestListener;
 import dan.dit.gameMemo.appCore.tichu.TichuGamesOverviewListFragment.GameSelectionListener;
 import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothDataExchangeActivity;
+import dan.dit.gameMemo.dataExchange.file.FileWriteDataExchangeActivity;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
@@ -109,14 +110,17 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.new_tichu_game:
-			createTichuGame();
+		case R.id.setup_game:
+			startGameSetup();
 			return true;
 		case R.id.show_statistics:
 			showStatistics();
 			return true;
 		case R.id.open_data_exchanger_bluetooth:
 			openDataExchangerBluetooth();
+			return true;
+		case R.id.share:
+			openFileWriterExchanger();
 			return true;
 		case R.id.rename_player:
 			renamePlayerDialog();
@@ -131,7 +135,7 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void createTichuGame() {
+	private void startGameSetup() {
 		Intent i = new Intent(this, GameSetupActivity.class);
 		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.TICHU);
 		i.putExtra(GameSetupActivity.EXTRA_TEAM_MIN_PLAYERS, TICHU_GAME_MIN_PLAYERS);
@@ -243,6 +247,12 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 	
 	private void openDataExchangerBluetooth() {
 		Intent i = new Intent(this, BluetoothDataExchangeActivity.class);
+		i.putExtra(GameKey.EXTRA_GAMEKEY, new int[] {GameKey.TICHU});
+		startActivity(i);
+	}
+	
+	private void openFileWriterExchanger() {
+		Intent i = new Intent(this, FileWriteDataExchangeActivity.class);
 		i.putExtra(GameKey.EXTRA_GAMEKEY, new int[] {GameKey.TICHU});
 		startActivity(i);
 	}

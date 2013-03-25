@@ -107,7 +107,7 @@ public class GameDataExchanger implements PostRecipient {
 		if (message == null || message.length() == 0) {
 			// handle receiving of no data messages
 			switch(messageId) {
-			case MESSAGE_ID_OFFERING_DATA:
+			case MESSAGE_ID_OFFERING_DATA:					
 				// other got nothing to offer, so we will not receive anything
 				mOwnRequestDataReceived = true;
 				mPartnerOfferReceived = true;
@@ -215,7 +215,7 @@ public class GameDataExchanger implements PostRecipient {
 		mPartnerRequestSatisfied = true;
 	}
 	
-	private void onReceiveGames(String message) {
+	protected void onReceiveGames(String message) {
 		String compressedGames = new String(message);
 		Compressor gamesCmp = new Compressor(compressedGames);
 		buildOwnStarttimes(); // even though I can assert that they are already built at this point (we sent a request to receive data)
@@ -240,12 +240,14 @@ public class GameDataExchanger implements PostRecipient {
 				} else if (mOwnUnfinishedGamesStarttimes.contains(Long.valueOf(curr.getStartTime()))) {
 					// already has the game, but unfinished, so overwrite the own game instead of newly saving it (chances are it is now finished)
 					long unfinishedId = Game.getUnfinishedGame(mGameKey, mContentResolver, curr.getStartTime());
-					if (Game.isValidId(unfinishedId)) { // should always be the case since unfinished games is a subset of all own start times
+					if (Game.isValidId(unfinishedId)) { 
+						// received game is unfinished game, overwrite it
 						Log.d(TAG, "Overwriting game." + curr.toString());
 						if (curr.saveGame(mContentResolver, unfinishedId)) {
 							mGamesReceivedCount++; // saving is always successful since the id is valid and curr game does not yet have an id
 						}
-					} else {
+					} // else the game is already finished, ignore the game, we do not change finished games 
+					else {
 						Log.e(TAG, "Received already existing and finished game, do not save: " + curr.toString());
 					}
 				}
@@ -287,13 +289,18 @@ public class GameDataExchanger implements PostRecipient {
 		List<Long> receivedStarttimes = timesFromString(message);
 		// now check which of the received start times are not contained in the own start times or if that game is not yet finished and request those
 		buildOwnStarttimes(); // if not yet build, get them
+		List<Long> wantedStartTimes = filterReceivedOffer(receivedStarttimes);
+		requestData(wantedStartTimes);
+	}
+	
+	protected List<Long> filterReceivedOffer(List<Long> receivedTimes) {
 		List<Long> wantedStartTimes = new LinkedList<Long>();
-		for (Long received : receivedStarttimes) {
+		for (Long received : receivedTimes) {
 			if ((!mOwnStarttimes.contains(received) || mOwnUnfinishedGamesStarttimes.contains(received))) {
 				wantedStartTimes.add(received);
 			}
 		}
-		requestData(wantedStartTimes);
+		return wantedStartTimes;
 	}
 	
 	private void requestData(List<Long> requestedStartTimes) {
@@ -306,8 +313,12 @@ public class GameDataExchanger implements PostRecipient {
 			return; // in case exchanger disconnected during the delay
 		}
 		buildOwnStarttimes();
-		String message = timesToString(mOwnStarttimes);
+		String message = timesToString(getOffer());
 		sendMessage(MESSAGE_ID_OFFERING_DATA, message);
+	}
+	
+	protected List<Long> getOffer() {
+		return mOwnStarttimes;
 	}
 	
 	private void sendGames(List<Game> games) {

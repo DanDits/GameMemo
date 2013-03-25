@@ -16,6 +16,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|center_horizontal"
-        android:text="@string/no_tichus" />
+        android:text="@string/game_list_empty" />
 
 </LinearLayout>

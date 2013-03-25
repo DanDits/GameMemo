@@ -1,4 +1,4 @@
-package dan.dit.gameMemo.storage.database.tichu;
+package dan.dit.gameMemo.storage.database;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -7,7 +7,6 @@ import java.util.HashSet;
 import android.database.sqlite.SQLiteDatabase;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.storage.database.GameSQLiteHelper;
 
 /**
  * A helper class for creating and upgrading the tichu table in the games
@@ -51,7 +50,7 @@ public class TichuTable {
   }
 
   /**
-   * When the database is upgraded, drop the table for tichu games and create it newly.
+   * Upgrade the table in the database.
    * @param database The upgrading database.
    * @param oldVersion The old version of the database.
    * @param newVersion The new version of the database.

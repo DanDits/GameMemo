@@ -8,6 +8,7 @@ import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.Toast;
+import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.dataExchange.GamesOverviewDialog.GamesOverviewDialogCallback;
 import dan.dit.gameMemo.gameData.game.GameKey;
 
@@ -47,6 +48,12 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 		mManager = new GamesExchangeManager(getSupportFragmentManager(),
 				gameKeySuggestions);
 		mHandler = new DataExchangeHandler(this);
+	}
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		mManager.setGamesExchangeView((GamesExchangeView) findViewById(R.id.gamesExchangeView));
 	}
 	
 	@Override
@@ -148,13 +155,4 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 		return mManager;
 	}
 	
-	/**
-	 * Sets the games exchange view of the GamesExchangeManager. This is important for visual feedback.
-	 * The manager uses this view to present progress and let the user select game types to exchange. Invoke
-	 * this as soon as possible with a valid view.
-	 * @param view The GamesExchangeView embedded somewhere in the layout of the implementing subclass.
-	 */
-	public void setGamesExchangeView(GamesExchangeView view) {
-		mManager.setGamesExchangeView(view);
-	}
 }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item
-        android:id="@+id/new_tichu_game"
+        android:id="@+id/setup_game"
         android:showAsAction="ifRoom"
-        android:title="@string/new_tichu_game" android:icon="@drawable/ic_menu_add">
+        android:title="@string/setup_game" android:icon="@drawable/ic_menu_add">
     </item>
     <item
         android:id="@+id/show_statistics"
@@ -11,9 +11,14 @@
         android:title="@string/show_statistics">
     </item>
     <item
-        android:id="@+id/open_data_exchanger_bluetooth"
+        android:id="@+id/open_data_exchanger"
         android:showAsAction="never"
-        android:title="@string/open_data_exchanger_bluetooth">
+        android:title="@string/open_data_exchanger" android:icon="@drawable/ic_menu_share">
+        <menu>
+            
+            <item android:id="@+id/open_data_exchanger_bluetooth" android:title="@string/open_data_exchanger_bluetooth"/>
+            <item android:id="@+id/share" android:title="@string/share" />
+        </menu>
     </item>
     <item
         android:id="@+id/rename_player"

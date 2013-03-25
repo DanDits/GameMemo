@@ -12,7 +12,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -75,10 +74,9 @@ public final class BluetoothExchangeService  implements ExchangeService {
 	
     /**
      * Constructor. Prepares a new BluetoothExchangeService session.
-     * @param context  The UI Activity Context
      * @param handler  A Handler to send messages back to the UI Activity
      */
-    public BluetoothExchangeService(Context context, Handler handler) {
+    public BluetoothExchangeService(Handler handler) {
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
         mHandler = handler;
@@ -579,9 +577,10 @@ public final class BluetoothExchangeService  implements ExchangeService {
 	public synchronized void unregisterRecipient(PostRecipient receiver) {
 		int index = mRecipients.indexOfValue(receiver);
 		if (index >= 0) {
-			Message msg = mHandler.obtainMessage(BluetoothDataExchangeActivity.MESSAGE_DATA_EXCHANGER_CLOSED, mRecipients.keyAt(index), -1);
+			int key = mRecipients.keyAt(index);
+			Message msg = mHandler.obtainMessage(BluetoothDataExchangeActivity.MESSAGE_DATA_EXCHANGER_CLOSED, key, -1);
 	        mHandler.sendMessage(msg);
-			mRecipients.removeAt(index);
+			mRecipients.remove(key);
 		}
 	}
 

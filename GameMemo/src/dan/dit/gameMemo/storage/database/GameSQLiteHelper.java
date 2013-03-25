@@ -1,7 +1,6 @@
 package dan.dit.gameMemo.storage.database;
 
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.storage.database.tichu.TichuTable;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

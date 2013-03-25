@@ -82,7 +82,7 @@ public class ChoosePlayerDialogFragment extends DialogFragment {
 	        });
 	        // Use the Builder class for convenient dialog construction
 	        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-	        builder.setTitle(R.string.game_select_player)
+	        builder.setTitle(R.string.select_player)
 	        		.setView(baseView)
 	               .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 	                   public void onClick(DialogInterface dialog, int id) {

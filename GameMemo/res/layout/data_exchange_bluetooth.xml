@@ -6,21 +6,15 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/data_exchange_connection_status_title" />
-
-    <TextView
         android:id="@+id/data_exchange_connection_status_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/textView2" />
+        android:layout_alignParentTop="true" />
 
     <dan.dit.gameMemo.dataExchange.GamesExchangeView
-        android:id="@+id/gamesExchangeView1"
+        android:id="@+id/gamesExchangeView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/data_exchange_connection_status_text" >
@@ -32,7 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_below="@id/gamesExchangeView1" >
+        android:layout_below="@id/gamesExchangeView" >
 
     </ListView>
 

@@ -344,7 +344,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	}
 	
 	private void clearPlayer(int index) {
-		mPlayerButtons[index].setText(getResources().getString(R.string.game_select_player));
+		mPlayerButtons[index].setText(getResources().getString(R.string.game_setup_select_player));
 		players[index] = null;
 	}
 	
@@ -430,7 +430,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	
 	private void buildUIFromBundle(Bundle in) {
 		mGameKey = in.getInt(GameKey.EXTRA_GAMEKEY);
-		findViewById(R.id.game_setup_mainscroll).setBackgroundResource(GameKey.getBackgroundResource(mGameKey));
+		findViewById(R.id.root_layout).setBackgroundResource(GameKey.getBackgroundResource(mGameKey));
 		int[] minTeamSize = in.getIntArray(EXTRA_TEAM_MIN_PLAYERS);
 		int[] maxTeamSize = in.getIntArray(EXTRA_TEAM_MAX_PLAYERS);
 		String[] teamNames = in.getStringArray(EXTRA_TEAM_NAMES);
@@ -483,9 +483,8 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	}
 	
 	private void initTitle() {
-		TextView title = (TextView) findViewById(R.id.team_selection_title);
-		title.setCompoundDrawablesWithIntrinsicBounds(GameKey.getGameIconId(mGameKey), 0, 0, 0);
-		title.setText(GameKey.getGameName(mGameKey));
+		mStartGame.setCompoundDrawablesWithIntrinsicBounds(GameKey.getGameIconId(mGameKey), 0, 0, 0);
+		mStartGame.setText(getResources().getString(R.string.game_setup_start, GameKey.getGameName(mGameKey)));
 	}
 	
 	private void initTeamsUI() {

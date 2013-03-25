@@ -2,8 +2,8 @@
 <resources>
 
     <string name="app_name">GameMemo</string>
-    <string name="no_tichus">Noch keine Tichu Spiele.</string>
-    <string name="new_tichu_game">Neues Spiel</string>
+    <string name="game_list_empty">Deine Spiele werden hier gespeichert</string>
+    <string name="setup_game">Spiel einrichten</string>
     <string name="menu_delete_game">Löschen</string>
     <string name="menu_info_game">Info</string>
     <string name="tichu_row_team1_heading">Team 1</string>
@@ -18,10 +18,11 @@
     <string name="tichu_team_select_team1">Team 1</string>
     <string name="tichu_team_select_team2">Team 2</string>
     <string name="game_enter_name">Name eingeben</string>
-    <string name="game_select_player">Wähle einen Spieler</string>
-    <string name="tichu_team_select_shuffle">Mische Spieler</string>
-    <string name="tichu_team_select_add_player">Füge hinzu</string>
     <string name="tichu_team_select_start_game">Spiel starten</string>
+    <string name="game_setup_select_player">Wähle einen Spieler</string>
+    <string name="game_setup_shuffle">Mische Spieler</string>
+    <string name="game_setup_start">%1$s starten</string>
+    <string name="select_player">Spieler wählen</string>
     <string name="tichu_game_tichu_button_1_content_description">Tichu Ansage umschalten für Spieler 1</string>
     <string name="tichu_game_tichu_button_2_content_description">Tichu Ansage umschalten für Spieler 2</string>
     <string name="tichu_game_tichu_button_3_content_description">Tichu Ansage umschalten für Spieler 3</string>
@@ -48,11 +49,10 @@
 	<string name="statistics_by_genre">Nach Typ</string>
 	<string name="statistics_by_genre_value_column_descr">Wert</string>
 	<string name="data_exchange_button_refresh_devices_list">Erneuern</string>
-	<string name="data_exchange_connection_status_title">Status:</string>
-	<string name="data_exchange_connection_status_none">Ruhend</string>
-	<string name="data_exchange_connection_status_listen">Wartend</string>
-	<string name="data_exchange_connection_status_connecting">Verbinden</string>
-	<string name="data_exchange_connection_status_connected">Verbunden</string>
+	<string name="data_exchange_connection_status_none">Status: Ruhend</string>
+	<string name="data_exchange_connection_status_listen">Status: Wartend</string>
+	<string name="data_exchange_connection_status_connecting">Status: Verbinden</string>
+	<string name="data_exchange_connection_status_connected">Status: Verbunden</string>
 	<string name="data_exchange_connected_to">Verbunden mit %1$s</string>
 	<string name="data_exchange_status_synchronizing_failed">Fehlgeschlagen</string>
 	<string name="data_exchange_bluetooth_no_devices">Keine Geräte</string>
@@ -60,9 +60,12 @@
 	<string name="data_exchange_bluetooth_not_enabled_leaving">Bluetooth benötigt</string>
 	<string name="bluetooth_not_available">Bluetooth ist nicht verfügbar</string>
 	<string name="data_exchange_finished">%1$d Spiele synchronisiert mit %2$s</string>
-	<string name="open_data_exchanger_bluetooth">Spieldatenaustausch</string>
 	<string name="data_exchange_bluetooth_button_ensure_discoverable">Auffindbar machen</string>
 	<string name="data_exchange_bluetooth_make_discoverable_on_start">Auffindbar starten</string>
+	<string name="data_exchange_filewriter_failed">Datei erstellen fehlgeschlagen</string>
+	<string name ="share_storage_unavailable">Externer Speicher nicht verfügbar</string>
+	<string name="open_data_exchanger">Teilen</string>
+	<string name="open_data_exchanger_bluetooth">Sync über Bluetooth</string>
 	<string name="confirm_delete">Löschen bestätigen</string>
 	<string name="confirm_delete_tichu_game">Dieses Spiel wirklich löschen?</string>
 	<string name="data_exchange_games_received_sent">Empfangen %1$d / Gesendet %2$d</string>
@@ -128,4 +131,5 @@
 	<string name="games_selected">Gewählte Spiele %1$d/%2$d</string>
 	<string name="games_selected_all">Alle Spiele gewählt</string>
 	<string name="games_selection_title">Spiele zum Tauschen</string>
+	<string name="share">Teilen</string>
 </resources>
