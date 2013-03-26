@@ -21,14 +21,16 @@ public class GamesExchangeManager {
 	public static final long EXCHANGE_START_DELAY = 1500; //ms, must be smaller than timeout duration
 	public static final long TIMEOUT_DURATION = 5000; //ms
 	
+	private List<Integer> mAllGames;
 	private List<Integer> mSelectedGames;
 	private FragmentManager mFragManager;
 	private GamesExchangeView mExchangeView;
 	private List<GameDataExchanger> mDataExchangers;
 	private GamesOverviewDialog mGamesOverviewDialog;
 	
-	public GamesExchangeManager(FragmentManager fragManager, int[] gamesSuggestions) {
+	public GamesExchangeManager(FragmentManager fragManager, int[] gamesSuggestions, int[] allGames) {
 		mDataExchangers = new LinkedList<GameDataExchanger>();
+		mAllGames = (allGames != null && allGames.length > 0) ? GameKey.toList(allGames) : GameKey.toList(GameKey.ALL_GAMES);
 		setSelectedGames(gamesSuggestions);
 		initFragManager(fragManager);
 	}
@@ -53,7 +55,7 @@ public class GamesExchangeManager {
 	public void setSelectedGames(int[] gamesSuggestions) {
 		mSelectedGames = new LinkedList<Integer>();
 		if (gamesSuggestions == null || gamesSuggestions.length == 0) {
-			for (int key : GameKey.ALL_GAMES) {
+			for (int key : mAllGames) {
 				mSelectedGames.add(key);
 			}
 		} else {
@@ -142,6 +144,10 @@ public class GamesExchangeManager {
 	
 	public boolean isSelected(int gameKey) {
 		return mSelectedGames.contains(Integer.valueOf(gameKey));
+	}
+
+	public List<Integer> getAllGames() {
+		return mAllGames;
 	}
 	
 }

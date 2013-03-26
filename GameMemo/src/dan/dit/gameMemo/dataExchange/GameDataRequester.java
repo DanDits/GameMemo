@@ -10,21 +10,16 @@ import android.content.ContentResolver;
  * @author Daniel
  *
  */
-public class GameDataExchangerEgoistic extends GameDataExchanger {
+public class GameDataRequester extends GameDataExchanger {
 
-	private boolean mIgnoreReceivedGames;
 
-	public GameDataExchangerEgoistic(ContentResolver resolver,
+	public GameDataRequester(ContentResolver resolver,
 			ExchangeService service, int gameKey) {
 		super(resolver, service, gameKey);
 	}
 
 	protected List<Long> filterReceivedOffer(List<Long> receivedTimes) {
 		return receivedTimes; // request all games
-	}
-	
-	public void setIgnoreReceivedGames(boolean ignore) {
-		mIgnoreReceivedGames = ignore;
 	}
 
 	protected List<Long> getOffer() {
@@ -33,8 +28,6 @@ public class GameDataExchangerEgoistic extends GameDataExchanger {
 
 	@Override
 	protected void onReceiveGames(String message) {
-		if (!mIgnoreReceivedGames) {
-			super.onReceiveGames(message);
-		}
+		// by default do nothing with received games, they are handled elsewhere
 	}
 }

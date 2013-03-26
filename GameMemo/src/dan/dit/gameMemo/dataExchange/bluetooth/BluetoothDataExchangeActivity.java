@@ -249,7 +249,7 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
     @Override
     protected void onConnectionTerminated(int successfullyExchanged) {
     	super.onConnectionTerminated(successfullyExchanged);
-    	Toast.makeText(this, getResources().getString(R.string.data_exchange_finished, 
+    	Toast.makeText(this, getResources().getQuantityString(R.plurals.data_exchange_finished, successfullyExchanged,
     			successfullyExchanged, mLastConnectedDeviceName), 
     			Toast.LENGTH_LONG).show();
 		if (mIsStopped && mExchangeService != null) {

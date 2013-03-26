@@ -38,9 +38,9 @@ public class GameDataExchanger implements PostRecipient {
 	private static final String TAG = "GameDataExchange";
 
 	// message ids 
-	private static final int MESSAGE_ID_OFFERING_DATA = 1;
-	private static final int MESSAGE_ID_REQUESTING_DATA = 2;
-	private static final int MESSAGE_ID_SENDING_DATA = 3;
+	public static final int MESSAGE_ID_OFFERING_DATA = 1;
+	public static final int MESSAGE_ID_REQUESTING_DATA = 2;
+	public static final int MESSAGE_ID_SENDING_DATA = 3;
 	
 	// member vars	
 	private ContentResolver mContentResolver;

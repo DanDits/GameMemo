@@ -1,7 +1,6 @@
-package dan.dit.gameMemo.dataExchange.file;
+package dan.dit.gameMemo.dataExchange;
 
 import android.util.SparseArray;
-import dan.dit.gameMemo.dataExchange.ExchangeService;
 import dan.dit.gameMemo.dataExchange.Postman.PostRecipient;
 
 /**

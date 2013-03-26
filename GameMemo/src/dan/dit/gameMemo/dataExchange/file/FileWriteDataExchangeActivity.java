@@ -52,6 +52,18 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 	}
 	
 	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (mService != null) {
+			try {
+				mService.close();
+			} catch (IOException e) {
+				// failed closing file stream but service still closed, ignore
+			}
+		}
+	}
+	
+	@Override
 	protected ExchangeService getExchangeService() {
 		return mService;
 	}
@@ -67,7 +79,7 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
     	try {
 			mService.close();
 		} catch (IOException e) {
-			//ignore
+			// failed closing file stream but service still closed, ignore
 		}
     	mStartShare.setEnabled(true);
     }

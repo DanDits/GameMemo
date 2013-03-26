@@ -1,6 +1,5 @@
 package dan.dit.gameMemo.dataExchange;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -59,10 +58,7 @@ public class GamesOverviewDialog extends DialogFragment {
 			   mCurrentlySelectedGames.add(selectedKey);
 		   }
 		   mListView = (ListView) baseView.findViewById(R.id.games_exchange_overview_list);
-		   mAllGamesList = new ArrayList<Integer>(GameKey.ALL_GAMES.length);
-		   for (int gameKey : GameKey.ALL_GAMES) {
-			   mAllGamesList.add(gameKey);
-		   }
+		   mAllGamesList = mCallback.getManager().getAllGames();
 		   mGamesAdapter = new GamesAdapter(getActivity(), R.layout.exchange_game_state);
 	       mListView.setAdapter(mGamesAdapter);
 	       mListView.setOnItemClickListener(new OnItemClickListener() {

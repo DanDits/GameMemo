@@ -22,7 +22,8 @@ import dan.dit.gameMemo.gameData.game.GameKey;
 public abstract class DataExchangeActivity extends FragmentActivity implements
 		GamesOverviewDialogCallback {
 	private static final String TAG = DataExchangeActivity.class.getName();
-
+	public static final String EXTRA_ALL_GAMES = "dan.dit.gameMemo.ALL_GAMES"; //int[] with at least one gamekey
+	
 	// handler message constants
 	public static final int MESSAGE_CONNECTION_STATE_CHANGE = 1; // used to update the text that displays the state, new state id in arg1
 	public static final int MESSAGE_TOAST = 2; // if arg1 != -1 loads string resource with this id, else displays obj as CharSequence 
@@ -46,7 +47,7 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 			gameKeySuggestions = extras.getIntArray(GameKey.EXTRA_GAMEKEY);
 		}
 		mManager = new GamesExchangeManager(getSupportFragmentManager(),
-				gameKeySuggestions);
+				gameKeySuggestions, extras != null ? extras.getIntArray(EXTRA_ALL_GAMES) : null);
 		mHandler = new DataExchangeHandler(this);
 	}
 	

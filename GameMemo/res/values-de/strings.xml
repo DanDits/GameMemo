@@ -59,10 +59,19 @@
 	<string name="bluetooth_unable_to_connect">Verbinden mit Gerät fehlgeschlagen</string>
 	<string name="data_exchange_bluetooth_not_enabled_leaving">Bluetooth benötigt</string>
 	<string name="bluetooth_not_available">Bluetooth ist nicht verfügbar</string>
-	<string name="data_exchange_finished">%1$d Spiele synchronisiert mit %2$s</string>
+	<plurals
+        name="data_exchange_finished">
+        <item quantity="one">%1$d Spiel mit %2$s synchronisiert</item>
+        <item quantity="other">%1$d Spiele mit %2$s synchronisiert</item>
+    </plurals>
 	<string name="data_exchange_bluetooth_button_ensure_discoverable">Auffindbar machen</string>
 	<string name="data_exchange_bluetooth_make_discoverable_on_start">Auffindbar starten</string>
 	<string name="data_exchange_filewriter_failed">Datei erstellen fehlgeschlagen</string>
+	<plurals
+        name="import_success">
+        <item quantity="one">%1$d Spiel erfolgreich importiert</item>
+        <item quantity="other">Erfolgreich %1$d Spiele importiert</item>
+    </plurals>
 	<string name ="share_storage_unavailable">Externer Speicher nicht verfügbar</string>
 	<string name="open_data_exchanger">Teilen</string>
 	<string name="open_data_exchanger_bluetooth">Sync über Bluetooth</string>
@@ -132,4 +141,5 @@
 	<string name="games_selected_all">Alle Spiele gewählt</string>
 	<string name="games_selection_title">Spiele zum Tauschen</string>
 	<string name="share">Teilen</string>
+	<string name="share_accept">Akzeptieren</string>
 </resources>

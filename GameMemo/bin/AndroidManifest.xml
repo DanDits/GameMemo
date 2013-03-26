@@ -55,6 +55,22 @@
             android:name=".dataExchange.file.FileWriteDataExchangeActivity"
             android:configChanges="keyboardHidden|orientation|screenSize">
         </activity>
+        <activity 
+            android:name=".dataExchange.file.FileReadDataExchangeActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize">
+
+			<intent-filter>
+				  <action android:name="android.intent.action.VIEW" />
+				  <category android:name="android.intent.category.DEFAULT" />
+				  <data android:scheme="file"  android:host="*" android:pathPattern=".*\\.gamememo" android:mimeType="*/*"  />
+			</intent-filter>
+			<intent-filter>
+			    <action android:name="android.intent.action.VIEW" />
+			    <category android:name="android.intent.category.DEFAULT" />
+			    <data android:mimeType="*/*" />
+			    <data android:pathPattern=".*\\.gamememo" />
+			</intent-filter>
+        </activity>
           <provider
      		 android:name=".storage.database.GamesDBContentProvider"
       		 android:authorities="dan.dit.gameMemo.games_db.contentprovider" 

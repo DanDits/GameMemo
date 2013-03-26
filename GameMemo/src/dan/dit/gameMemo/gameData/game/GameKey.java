@@ -32,6 +32,17 @@ public final class GameKey {
 	
 	private GameKey() {}
 	
+	public static List<Integer> toList(int[] array) {
+		if (array == null) {
+			return null;
+		}
+		ArrayList<Integer> list = new ArrayList<Integer>(array.length);
+		for (int data : array) {
+			list.add(data);
+		}
+		return list;
+	}
+	
 	public static GameStatisticBuilder getStatisticBuilder(int gameKey, List<Player> players) {
 		switch(gameKey) {
 		case GameKey.TICHU:
