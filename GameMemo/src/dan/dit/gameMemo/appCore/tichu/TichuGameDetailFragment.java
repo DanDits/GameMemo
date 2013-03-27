@@ -152,7 +152,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	 *
 	 */
 	public interface CloseDetailViewRequestListener {
-		void closeDetailView(boolean error);
+		void closeDetailView(boolean error, boolean rematch);
 	}
 	
 	// member vars concerning building up a new game round, visualizing and editing rounds
@@ -301,7 +301,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 					useMercyRule, scoreLimit);
 		} else {
 			Log.d("Tichu", "Failed loading or creating game for id " + gameId);
-			mCloseRequestListener.closeDetailView(true);
+			mCloseRequestListener.closeDetailView(true, false);
 			return;
 		}
 	}
@@ -559,7 +559,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			mStateMachine.updateUI();
 		} else {
 			Toast.makeText(getActivity(), getResources().getString(R.string.game_failed_loading), Toast.LENGTH_LONG).show();
-			mCloseRequestListener.closeDetailView(true); // nothing to show here
+			mCloseRequestListener.closeDetailView(true, false); // nothing to show here
 		}
 	}
 
@@ -709,7 +709,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		boolean clear = pos == TichuRound.FINISHER_POS_UNKNOWN;
 		Button button = mPlayer[playerId - TichuGame.PLAYER_ONE_ID];
 		if (clear) {
-			button.setBackgroundResource(R.drawable.tichu_player_button_none);
+			button.setBackgroundResource(R.drawable.tichu_button);
 		} else if (button.getBackground() != null) {
 			button.setBackgroundResource(PLAYER_FINISHER_POS_DRAWABLE_ID[pos - 1]);
 		}
@@ -734,11 +734,11 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		// unavailable input must guarantee that applyRoundData cannot get invoked (which is the only place a TichuRound gets created newly)
 	}
 	
-	private void saveAndClose() {
+	private void saveCloseAndRematch() {
 		if (getDisplayedGameId() == Game.NO_ID) {
 			saveState();
 		}
-		mCloseRequestListener.closeDetailView(false);
+		mCloseRequestListener.closeDetailView(false, true);
 	}
 	
 	private void onRoundDataChange() {
@@ -782,22 +782,22 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	}
 
 	private class TichuGameStateMachine {
-		private static final int STATE_GAME_CLOSABLE = 0;
 		private static final int STATE_EXPECT_DATA = 1;
 		private static final int STATE_ADD_ROUND= 2;
 		private static final int STATE_OLD_ROUND_EDITED = 3;
-		private static final int STATE_OLD_ROUND_SELECTED= 4;
+		private static final int STATE_OLD_ROUND_SELECTED = 4;
+		private static final int STATE_REMATCH = 5;
 		
 		private int mState;
 		private void determineState() {
 			if (mCurrRoundIndex == -1) {
 				// no round selected
-				if (mCurrRound != null) {
-					mState = STATE_ADD_ROUND;
+				if (mCurrRound != null) { // enough information for new round
+					mState = STATE_ADD_ROUND; 
 				} else if (!mGame.isFinished()) {
 					mState = STATE_EXPECT_DATA;
 				} else {
-					mState = STATE_GAME_CLOSABLE;
+					mState = STATE_REMATCH;
 				}
 			} else {
 				// round selected
@@ -806,7 +806,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 					if (!mGame.isFinished()) {
 						mState = STATE_OLD_ROUND_SELECTED;
 					} else {
-						mState = STATE_GAME_CLOSABLE;
+						mState = STATE_REMATCH;
 					}
 				} else {
 					mState = STATE_OLD_ROUND_EDITED;
@@ -816,8 +816,8 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		
 		private int getLockInButtonDrawableId() {
 			switch(mState) {
-			case STATE_GAME_CLOSABLE:
-				return R.drawable.ic_menu_close_clear_cancel;
+			case STATE_REMATCH:
+				return R.drawable.rematch;
 			case STATE_EXPECT_DATA:
 				return R.drawable.ic_menu_view;
 			case STATE_ADD_ROUND:
@@ -845,8 +845,8 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			gameScore.append(':');
 			gameScore.append(mGame.getScoreTeam2());
 			switch(mState) {
-			case STATE_GAME_CLOSABLE:
-				return getResources().getString(R.string.tichu_game_state_game_closable) + gameScore.toString();
+			case STATE_REMATCH:
+				return getResources().getString(R.string.tichu_game_state_rematch) + gameScore.toString();
 			case STATE_EXPECT_DATA:
 				return getResources().getString(R.string.tichu_game_state_expect_data);
 			case STATE_ADD_ROUND:
@@ -866,8 +866,8 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		
 		private void onLockinButtonPressed() {
 			switch(mState) {
-			case STATE_GAME_CLOSABLE:
-				saveAndClose();
+			case STATE_REMATCH:
+				saveCloseAndRematch();
 				break;
 			case STATE_EXPECT_DATA:
 				assert false; // button should not be available when game not finished and no valid round given
@@ -894,11 +894,6 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		
 		private CharSequence getInfoText() {
 			StringBuilder builder = new StringBuilder();
-			builder.append(GameKey.getGameName(GameKey.TICHU));
-			if (mGame.usesMercyRule()) {
-				builder.append(' ');
-				builder.append(getResources().getString(R.string.tichu_game_mery_rule_short));
-			}
 			if (mGame.isFinished()) {
 				List<Player> winners = mGame.getWinner().getPlayers();
 				builder.append(' ');
@@ -912,6 +907,10 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 				builder.append(mGame.getScoreTeam1());
 				builder.append(':');
 				builder.append(mGame.getScoreTeam2());
+			}			
+			if (mGame.usesMercyRule()) {
+				builder.append(' ');
+				builder.append(getResources().getString(R.string.tichu_game_mery_rule_short));
 			}
 			if (mGame.getScoreLimit() != TichuGame.DEFAULT_SCORE_LIMIT) {
 				builder.append(' ');

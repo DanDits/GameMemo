@@ -3,7 +3,8 @@
     android:id="@+id/RelativeLayout1"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal" >
+    android:orientation="horizontal" 
+    android:background="@drawable/tichu_list_selector">
 
     <LinearLayout
         android:id="@+id/tichu_overview_header"

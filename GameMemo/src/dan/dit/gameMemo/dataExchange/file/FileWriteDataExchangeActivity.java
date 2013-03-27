@@ -18,11 +18,13 @@ import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
 
 public class FileWriteDataExchangeActivity extends DataExchangeActivity {
-	private static final String GAMES_DATA_FILE_NAME = "games_share.gamememo";
+	public static final String EXTRA_FLAG_START_SHARE_IMMEDIATELY = "dan.dit.gameMemo.START_SHARE_IMMEDIATELY";
+	private static final String GAMES_DATA_FILE_NAME = "games.gamememo";
 	private FileWriteService mService;
 	private File mTempGamesData;
 	private List<Integer> mTempGamesDataForGames;
 	private Button mStartShare;
+	private boolean mStartImmediately;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -40,6 +42,10 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 			return;
 		}
 		setContentView(R.layout.data_exchange_filewrite);
+		Bundle extras = getIntent().getExtras();
+		if (extras != null) {
+			mStartImmediately = extras.getBoolean(EXTRA_FLAG_START_SHARE_IMMEDIATELY);
+		}
 		mStartShare = (Button) findViewById(R.id.share);
 		mStartShare.setOnClickListener(new OnClickListener() {
 
@@ -49,6 +55,14 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 			}
 			
 		});
+	}
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		if (mStartImmediately) {
+			startShare();
+		}
 	}
 	
 	@Override
@@ -93,6 +107,7 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
     	Intent shareIntent = new Intent();
     	shareIntent.setAction(Intent.ACTION_SEND);
     	shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(mTempGamesData));
+    	shareIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.share_subject));
     	shareIntent.setType("application/octet-stream");
     	startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.share)));
     }

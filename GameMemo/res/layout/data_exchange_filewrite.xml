@@ -8,6 +8,7 @@
         android:id="@+id/share"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/button_green_1"
         android:drawableLeft="@drawable/ic_menu_share"
         android:text="@string/share" />
 

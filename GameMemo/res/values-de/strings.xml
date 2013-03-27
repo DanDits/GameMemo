@@ -69,6 +69,7 @@
 	<string name="data_exchange_filewriter_failed">Datei erstellen fehlgeschlagen</string>
 	<plurals
         name="import_success">
+        <item quantity="zero">Importieren fehlgeschlagen</item>
         <item quantity="one">%1$d Spiel erfolgreich importiert</item>
         <item quantity="other">Erfolgreich %1$d Spiele importiert</item>
     </plurals>
@@ -128,7 +129,7 @@
 	<string name="tichu_game_state_add_round">Runde hinzufügen</string>
 	<string name="tichu_game_state_new_round">Neue Runde</string>
 	<string name="tichu_game_state_old_round_edited">Änderungen speichern</string>
-	<string name="tichu_game_state_game_closable">Spiel beenden</string>
+	<string name="tichu_game_state_rematch">Rematch</string>
 	<string name="tichu_game_state_expect_data">Neue Runde eingeben</string>
 	<string name="tichu_game_enter_hand_score">Punkte</string>
 	<string name="tichu_game_lock_button_content_description">Beginne neue Runde, ändere die gewählte oder verlasse das Spiel.</string>
@@ -141,5 +142,7 @@
 	<string name="games_selected_all">Alle Spiele gewählt</string>
 	<string name="games_selection_title">Spiele zum Tauschen</string>
 	<string name="share">Teilen</string>
+	<string name="share_subject">GameMemo Spielstände</string>
 	<string name="share_accept">Akzeptieren</string>
+	<string name="share_accept_and_close">Akzeptieren und schließen</string>
 </resources>

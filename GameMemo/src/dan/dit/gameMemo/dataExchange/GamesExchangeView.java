@@ -2,9 +2,11 @@ package dan.dit.gameMemo.dataExchange;
 
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -24,6 +26,7 @@ import dan.dit.gameMemo.gameData.game.GameKey;
 public class GamesExchangeView extends LinearLayout {
 	private ProgressBar mProgress;
 	private Button mShowGames;
+	private Drawable mDefaultShowGamesBackground;
 	
 	public GamesExchangeView(Context context) {
 		super(context);
@@ -73,12 +76,29 @@ public class GamesExchangeView extends LinearLayout {
 		Resources res = getContext().getResources();
 		mShowGames.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 		if (selectedGames.size() == 1) {
-			mShowGames.setCompoundDrawablesWithIntrinsicBounds(GameKey.getGameIconId(selectedGames.get(0)), 0, 0, 0);
+			int key = selectedGames.get(0);
+			mShowGames.setCompoundDrawablesWithIntrinsicBounds(GameKey.getGameIconId(key), 0, 0, 0);
+			if (mDefaultShowGamesBackground == null) {
+				mDefaultShowGamesBackground = mShowGames.getBackground();
+			}
+			mShowGames.setBackgroundResource(GameKey.getBackgroundResource(key));
 			mShowGames.setText(res.getString(R.string.games_selected_single, GameKey.getGameName(selectedGames.get(0))));
 		} else if (selectedGames.size() < GameKey.ALL_GAMES.length) {
 			mShowGames.setText(res.getString(R.string.games_selected, selectedGames.size(), GameKey.ALL_GAMES.length));
+			resetBackground();
 		} else if (selectedGames.size() == GameKey.ALL_GAMES.length) {
 			mShowGames.setText(res.getString(R.string.games_selected_all));
+			resetBackground();
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	@SuppressLint("NewApi")
+	private void resetBackground() {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+			mShowGames.setBackgroundDrawable(mDefaultShowGamesBackground);
+		} else {
+			mShowGames.setBackground(mDefaultShowGamesBackground);
 		}
 	}
 }

@@ -8,7 +8,11 @@
         android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:cacheColorHint="#fff"       >
+        android:cacheColorHint="#fff"
+        android:choiceMode="singleChoice"
+        android:dividerHeight="2dp"
+        android:listSelector="@drawable/tichu_list_selector" >
+
     </ListView>
 
     <TextView

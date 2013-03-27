@@ -9,19 +9,22 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 import dan.dit.gameMemo.R;
+import dan.dit.gameMemo.appCore.tichu.TichuGamesActivity;
 import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
 
@@ -29,11 +32,14 @@ import dan.dit.gameMemo.dataExchange.ExchangeService;
 public class FileReadDataExchangeActivity extends DataExchangeActivity {
 	private File mDataFile;
 	private InputStream mDataStream;
-	private List<ExchangeMessage> mMessages;
+	private LinkedList<ExchangeMessage> mMessages;
 	private int[] mContainedGames;
 	private MessageImportService mService;
 	private Button mStartImport;
+	private Button mStartImportAndClose;
+	private boolean mCloseOnFinish;
 	
+	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		if (getIntent().getAction().equals(Intent.ACTION_VIEW)) {
@@ -62,6 +68,9 @@ public class FileReadDataExchangeActivity extends DataExchangeActivity {
 		}
 		super.onCreate(savedInstanceState);
 		if (hasValidData) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH && getActionBar() != null) {
+				getActionBar().setHomeButtonEnabled(true);
+			}
 			setContentView(R.layout.data_exchange_fileread);
 			mStartImport = (Button) findViewById(R.id.share);
 			mStartImport.setOnClickListener(new OnClickListener() {
@@ -71,11 +80,42 @@ public class FileReadDataExchangeActivity extends DataExchangeActivity {
 					startImport();
 				}
 			});
-		} else {
+			mStartImportAndClose = (Button) findViewById(R.id.share_and_close);
+			mStartImportAndClose.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					mCloseOnFinish = true;
+					startImport();
+				}
+			});
+ 		} else {
 			Log.d("FileRead", "No valid data found in intent " + getIntent());
 			setResult(RESULT_CANCELED);
 			finish();
 		}
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (mService != null) {
+			mService.setPaused(true);
+		}
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    switch (item.getItemId()) {
+	        case android.R.id.home:
+	            // app icon in action bar clicked; go home
+	            Intent intent = new Intent(this, TichuGamesActivity.class); //TODO change home activity later to general one
+	            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+	            startActivity(intent);
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
 	}
 	
 	private boolean prepareData() {
@@ -142,12 +182,24 @@ public class FileReadDataExchangeActivity extends DataExchangeActivity {
 	@Override
 	protected void onConnectionTerminated(int successfullyExchanged) {
 		super.onConnectionTerminated(successfullyExchanged);
-		Toast.makeText(this, getResources().getQuantityString(R.plurals.import_success, successfullyExchanged, successfullyExchanged), Toast.LENGTH_LONG).show();
+		String text = getResources().getQuantityString(R.plurals.import_success, successfullyExchanged, successfullyExchanged);
+		Toast.makeText(this, text, Toast.LENGTH_LONG).show();
+		mStartImport.setText(text);
+		if (mCloseOnFinish) {
+			if (successfullyExchanged > 0) {
+				setResult(RESULT_OK);
+			}
+			finish();
+		}
 	}
 
 	private void startImport() {
-		mService = new MessageImportService(mHandler, mMessages);
 		mStartImport.setEnabled(false);
+		mStartImportAndClose.setEnabled(false);
+		if (!mCloseOnFinish) {
+			mStartImportAndClose.setVisibility(View.GONE);
+		}
+		mService = new MessageImportService(mHandler, mMessages);
 	}
 	
 	@Override

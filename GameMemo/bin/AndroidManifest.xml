@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dan.dit.gameMemo"
-    android:versionCode="3"
-    android:versionName="1.06" 
+    android:versionCode="4"
+    android:versionName="1.07" 
     android:installLocation="auto">
 	
     <uses-sdk
@@ -57,7 +57,8 @@
         </activity>
         <activity 
             android:name=".dataExchange.file.FileReadDataExchangeActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize">
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:noHistory="true">
 
 			<intent-filter>
 				  <action android:name="android.intent.action.VIEW" />

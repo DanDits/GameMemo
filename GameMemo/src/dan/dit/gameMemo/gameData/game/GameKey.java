@@ -120,7 +120,7 @@ public final class GameKey {
 	public static int getBackgroundResource(int gameKey) {
 		switch (gameKey) {
 		case GameKey.TICHU:
-			return R.drawable.tichu_detail_background;
+			return R.drawable.tichu_button;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}

@@ -282,7 +282,8 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 		return Game.NO_ID;
 	}
 	
-	public static List<Player> getPlayers(ContentResolver resolver, int gameKey, long gameId) {
+	//maybe this will be needed in some other situation, but best is too avoid reading only single columns
+	/*public static List<Player> getPlayers(ContentResolver resolver, int gameKey, long gameId) {
 		if (!Game.isValidId(gameId)) {
 			return null;
 		}
@@ -302,7 +303,7 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 			cursor.close();
 		}
 		return null;
-	}
+	}*/
 
 	
 	public static final boolean isValidId(long id) {

@@ -20,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -51,23 +52,27 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
 			+ GameStorageHelper.COLUMN_STARTTIME + " DESC";
 
 	private TichuGameOverviewAdapter adapter;
-	private GameSelectionListener mGameSelectionListener;
+	private GameOverviewCallback mGameOverviewCallback;
 	
-	public interface GameSelectionListener {
+	public interface GameOverviewCallback {
 		long getSelectedGameId();
 		void selectGame(long gameId);
+		/**
+		 * Convenience method that suggests activity to start game setup, can be ignored to avoid loops or other situations.
+		 */
+		void setupGame();
 	}
 	
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		mGameSelectionListener = (GameSelectionListener) activity;
+		mGameOverviewCallback = (GameOverviewCallback) activity;
 	}
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		this.getListView().setDividerHeight(2);
+		getListView().setSelector(R.drawable.tichu_list_selector);
 		fillData();
 		registerForContextMenu(getListView());
 		restoreFromSave(savedInstanceState);
@@ -96,20 +101,45 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
  	
  	public void setHighlightedGameId(long gameId) {
  		if (adapter != null) {
- 			adapter.setHighlightedGameId(gameId);
+ 			if (gameId == Game.NO_ID) {
+ 				getListView().clearChoices();
+ 			} else {
+ 				int pos = getPositionForId(gameId);
+ 				if (pos >= 0) {
+ 					getListView().setItemChecked(pos, true); 
+ 				}
+ 			}
  		}
+ 	}
+ 	
+ 	private int getPositionForId(long id) {
+ 		ListView view = getListView();
+ 		for (int pos = 0; pos < view.getCount(); pos++) {
+ 			if (view.getItemIdAtPosition(pos) == id) {
+ 				return pos;
+ 			}
+ 		}
+ 		return -1;
  	}
  	
  	public long getHighlightedGameId() {
  		if (adapter != null) {
- 			return adapter.getHighlightedGameId();
- 		} else {
- 			return Game.NO_ID;
+ 	 		long[] ids = getListView().getCheckedItemIds();
+ 			if (ids.length > 0) {
+ 				return ids[0];
+ 			} else {
+ 				long id = getListView().getSelectedItemId();
+ 				if (id != AdapterView.INVALID_ROW_ID) {
+ 					setHighlightedGameId(id);
+ 					return id;
+ 				}
+ 			}
  		}
+ 		return Game.NO_ID;
  	}
 
  	private void openGame(long id) {
- 		mGameSelectionListener.selectGame(id);
+ 		mGameOverviewCallback.selectGame(id);
  	}
  	
  	private void fillData() {
@@ -127,14 +157,14 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
  	@Override
  	public void onSaveInstanceState(Bundle outState) {
  		super.onSaveInstanceState(outState);
- 		outState.putLong(STORAGE_HIGHLIGHTED_GAME_ID, adapter.getHighlightedGameId());
+ 		outState.putLong(STORAGE_HIGHLIGHTED_GAME_ID, getHighlightedGameId());
  	}
 
  	@Override
  	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (item.getMenuInfo() instanceof AdapterContextMenuInfo) 
 				? (AdapterContextMenuInfo) item.getMenuInfo() : null;
-		final long gameId = (info != null) ? info.id : -1;
+		final long gameId = (info != null) ? info.id : Game.NO_ID;
  		switch (item.getItemId()) {
  		case DELETE_ID: 
  			askAndPerformDelete(gameId);
@@ -150,6 +180,10 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
  	public void onCreateContextMenu(ContextMenu menu, View v,
  			ContextMenuInfo menuInfo) {
  		super.onCreateContextMenu(menu, v, menuInfo);
+		AdapterContextMenuInfo info = (menuInfo instanceof AdapterContextMenuInfo) 
+				? (AdapterContextMenuInfo) menuInfo : null;
+		final long gameId = (info != null) ? info.id : Game.NO_ID;
+		setHighlightedGameId(gameId);
  		menu.add(0, DELETE_ID, 0, R.string.menu_delete_game);
  		menu.add(0, INFO_ID, 0, R.string.menu_info_game);
  	}
@@ -184,8 +218,8 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
 		.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
 		    public void onClick(DialogInterface dialog, int whichButton) {
-		    	if (mGameSelectionListener.getSelectedGameId() == gameId) {
-		    		mGameSelectionListener.selectGame(Game.NO_ID);
+		    	if (mGameOverviewCallback.getSelectedGameId() == gameId) {
+		    		mGameOverviewCallback.selectGame(Game.NO_ID);
 		    	}
 	 			Uri uri = GameStorageHelper.getUri(GAMEKEY, gameId);
 	 			getActivity().getContentResolver().delete(uri, null, null);
@@ -205,6 +239,9 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
 		@Override
 		public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 			Cursor oldCursor = adapter.swapCursor(data);
+			if (data.getCount() == 0) {
+				mGameOverviewCallback.setupGame();
+			}
 			if (oldCursor != null) {
 				oldCursor.close();
 			}

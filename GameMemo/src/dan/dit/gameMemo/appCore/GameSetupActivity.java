@@ -93,6 +93,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	private int mChoosingPlayerSlot;
 	private Button[] mPlayerButtons;
 	private Button mShuffle;
+	private Button mClear;
 	private ProgressBar mShuffleProgress;
 	private Timer mShufflePlayersTimer;
 	private final Handler mTimerHandler = new Handler();
@@ -114,7 +115,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		mOptionsContainer = (LinearLayout) findViewById(R.id.options_container);
 		mShuffleProgress = (ProgressBar) findViewById(R.id.progressBar);
 		mStartGame = (Button) findViewById(R.id.startGame);
-		
+		mClear = (Button) findViewById(R.id.clear);
 		Player[] temp = null;
 		if (savedInstanceState == null) {
 			buildUIFromBundle(getIntent().getExtras());
@@ -133,7 +134,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	}
 	
 	private void initListeners() {
-		findViewById(R.id.clear).setOnClickListener(new OnClickListener() {
+		mClear.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
@@ -430,7 +431,6 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	
 	private void buildUIFromBundle(Bundle in) {
 		mGameKey = in.getInt(GameKey.EXTRA_GAMEKEY);
-		findViewById(R.id.root_layout).setBackgroundResource(GameKey.getBackgroundResource(mGameKey));
 		int[] minTeamSize = in.getIntArray(EXTRA_TEAM_MIN_PLAYERS);
 		int[] maxTeamSize = in.getIntArray(EXTRA_TEAM_MAX_PLAYERS);
 		String[] teamNames = in.getStringArray(EXTRA_TEAM_NAMES);
@@ -480,6 +480,17 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		initTitle();
 		initTeamsUI();
 		initOptionsUI(in);
+		applyBackgroundTheme(GameKey.getBackgroundResource(mGameKey));
+	}
+	
+	private void applyBackgroundTheme(int res) {
+		mShuffle.setBackgroundResource(res);
+		mStartGame.setBackgroundResource(res);
+		mClear.setBackgroundResource(res);
+		for (Button p : mPlayerButtons) {
+			p.setBackgroundResource(res);
+		}
+		
 	}
 	
 	private void initTitle() {

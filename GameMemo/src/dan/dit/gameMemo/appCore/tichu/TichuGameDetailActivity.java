@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.view.MenuItem;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment.CloseDetailViewRequestListener;
 import dan.dit.gameMemo.gameData.game.Game;
@@ -39,12 +40,14 @@ public class TichuGameDetailActivity extends FragmentActivity implements CloseDe
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			ActionBar bar = getActionBar();
 			if (bar != null) {
-				bar.hide();
+				bar.setHomeButtonEnabled(true);
+				bar.setDisplayHomeAsUpEnabled(true);
+				bar.setIcon(GameKey.getGameIconId(GameKey.TICHU));
 			}
 		}
 		if (savedInstanceState == null) {
 			if (getIntent().getExtras() == null) {
-				closeDetailView(true); // we need an id or player names but got nothing
+				closeDetailView(true, false); // we need an id or player names but got nothing
 				return;
 			}
 			// initial setup, cannot make fragment static since we need to pass arguments to it
@@ -57,22 +60,34 @@ public class TichuGameDetailActivity extends FragmentActivity implements CloseDe
 	}
 	
 	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    switch (item.getItemId()) {
+	        case android.R.id.home:
+	            // app icon in action bar clicked; simply finish since we always came from TichuGamesActivity
+	        	closeDetailView(false, false);
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
+	}
+	
+	@Override
 	public void onBackPressed() {
-		prepareSuccessfulResult();
+		prepareSuccessfulResult(false);
 		super.onBackPressed();
 	}
 
 	@Override
-	public void closeDetailView(final boolean error) {
+	public void closeDetailView(final boolean error, boolean rematch) {
 		if (!error) {
-			prepareSuccessfulResult();
+			prepareSuccessfulResult(rematch);
 		} else {
 			setResult(RESULT_CANCELED);
 		}
 		finish();
 	}
 	
-	private void prepareSuccessfulResult() {
+	private void prepareSuccessfulResult(boolean rematch) {
 		Fragment frag = getSupportFragmentManager().findFragmentById(R.id.game_detail_frame);
 		if (frag != null && frag instanceof TichuGameDetailFragment) {
 			TichuGameDetailFragment details = (TichuGameDetailFragment) frag;
@@ -81,6 +96,7 @@ public class TichuGameDetailActivity extends FragmentActivity implements CloseDe
 				details.saveState();
 			}
 			i.putExtra(GameStorageHelper.getCursorItemType(GameKey.TICHU), details.getDisplayedGameId());
+			i.putExtra(TichuGamesActivity.EXTRA_RESULT_WANT_REMATCH, rematch);
 			setResult(RESULT_OK, i);
 		} else {
 			setResult(RESULT_OK);

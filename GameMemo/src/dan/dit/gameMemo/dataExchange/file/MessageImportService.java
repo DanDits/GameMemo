@@ -1,6 +1,6 @@
 package dan.dit.gameMemo.dataExchange.file;
 
-import java.util.List;
+import java.util.Queue;
 
 import android.os.Handler;
 import android.os.Message;
@@ -13,9 +13,10 @@ import dan.dit.gameMemo.dataExchange.Postman.PostRecipient;
 public class MessageImportService implements ExchangeService {
     private SparseArray<PostRecipient> mRecipients;	
 	private Handler mHandler;
-	private List<ExchangeMessage> mMessages;
+	private Queue<ExchangeMessage> mMessages; //FIFO
+	private boolean mIsRunning;
 	
-	public MessageImportService(Handler handler, List<ExchangeMessage> messages) {
+	public MessageImportService(Handler handler, Queue<ExchangeMessage> messages) {
 		mHandler = handler;
 		mMessages = messages;
 		mRecipients = new SparseArray<PostRecipient>();
@@ -29,10 +30,33 @@ public class MessageImportService implements ExchangeService {
 		throw new UnsupportedOperationException();
 	}
 	
-	public void startImport() {
-		for (ExchangeMessage msg : mMessages) {
-			onNewPost(msg.getConnectionId(), msg.getMessageId(), msg.getMessage());
+	public synchronized void setPaused(boolean pause) {
+		if (mIsRunning == pause) {
+			mIsRunning = !pause;
+			if (mIsRunning) {
+				startImport();
+			}
 		}
+	}
+	
+	public void startImport() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				handleMessages();
+			}
+		}).start();
+	}
+	
+	private void handleMessages() {
+		mIsRunning = true;
+		while (mIsRunning && !mMessages.isEmpty()) {
+			if (mIsRunning) {
+				ExchangeMessage msg = mMessages.poll();
+				onNewPost(msg.getConnectionId(), msg.getMessageId(), msg.getMessage());
+			}
+		}
+		mIsRunning = false;
 	}
 
 	@Override

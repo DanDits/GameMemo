@@ -55,12 +55,15 @@ public class GamesExchangeManager {
 	public void setSelectedGames(int[] gamesSuggestions) {
 		mSelectedGames = new LinkedList<Integer>();
 		if (gamesSuggestions == null || gamesSuggestions.length == 0) {
-			for (int key : mAllGames) {
-				mSelectedGames.add(key);
-			}
+			mSelectedGames.addAll(mAllGames);
 		} else {
 			for (int key : gamesSuggestions) {
-				mSelectedGames.add(key);
+				if (mAllGames.contains(Integer.valueOf(key))) {
+					mSelectedGames.add(key);
+				}
+			}
+			if (mSelectedGames.size() == 0) { // only got games that were not contained in all games
+				mSelectedGames.addAll(mAllGames);
 			}
 		}
 		if (mExchangeView != null) {

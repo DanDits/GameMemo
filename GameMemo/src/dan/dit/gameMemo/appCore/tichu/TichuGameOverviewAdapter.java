@@ -34,7 +34,6 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
 	private static final DateFormat DATE_FORMAT = SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM);
 	private static final Calendar CALENDAR_CHECKER1 = Calendar.getInstance();
 	private static final Calendar CALENDAR_CHECKER2 = Calendar.getInstance();
-	private long highlightedGameId = Game.NO_ID;
     private int layout;
     private Context context;
 
@@ -75,16 +74,10 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
        updateViewInfo(v, c);
     }
     
-    public void setHighlightedGameId(long gameId) {
-    	if (gameId != highlightedGameId) {
-    		highlightedGameId = gameId;
-    		notifyDataSetChanged();
-    	}
+    @Override
+    public boolean hasStableIds() {
+    	return true;
     }
-    
-	public long getHighlightedGameId() {
-		return highlightedGameId;
-	}
     
     private void updateViewInfo(View tichuRow, Cursor c) {
         int playersCol = c.getColumnIndex(GameStorageHelper.COLUMN_PLAYERS);
@@ -159,14 +152,7 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
         	}
         }
         holder.team1.setCompoundDrawablesWithIntrinsicBounds(team1Image, 0, 0, 0);
-        holder.team2.setCompoundDrawablesWithIntrinsicBounds(0, 0, team2Image, 0);
-        
-        if (id == highlightedGameId) {
-        	tichuRow.setBackgroundResource(R.drawable.tichu_overview_game_selected);
-        } else {
-        	tichuRow.setBackgroundResource(0);
-        }
-        
+        holder.team2.setCompoundDrawablesWithIntrinsicBounds(0, 0, team2Image, 0);        
     }
     
     private void applyDate(TextView date, Date startDate) {
