@@ -1,6 +1,8 @@
 package dan.dit.gameMemo.dataExchange;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,7 +25,8 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 		GamesOverviewDialogCallback {
 	private static final String TAG = DataExchangeActivity.class.getName();
 	public static final String EXTRA_ALL_GAMES = "dan.dit.gameMemo.ALL_GAMES"; //int[] with at least one gamekey
-	
+	public static final String EXTRA_SINGLE_GAME_OFFERS = "dan.dit.gameMemo.SINGLE_GAME_OFFERS"; // long[] if only one game suggested these starttimes are used to limit the offer of this game, others will send all
+	private static final String STORAGE_SINGLE_GAME_ID = "dan.dit.gameMemo.SINGLE_GAME_KEY"; // key of the single game
 	// handler message constants
 	public static final int MESSAGE_CONNECTION_STATE_CHANGE = 1; // used to update the text that displays the state, new state id in arg1
 	public static final int MESSAGE_TOAST = 2; // if arg1 != -1 loads string resource with this id, else displays obj as CharSequence 
@@ -33,6 +36,8 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 	
 	protected GamesExchangeManager mManager;
 	protected Handler mHandler;
+	private int mSingleGameKey = GameKey.NO_GAME;
+	private long[] mSingleGameOfferedStarttimes;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -43,11 +48,28 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 		if (savedInstanceState != null) {
 			gameKeySuggestions = savedInstanceState
 					.getIntArray(GameKey.EXTRA_GAMEKEY);
+			mSingleGameOfferedStarttimes = savedInstanceState.getLongArray(EXTRA_SINGLE_GAME_OFFERS);
+			if (mSingleGameOfferedStarttimes != null && mSingleGameOfferedStarttimes.length > 0 && gameKeySuggestions != null 
+					&& gameKeySuggestions.length == 1 && GameKey.isGameSupported(gameKeySuggestions[0])) {
+				mSingleGameKey = savedInstanceState.getInt(STORAGE_SINGLE_GAME_ID, GameKey.NO_GAME);
+			}
 		} else if (extras != null) {
 			gameKeySuggestions = extras.getIntArray(GameKey.EXTRA_GAMEKEY);
+			mSingleGameOfferedStarttimes = extras.getLongArray(EXTRA_SINGLE_GAME_OFFERS);
+			if (mSingleGameOfferedStarttimes != null && mSingleGameOfferedStarttimes.length > 0 && gameKeySuggestions != null 
+					&& gameKeySuggestions.length == 1 && GameKey.isGameSupported(gameKeySuggestions[0])) {
+				mSingleGameKey = gameKeySuggestions[0];
+			}
 		}
 		mManager = new GamesExchangeManager(getSupportFragmentManager(),
 				gameKeySuggestions, extras != null ? extras.getIntArray(EXTRA_ALL_GAMES) : null);
+		if (GameKey.isGameSupported(mSingleGameKey)) {
+			List<Long> asList = new ArrayList<Long>(mSingleGameOfferedStarttimes.length);
+			for (long starttime : mSingleGameOfferedStarttimes) {
+				asList.add(Long.valueOf(starttime));
+			}
+			mManager.setOffer(mSingleGameKey, asList);
+		}
 		mHandler = new DataExchangeHandler(this);
 	}
 	
@@ -61,6 +83,8 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putIntArray(GameKey.EXTRA_GAMEKEY, mManager.getSelectedGames());
+		outState.putLongArray(EXTRA_SINGLE_GAME_OFFERS, mSingleGameOfferedStarttimes);
+		outState.putInt(STORAGE_SINGLE_GAME_ID, mSingleGameKey);
 	}
 
 	// The Handler that gets information back from the ExchangeService

@@ -1,6 +1,7 @@
 package dan.dit.gameMemo.appCore.tichu;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -18,8 +19,9 @@ import android.view.View;
 import android.webkit.WebView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameSetupActivity;
-import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment.CloseDetailViewRequestListener;
+import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment.DetailViewCallback;
 import dan.dit.gameMemo.appCore.tichu.TichuGamesOverviewListFragment.GameOverviewCallback;
+import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothDataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.file.FileWriteDataExchangeActivity;
 import dan.dit.gameMemo.gameData.game.Game;
@@ -44,7 +46,7 @@ import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
  * @author Daniel
  *
  */
-public class TichuGamesActivity extends FragmentActivity implements CloseDetailViewRequestListener, GameOverviewCallback, RenamePlayerCallback, ChoosePlayerDialogListener  {
+public class TichuGamesActivity extends FragmentActivity implements DetailViewCallback, GameOverviewCallback, RenamePlayerCallback, ChoosePlayerDialogListener  {
 	public static final String EXTRA_RESULT_WANT_REMATCH = "dan.dit.gameMemo.WANT_REMATCH";
 	private static final int PLAYER_SELECTION_ACTIVITY = 1; // when user wants to start a new game and wants to continue an existing one or selected players
 	private static final int[] TICHU_GAME_MIN_PLAYERS = new int[] {2, 2};
@@ -62,6 +64,7 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 	private boolean mHandlesDetailFragment;
 	private boolean mIsActivityInitialLaunch;
 	private TichuGameDetailFragment mDetailsFragment;
+	private TichuGamesOverviewListFragment mOverviewFragment;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -69,6 +72,7 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 		Thread.setDefaultUncaughtExceptionHandler(new ShowStacktraceUncaughtExceptionHandler(this));
 		setContentView(R.layout.tichu_main);
 		mHandler = new Handler();
+		mOverviewFragment = (TichuGamesOverviewListFragment) getSupportFragmentManager().findFragmentById(R.id.game_list);
 		checkIfHandlesDetailsFragment();
 		if (savedInstanceState == null) {
 			// initial setup
@@ -84,8 +88,7 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 		super.onRestart();
 		checkIfHandlesDetailsFragment();
 		if (mHandlesDetailFragment) {
-			TichuGamesOverviewListFragment overview = (TichuGamesOverviewListFragment) getSupportFragmentManager().findFragmentById(R.id.game_list);
-			if (mDetailsFragment != null && mDetailsFragment.getDisplayedGameId() != overview.getHighlightedGameId()) {
+			if (mDetailsFragment != null && mDetailsFragment.getDisplayedGameId() != mOverviewFragment.getHighlightedGameId()) {
 				setHighlightedGame(mDetailsFragment.getDisplayedGameId());
 			}
 		}
@@ -151,11 +154,18 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_VALUES, TICHU_OPTIONS_BOOLEAN);
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_NAMES, new String[] {getResources().getString(R.string.tichu_game_score_limit)});
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_NAMES, new String[] {getResources().getString(R.string.tichu_game_mery_rule)});
-		long highlightedId = getHighlightedGame();
-		if (Game.isValidId(highlightedId)) {
+		i.putExtra(GameSetupActivity.EXTRA_FLAG_SUGGEST_UNFINISHED_GAME, true);
+		long copyGameSetupId = getHighlightedGame();
+		if (!Game.isValidId(copyGameSetupId)) {
+			Collection<Long> checked = mOverviewFragment.getCheckedIds();
+			if (checked.size() == 1) {
+				copyGameSetupId = checked.iterator().next();
+			}
+		}
+		if (Game.isValidId(copyGameSetupId)) {
 			List<Game> games = null;
 			try {
-				games = GameKey.loadGames(GameKey.TICHU, getContentResolver(), GameStorageHelper.getUri(GameKey.TICHU, highlightedId));
+				games = GameKey.loadGames(GameKey.TICHU, getContentResolver(), GameStorageHelper.getUri(GameKey.TICHU, copyGameSetupId));
 			} catch (CompressedDataCorruptException e) {
 				// fail silently and do not change default information
 			}
@@ -273,6 +283,10 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 		Intent i = new Intent(this, FileWriteDataExchangeActivity.class);
 		i.putExtra(GameKey.EXTRA_GAMEKEY, new int[] {GameKey.TICHU});
 		i.putExtra(FileWriteDataExchangeActivity.EXTRA_FLAG_START_SHARE_IMMEDIATELY, true);
+		Collection<Long> checkedStarttimes = mOverviewFragment.getCheckedGamesStarttimes();
+		if (checkedStarttimes.size() > 0) {
+			i.putExtra(DataExchangeActivity.EXTRA_SINGLE_GAME_OFFERS, GameKey.toArray(checkedStarttimes));
+		}
 		startActivity(i);
 	}
 	
@@ -412,6 +426,11 @@ public class TichuGamesActivity extends FragmentActivity implements CloseDetailV
 		if (mIsActivityInitialLaunch) {
 			startGameSetup();
 		}
+	}
+
+	@Override
+	public void setInfo(CharSequence main, CharSequence extra) {
+		mDetailsFragment.setInfoText(main, extra);
 	}
 
 }

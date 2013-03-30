@@ -33,7 +33,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:visibility="invisible" />
+            android:focusable="false"
+            android:focusableInTouchMode="false" />
 
     </LinearLayout>
     
@@ -48,24 +49,64 @@
         android:src="@drawable/vs" />
     
     <TextView
+        android:id="@+id/tichu_overview_team1_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tichu_overview_header"
+        android:layout_toLeftOf="@id/image_vs"
+        android:layout_toRightOf="@+id/tichu_overview_team1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/tichu_overview_team2_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tichu_overview_header"
+        android:layout_toRightOf="@id/image_vs"
+        android:layout_toLeftOf="@+id/tichu_overview_team2"
+        android:gravity="right"
+        android:maxLines="1"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/tichu_overview_team1_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tichu_overview_team1_1"
+        android:layout_alignParentLeft="false"
+        android:layout_alignRight="@+id/tichu_overview_team1_1"
+        android:layout_below="@+id/tichu_overview_team1_1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+    
+    <TextView
+        android:id="@+id/tichu_overview_team2_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="false"
+        android:layout_alignLeft="@+id/tichu_overview_team2_1"
+        android:layout_below="@+id/tichu_overview_team2_1"
+        android:layout_alignRight="@+id/tichu_overview_team2_1"
+        android:ellipsize="end"
+        android:gravity="right"
+        android:maxLines="1"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <ImageView
         android:id="@+id/tichu_overview_team1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_below="@id/tichu_overview_header"
-        android:layout_toLeftOf="@id/image_vs"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    <TextView
+        android:layout_below="@+id/tichu_overview_header" />
+    
+    <ImageView
         android:id="@+id/tichu_overview_team2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_below="@id/tichu_overview_header"
-        android:layout_toRightOf="@id/image_vs"
-        android:gravity="right"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-
+        android:layout_below="@+id/tichu_overview_header" />
 
 </RelativeLayout>

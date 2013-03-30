@@ -16,6 +16,7 @@ import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
+import dan.dit.gameMemo.gameData.game.GameKey;
 
 public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 	public static final String EXTRA_FLAG_START_SHARE_IMMEDIATELY = "dan.dit.gameMemo.START_SHARE_IMMEDIATELY";
@@ -28,7 +29,6 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
 		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
 			File cacheDir = getExternalCacheDir();
 			if (cacheDir != null) {
@@ -38,10 +38,22 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 		if (mTempGamesData == null) {
 			Toast.makeText(this, getResources().getString(R.string.share_storage_unavailable), Toast.LENGTH_SHORT).show();
 			setResult(RESULT_CANCELED);
+			super.onCreate(savedInstanceState);
 			finish();
 			return;
 		}
+		int[] toShare = GameKey.calculateUsedGames(getContentResolver());
+		if (toShare.length == 0) {
+			setResult(RESULT_CANCELED);
+			Toast.makeText(this, getResources().getString(R.string.share_no_data), Toast.LENGTH_SHORT).show();
+			super.onCreate(savedInstanceState);
+			finish();
+			return;
+		}
+		getIntent().putExtra(DataExchangeActivity.EXTRA_ALL_GAMES, toShare);
+		super.onCreate(savedInstanceState);
 		setContentView(R.layout.data_exchange_filewrite);
+
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
 			mStartImmediately = extras.getBoolean(EXTRA_FLAG_START_SHARE_IMMEDIATELY);
@@ -61,6 +73,7 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 	public void onStart() {
 		super.onStart();
 		if (mStartImmediately) {
+			mStartImmediately = false;
 			startShare();
 		}
 	}
@@ -108,7 +121,8 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
     	shareIntent.setAction(Intent.ACTION_SEND);
     	shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(mTempGamesData));
     	shareIntent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.share_subject));
-    	shareIntent.setType("application/octet-stream");
+    	shareIntent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.share_text));
+    	shareIntent.setType("application/gamememo");
     	startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.share)));
     }
     

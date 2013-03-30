@@ -51,6 +51,7 @@ public class FileReadDataExchangeActivity extends DataExchangeActivity {
 						mDataFile = new File(path);
 					}
 				} else if (uri.getScheme().equals("content")) {
+					Log.d("FileRead", "Content scheme uri = " + uri + " path= " + uri.getPath());
 					try {
 						mDataStream = getContentResolver().openInputStream(getIntent().getData());
 					} catch (FileNotFoundException fnf) {

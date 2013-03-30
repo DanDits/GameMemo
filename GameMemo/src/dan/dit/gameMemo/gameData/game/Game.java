@@ -1,14 +1,21 @@
 package dan.dit.gameMemo.gameData.game;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.net.Uri;
+import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerTeam;
 import dan.dit.gameMemo.storage.GameStorageHelper;
@@ -16,6 +23,7 @@ import dan.dit.gameMemo.util.compression.Compressible;
 import dan.dit.gameMemo.util.compression.Compressor;
 
 public abstract class Game implements Iterable<GameRound>, Compressible {
+	public static final String PREFERENCES_FILE = "dan.dit.gameMemo.GAME_PREFERENCES";
 	public static final long NO_ID = -1; // isValidId(NO_ID) must be false
 	public static final int WINNER_NONE = 0;
 	public static final int GENERAL_GAME_ICON = android.R.drawable.ic_menu_mapmode;
@@ -280,6 +288,41 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 			return id;
 		}
 		return Game.NO_ID;
+	}
+	
+	public interface GamesDeletionListener {
+		void deletedGames(Collection<Long> deletedIds);
+	}
+	
+	public static void deleteConfirmed(final Context context, final Collection<Long> ids, final int gameKey, final GamesDeletionListener listener) {
+		if (ids == null || ids.size() == 0) {
+			return;
+		}
+ 		// better prompt user, to check if the games really should be deleted
+		new AlertDialog.Builder(context)
+		.setTitle(context.getResources().getString(R.string.confirm_delete))
+		.setMessage(context.getResources().getQuantityString(R.plurals.confirm_delete_games, ids.size(), ids.size()))
+		.setIcon(android.R.drawable.ic_dialog_alert)
+		.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+		    public void onClick(DialogInterface dialog, int whichButton) {
+		    	Collection<Long> deletedGames = deleteGames(context.getContentResolver(), ids, gameKey);
+		    	if (listener != null) {
+		    		listener.deletedGames(deletedGames);
+		    	}
+		    }})
+		 .setNegativeButton(android.R.string.no, null).show();
+	}
+	
+	public static Collection<Long> deleteGames(ContentResolver resolver, Collection<Long> ids, int gameKey) {
+		Collection<Long> deleted = new HashSet<Long>();
+		for (long id : ids) {
+			Uri uri = GameStorageHelper.getUri(gameKey, id);
+			if (resolver.delete(uri, null, null) > 0) {
+				deleted.add(id);
+			}
+		}
+		return deleted;
 	}
 	
 	//maybe this will be needed in some other situation, but best is too avoid reading only single columns

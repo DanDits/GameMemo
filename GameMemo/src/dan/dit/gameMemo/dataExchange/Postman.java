@@ -3,10 +3,17 @@ package dan.dit.gameMemo.dataExchange;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import android.util.Log;
-
+/**
+ * Bridge class to allow sending ExchangeMessages over a binary
+ * stream. An ExchangeService will usually only require one Postman. Concurrency
+ * is not handled by this class but must be done by the using class. A message
+ * is built by passing data read from an InputStream to onReceiveData and will
+ * trigger onNewPost() of the ExchangeService as soon as a new post arrived completely.
+ * Requires the ExchangeService's binary sendData(data) method.
+ * @author Daniel
+ *
+ */
 public class Postman {
-	private static final String TAG = "GameDataExchange";
 	// states how incoming data is expected for a single message (HEADER=(KEY, ID, SIZE)[, DATA])
 	private static final int HEADER_SIZE = 12; // in bytes, here a multiple of 4 since data is stored in ints
 	private static final int DATA_INCOME_STATE_EXPECT_HEADER = 1;
@@ -37,9 +44,6 @@ public class Postman {
 	}
 	
 	public void onReceiveData(byte[] data, int dataCount) {
-		if (mBytesReceived == null) {
-			return; // ignore gracefully, the Postman is not usable anymore, but there could still be some data around
-		}
 		if (dataCount <= 0) {
 			return; // no data received, you lied!
 		}
@@ -51,10 +55,6 @@ public class Postman {
 	}
 	
 	public void sendPost(int connectionId, int messageId, String message) {
-		if (mTarget == null) {
-			Log.d(TAG, "Attempting to send message " + messageId + " message = " + message + " over closed postman (target is null)");
-			return; // closed
-		}
 		byte[] header = new byte[HEADER_SIZE];
 		intToByte(connectionId, header, 0);
 		intToByte(messageId, header, 4);
@@ -148,7 +148,7 @@ public class Postman {
 		}
 	}
 	
-	protected void handleCurrentMessage() {
+	private void handleCurrentMessage() {
 		mDataIncomeState = DATA_INCOME_STATE_EXPECT_HEADER; // back to the first state if message is finished
 		byte[] messageRaw = mCurrMessage;
 		String message = new String(messageRaw);

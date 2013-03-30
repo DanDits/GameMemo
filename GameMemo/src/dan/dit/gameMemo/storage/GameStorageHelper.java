@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.database.Cursor;
 import android.net.Uri;
 import android.util.SparseArray;
 import dan.dit.gameMemo.gameData.game.Game;
@@ -47,6 +48,11 @@ public final class GameStorageHelper {
 		CONTENT_URIS.put(GameKey.TICHU, Uri.parse("content://" + GamesDBContentProvider.AUTHORITY
 			+ "/" + TichuTable.TABLE_TICHU_GAMES));
 		GamesDBContentProvider.registerGame(GameKey.TICHU, TichuTable.TABLE_TICHU_GAMES);
+	}
+	
+	public static int getStoredGamesCount(ContentResolver resolver, int gameKey) {
+		Cursor data = resolver.query(getUriAllItems(gameKey), new String[] {COLUMN_ID}, null, null, null);
+		return data == null ? 0 : data.getCount();
 	}
 	
 	public static String getTableName(int gameKey) {

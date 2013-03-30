@@ -1,6 +1,7 @@
 package dan.dit.gameMemo.dataExchange;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
@@ -50,6 +51,7 @@ public class GameDataExchanger implements PostRecipient {
 	private int mGamesSentCount;
 	private int mGamesReceivedCount;
 	private List<Long> mOwnStarttimes;
+	private Collection<Long> mOffer;
 	private List<Long> mOwnUnfinishedGamesStarttimes;
 	private boolean mPartnerOfferReceived;
 	private boolean mPartnerRequestSatisfied;
@@ -317,8 +319,17 @@ public class GameDataExchanger implements PostRecipient {
 		sendMessage(MESSAGE_ID_OFFERING_DATA, message);
 	}
 	
-	protected List<Long> getOffer() {
-		return mOwnStarttimes;
+	public void setOffer(Collection<Long> offer) {
+		mOffer = offer; // null offer means: offer all
+	}
+	
+	private Collection<Long> getOffer() {
+		if (mOffer == null) {
+			return mOwnStarttimes;
+		} else {
+			mOffer.retainAll(mOwnStarttimes);
+			return mOffer;
+		}
 	}
 	
 	private void sendGames(List<Game> games) {
@@ -406,7 +417,7 @@ public class GameDataExchanger implements PostRecipient {
 	 * @param startTimes The starttimes.
 	 * @return The compressed starttimes.
 	 */
-	public static String timesToString(List<Long> startTimes) {
+	public static String timesToString(Collection<Long> startTimes) {
 		if (startTimes == null || startTimes.size() == 0) {
 			return "";
 		}

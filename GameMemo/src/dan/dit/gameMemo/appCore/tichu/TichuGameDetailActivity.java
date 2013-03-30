@@ -8,12 +8,12 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import dan.dit.gameMemo.R;
-import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment.CloseDetailViewRequestListener;
+import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment.DetailViewCallback;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
@@ -28,7 +28,9 @@ import dan.dit.gameMemo.util.ShowStacktraceUncaughtExceptionHandler;
  * @author Daniel
  *
  */
-public class TichuGameDetailActivity extends FragmentActivity implements CloseDetailViewRequestListener, ChoosePlayerDialogListener {
+public class TichuGameDetailActivity extends FragmentActivity implements DetailViewCallback, ChoosePlayerDialogListener {
+	private ActionBar mBar;
+	private TichuGameDetailFragment mDetails;
 	
 	@SuppressLint("NewApi")
 	@Override
@@ -38,11 +40,12 @@ public class TichuGameDetailActivity extends FragmentActivity implements CloseDe
 		setContentView(R.layout.tichu_detail_fragment);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			ActionBar bar = getActionBar();
-			if (bar != null) {
-				bar.setHomeButtonEnabled(true);
-				bar.setDisplayHomeAsUpEnabled(true);
-				bar.setIcon(GameKey.getGameIconId(GameKey.TICHU));
+			mBar = getActionBar();
+			if (mBar != null) {
+				mBar.setHomeButtonEnabled(true);
+				mBar.setDisplayHomeAsUpEnabled(true);
+				mBar.setIcon(GameKey.getGameIconId(GameKey.TICHU));
+				mBar.setDisplayShowTitleEnabled(true);
 			}
 		}
 		if (savedInstanceState == null) {
@@ -52,8 +55,8 @@ public class TichuGameDetailActivity extends FragmentActivity implements CloseDe
 			}
 			// initial setup, cannot make fragment static since we need to pass arguments to it
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            TichuGameDetailFragment details = TichuGameDetailFragment.newInstance(getIntent().getExtras());
-            ft.replace(R.id.game_detail_frame, details);
+            mDetails = TichuGameDetailFragment.newInstance(getIntent().getExtras());
+            ft.replace(R.id.game_detail_frame, mDetails);
             ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
             ft.commit();
 		}
@@ -88,14 +91,12 @@ public class TichuGameDetailActivity extends FragmentActivity implements CloseDe
 	}
 	
 	private void prepareSuccessfulResult(boolean rematch) {
-		Fragment frag = getSupportFragmentManager().findFragmentById(R.id.game_detail_frame);
-		if (frag != null && frag instanceof TichuGameDetailFragment) {
-			TichuGameDetailFragment details = (TichuGameDetailFragment) frag;
+		if (mDetails != null ) {
 			Intent i = new Intent();
-			if (details.getDisplayedGameId() == Game.NO_ID) {
-				details.saveState();
+			if (mDetails.getDisplayedGameId() == Game.NO_ID) {
+				mDetails.saveState();
 			}
-			i.putExtra(GameStorageHelper.getCursorItemType(GameKey.TICHU), details.getDisplayedGameId());
+			i.putExtra(GameStorageHelper.getCursorItemType(GameKey.TICHU), mDetails.getDisplayedGameId());
 			i.putExtra(TichuGamesActivity.EXTRA_RESULT_WANT_REMATCH, rematch);
 			setResult(RESULT_OK, i);
 		} else {
@@ -105,20 +106,32 @@ public class TichuGameDetailActivity extends FragmentActivity implements CloseDe
 
 	@Override
 	public PlayerPool getPool() {
-		TichuGameDetailFragment frag = (TichuGameDetailFragment) getSupportFragmentManager().findFragmentById(R.id.game_detail_frame);
-		return frag.getPool();
+		return mDetails.getPool();
 	}
 
 	@Override
 	public List<Player> toFilter() {
-		TichuGameDetailFragment frag = (TichuGameDetailFragment) getSupportFragmentManager().findFragmentById(R.id.game_detail_frame);
-		return frag.toFilter();
+		return mDetails.toFilter();
 	}
 
 	@Override
 	public void playerChosen(Player chosen) {
-		TichuGameDetailFragment frag = (TichuGameDetailFragment) getSupportFragmentManager().findFragmentById(R.id.game_detail_frame);
-		frag.playerChosen(chosen);
+		mDetails.playerChosen(chosen);
+	}
+
+	@SuppressLint("NewApi") // if mBar is not null then this is over honeycomb
+	@Override
+	public void setInfo(CharSequence main, CharSequence extra) {
+		if (mBar != null) {
+			mBar.setTitle(main);
+			if (TextUtils.isEmpty(extra)) {
+				mBar.setSubtitle(null);
+			} else {
+				mBar.setSubtitle(extra);
+			}
+		} else {
+			mDetails.setInfoText(main, extra);
+		}
 	}
 
 }

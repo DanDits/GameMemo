@@ -10,8 +10,7 @@
         android:layout_height="wrap_content"
         android:cacheColorHint="#fff"
         android:choiceMode="singleChoice"
-        android:dividerHeight="2dp"
-        android:listSelector="@drawable/tichu_list_selector" >
+        android:dividerHeight="2dp" >
 
     </ListView>
 

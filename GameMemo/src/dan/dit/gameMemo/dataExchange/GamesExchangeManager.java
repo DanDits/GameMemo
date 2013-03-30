@@ -1,10 +1,12 @@
 package dan.dit.gameMemo.dataExchange;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
 import android.content.ContentResolver;
 import android.support.v4.app.FragmentManager;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.View.OnClickListener;
 import dan.dit.gameMemo.gameData.game.GameKey;
@@ -27,10 +29,12 @@ public class GamesExchangeManager {
 	private GamesExchangeView mExchangeView;
 	private List<GameDataExchanger> mDataExchangers;
 	private GamesOverviewDialog mGamesOverviewDialog;
-	
+	private SparseArray<Collection<Long>> mGameOffers;
 	public GamesExchangeManager(FragmentManager fragManager, int[] gamesSuggestions, int[] allGames) {
-		mDataExchangers = new LinkedList<GameDataExchanger>();
+		mDataExchangers = new LinkedList<GameDataExchanger>(); 
 		mAllGames = (allGames != null && allGames.length > 0) ? GameKey.toList(allGames) : GameKey.toList(GameKey.ALL_GAMES);
+		GameKey.sortByName(mAllGames);
+		mGameOffers = new SparseArray<Collection<Long>>(1);
 		setSelectedGames(gamesSuggestions);
 		initFragManager(fragManager);
 	}
@@ -91,6 +95,10 @@ public class GamesExchangeManager {
 	public View getView() {
 		return mExchangeView;
 	}
+	
+	public void setOffer(int gameKey, Collection<Long> offeredStarttimes) {
+		mGameOffers.put(gameKey, offeredStarttimes);
+	}
 
 	public void startExchange(ExchangeService mExchangeService, ContentResolver resolver) {
 	   	 mDataExchangers.clear();
@@ -99,6 +107,7 @@ public class GamesExchangeManager {
 		 }
 	     for (int gameKey : mSelectedGames) {
 	     	GameDataExchanger exchanger = new GameDataExchanger(resolver, mExchangeService, gameKey);
+	     	exchanger.setOffer(mGameOffers.get(gameKey)); // if null then offers all
 	     	mDataExchangers.add(exchanger);
 	     	exchanger.startExchange(EXCHANGE_START_DELAY);
 	     }

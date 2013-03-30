@@ -2,6 +2,7 @@ package dan.dit.gameMemo.appCore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -55,6 +56,7 @@ import dan.dit.gameMemo.util.ShowStacktraceUncaughtExceptionHandler;
  *
  */
 public class GameSetupActivity extends FragmentActivity implements ChoosePlayerDialogListener {
+	public static final String EXTRA_FLAG_SUGGEST_UNFINISHED_GAME = "dan.dit.gameMemo.SUGGEST_UNFINISHED"; // default false
 	public static final String EXTRA_TEAM_NAMES = "dan.dit.gameMemo.EXTRA_TEAM_NAMES"; // if not given default to 'Team x'
 	public static final String EXTRA_TEAM_MIN_PLAYERS = "dan.dit.gameMemo.EXTRA_TEAM_MIN_PLAYERS"; // negative values will be interpreted as 0
 	public static final String EXTRA_TEAM_MAX_PLAYERS = "dan.dit.gameMemo.EXTRA_TEAM_MAX_PLAYERS"; // if not given default 10, must be > 0 each
@@ -68,10 +70,11 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	private static final String STORAGE_OPTIONS_NUMBER_VALUES_DEFAULT = "STORAGE_OPTIONS_INT_VALUES_DEFAULT";
 	private static final String STORAGE_OPTIONS_BOOLEAN_VALUES_DEFAULT = "STORAGE_OPTIONS_BOOLEAN_VALUES_DEFAULT";
 	
-	private static final long SHUFFLE_PERIOD = 250; // in ms
-	protected static final long SHUFFLE_DURATION = 3000; // in ms
+	private static final long SHUFFLE_PERIOD = 200; // in ms
+	protected static final long SHUFFLE_DURATION = 2000; // in ms
 	private static final int DEFAULT_MAX_TEAM_SIZE = 10;
 	private int mGameKey;
+	private boolean mSuggestUnfinished;
 	private Player[] players;
 	private int[] mMinTeamSizes;
 	private int[] mMaxTeamSizes;
@@ -117,6 +120,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		mStartGame = (Button) findViewById(R.id.startGame);
 		mClear = (Button) findViewById(R.id.clear);
 		Player[] temp = null;
+		mSuggestUnfinished = getIntent().getExtras().getBoolean(EXTRA_FLAG_SUGGEST_UNFINISHED_GAME);
 		if (savedInstanceState == null) {
 			buildUIFromBundle(getIntent().getExtras());
 			temp = new Player[players.length];
@@ -147,7 +151,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 			@Override
 			public void onClick(View v) {
 				if (startGameButtonCondition()) {
-					startGame();
+					onGameStart();
 				} else {
 					applyButtonsState();
 				}
@@ -191,7 +195,13 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		return hasAllPlayers();
 	}
 	
-	private void startGame() {
+	private void onGameStart() {
+		if (!mSuggestUnfinished || !searchAndSuggestUnfinished()) {
+			startNewGame(); // either not suggesting or did not find an unfinished game, start new one
+		}
+	}
+	
+	private boolean searchAndSuggestUnfinished() {
 		List<Player> team = new ArrayList<Player>(players.length);
 		for (int i = 0; i < players.length; i++) {
 			team.add(players[i]);
@@ -213,9 +223,9 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
  					startNewGame();
   			    }})
   			  .show();
-		} else {
-			startNewGame();
+			return true;
 		}
+		return false;
 	}
 	
 	private void continueUnfinishedGame(long unfinishedGameId) {
@@ -278,27 +288,6 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	}
 	
 	private void performShuffle(long timeShuffledByNow) {
-		Random rnd = new Random();
-		List<Integer> transformation = new ArrayList<Integer>(players.length);
-		while (transformation.size() < players.length) {
-			int curr = rnd.nextInt(players.length);
-			if (!transformation.contains(Integer.valueOf(curr))) {
-				transformation.add(Integer.valueOf(curr));
-				if (transformation.size() == players.length) {
-					// check if the transformation is the identity, this is not desired, restart in this case
-					boolean isIdentity = true;
-					for (int i = 0; i < players.length; i++) {
-						if (transformation.get(i) != i) {
-							isIdentity = false;
-							break;
-						}
-					}
-					if (isIdentity) {
-						transformation.clear();
-					}
-				}
-			}
-		}
 		if (mShuffleProgress.getMax() != SHUFFLE_DURATION) {
 			mShuffleProgress.setMax((int) SHUFFLE_DURATION);
 		}
@@ -307,14 +296,24 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		} else {
 			mShuffleProgress.setProgress((int) SHUFFLE_DURATION);
 		}
+		List<Integer> permutation = getPermutation(players.length);
 		Player[] newPlayers = new Player[players.length];
 		for (int i = 0; i < players.length; i++) {
-			newPlayers[transformation.get(i)] = players[i];
+			newPlayers[permutation.get(i)] = players[i];
 			clearPlayer(i);
 		}
 		for (int i = 0; i < players.length; i++) {
 			setPlayer(i, newPlayers[i]);
 		}
+	}
+	
+	private List<Integer> getPermutation(int size) {
+		List<Integer> perm = new ArrayList<Integer>(size);
+		for (int i = 0; i < size; i++) {
+			perm.add(i);
+		}
+		Collections.shuffle(perm, new Random());
+		return perm;
 	}
 	
 	private int getPlayerCount() {
@@ -480,17 +479,17 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		initTitle();
 		initTeamsUI();
 		initOptionsUI(in);
-		applyBackgroundTheme(GameKey.getBackgroundResource(mGameKey));
+		applyBackgroundTheme();
 	}
 	
-	private void applyBackgroundTheme(int res) {
-		mShuffle.setBackgroundResource(res);
-		mStartGame.setBackgroundResource(res);
-		mClear.setBackgroundResource(res);
+	private void applyBackgroundTheme() {
+		int btnResId = GameKey.getButtonResource(mGameKey);
+		mShuffle.setBackgroundResource(btnResId);
+		mStartGame.setBackgroundResource(btnResId);
+		mClear.setBackgroundResource(btnResId);
 		for (Button p : mPlayerButtons) {
-			p.setBackgroundResource(res);
+			p.setBackgroundResource(btnResId);
 		}
-		
 	}
 	
 	private void initTitle() {

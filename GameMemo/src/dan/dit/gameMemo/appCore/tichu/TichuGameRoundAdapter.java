@@ -2,12 +2,9 @@ package dan.dit.gameMemo.appCore.tichu;
 
 import java.util.List;
 
-import android.R.color;
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +34,6 @@ public class TichuGameRoundAdapter extends ArrayAdapter<GameRound> {
 	private Context context;
 	private boolean showDelta;
 	private boolean showTichus;
-	private int markedRowIndex;
 	
 	public TichuGameRoundAdapter(TichuGame game, Context context, int layoutResourceId, List<GameRound> data,
 			boolean showDelta, boolean showTichus) {
@@ -47,7 +43,6 @@ public class TichuGameRoundAdapter extends ArrayAdapter<GameRound> {
 		this.context = context;
 		this.showDelta = showDelta;
 		this.showTichus = showTichus;
-		this.markedRowIndex = -1;
 		inflater = ((Activity)context).getLayoutInflater();
 	}
 	
@@ -73,18 +68,6 @@ public class TichuGameRoundAdapter extends ArrayAdapter<GameRound> {
 		}
 	}
 
-	/**
-	 * Sets the marked row to the given index, clearing the old marked row.
-	 * This row will get highlighted.
-	 * @param index The index of the row to highlight. If out of bounds, no round will
-	 * be highlighted
-	 */
-	public void setMarkedRow(int index) {
-		if (index != markedRowIndex) {
-			markedRowIndex = index;
-			notifyDataSetChanged();
-		}
-	}
 	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
@@ -93,23 +76,10 @@ public class TichuGameRoundAdapter extends ArrayAdapter<GameRound> {
 			// if round row layout not yet created, create with default round layout
 			row = inflater.inflate(layoutResourceId, parent, false);
 		}
-		visualizeRow(row, position);
 		visualizeTichus(row, position);
 		visualizeScores(row, position);
 		
 		return row;
-	}
-	
-	private void visualizeRow(View row, int position) {
-		if (position == markedRowIndex) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-				row.setBackgroundColor(context.getResources().getColor(color.holo_blue_dark));
-			} else {
-				row.setBackgroundColor(Color.BLUE);
-			}
-		} else {
-			row.setBackgroundColor(Color.TRANSPARENT);
-		}
 	}
 	
 	private void visualizeTichus(View row, int position) {

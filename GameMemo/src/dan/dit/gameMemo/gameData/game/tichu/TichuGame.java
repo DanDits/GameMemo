@@ -41,8 +41,8 @@ public class TichuGame extends Game {
 	
 	public static final String GAME_NAME = "Tichu";
 	public static final PlayerPool PLAYERS = new PlayerPool();
-	public static final int WINNER_TEAM1 = 1;
-	public static final int WINNER_TEAM2 = 2;
+	public static final int WINNER_TEAM1 = Game.WINNER_NONE + 1;
+	public static final int WINNER_TEAM2 = Game.WINNER_NONE + 2;
 	
 	/*
 	 * TichuGame meta data: [MERCY_RULE,SCORE_LIMIT]

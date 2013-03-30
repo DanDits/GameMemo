@@ -1,13 +1,14 @@
 package dan.dit.gameMemo.appCore.tichu;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
@@ -72,7 +73,7 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getListView().setSelector(R.drawable.tichu_list_selector);
+		getListView().setSelector(GameKey.getSelectorResource(GAMEKEY));
 		fillData();
 		registerForContextMenu(getListView());
 		restoreFromSave(savedInstanceState);
@@ -103,6 +104,7 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
  		if (adapter != null) {
  			if (gameId == Game.NO_ID) {
  				getListView().clearChoices();
+ 				getListView().requestLayout();
  			} else {
  				int pos = getPositionForId(gameId);
  				if (pos >= 0) {
@@ -210,23 +212,29 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
  		if (!Game.isValidId(gameId)) {
  			return;
  		}
- 		// better prompt user, to check if the game really should be deleted
-		new AlertDialog.Builder(getActivity())
-		.setTitle(getResources().getString(R.string.confirm_delete))
-		.setMessage(getResources().getString(R.string.confirm_delete_tichu_game))
-		.setIcon(android.R.drawable.ic_dialog_alert)
-		.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+    	if (mGameOverviewCallback.getSelectedGameId() == gameId) {
+    		mGameOverviewCallback.selectGame(Game.NO_ID);
+    	}
+    	Set<Long> checked = adapter.getChecked();
+    	if (checked.contains(Long.valueOf(gameId))) {
+    		// ask to delete all checked, tell this the adapter so we have no zombies
+        	Game.deleteConfirmed(getActivity(), checked, GAMEKEY, adapter);
+    	} else {
+    		// clicked a game that was not checked, only delete this one
+    		List<Long> id = Collections.singletonList(Long.valueOf(gameId));
+    		Game.deleteConfirmed(getActivity(), id, GAMEKEY, adapter); 
+    	}    		
 
-		    public void onClick(DialogInterface dialog, int whichButton) {
-		    	if (mGameOverviewCallback.getSelectedGameId() == gameId) {
-		    		mGameOverviewCallback.selectGame(Game.NO_ID);
-		    	}
-	 			Uri uri = GameStorageHelper.getUri(GAMEKEY, gameId);
-	 			getActivity().getContentResolver().delete(uri, null, null);
-		    }})
-		 .setNegativeButton(android.R.string.no, null).show();
  	}
  	
+ 	public Collection<Long> getCheckedIds() {
+ 		return adapter.getChecked();
+ 	}
+	
+	public Collection<Long> getCheckedGamesStarttimes() {
+		return adapter.getCheckedStarttimes();
+	}
+	
 	@Override
 		public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 			String[] projection = { GameStorageHelper.COLUMN_ID, GameStorageHelper.COLUMN_PLAYERS, GameStorageHelper.COLUMN_STARTTIME,

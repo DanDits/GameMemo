@@ -55,7 +55,7 @@ import dan.dit.gameMemo.util.compression.Compressor;
  * Takes a long game id extra (preferred) or a parcelable Uri extra {@link Uri} to the TichuGame to load
  * referenced by the key GameStorageHelper.getCursorItemType(gameKey) as an argument.<br>
  * To start with a new game, do not give a id or uri extra but instead 4 valid player names {@link Player} String extras, 2 for each team.<br>
- * <b>Requires the hosting activity to implement the {@link CloseDetailViewRequestListener} interface to listen to
+ * <b>Requires the hosting activity to implement the {@link DetailViewCallback} interface to listen to
  * requests of the user to close this detail fragment.</b>
  * @author Daniel
  *
@@ -144,15 +144,16 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	private TextWatcher mScoreTeam2Watcher;
 	private ImageButton mLockIn;
 	private TichuGameRoundAdapter mAdapter;
-	private CloseDetailViewRequestListener mCloseRequestListener;
+	private DetailViewCallback mCallback;
 	
 	/**
-	 * A listener interface that is required
+	 * A callback interface that is required for the hosting activity.
 	 * @author Daniel
 	 *
 	 */
-	public interface CloseDetailViewRequestListener {
+	public interface DetailViewCallback {
 		void closeDetailView(boolean error, boolean rematch);
+		void setInfo(CharSequence main, CharSequence extra);
 	}
 	
 	// member vars concerning building up a new game round, visualizing and editing rounds
@@ -186,7 +187,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		mCloseRequestListener = (CloseDetailViewRequestListener) activity; // throws if given activity does not listen to close requests
+		mCallback = (DetailViewCallback) activity; // throws if given activity does not listen to close requests
 		if (!(activity instanceof ChoosePlayerDialogListener)) {
 			throw new ClassCastException("Hosting activity must implement ChoosePlayerDialogListener interface.");
 		}
@@ -211,7 +212,6 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		super.onActivityCreated(savedInstanceState); 
 		getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 		getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-		this.getListView().setDividerHeight(2);
 		mFinisher = new ArrayList<Integer>(TichuGame.TOTAL_PLAYERS);
 		mBids = new TichuBidType[TichuGame.TOTAL_PLAYERS];
 		mPlayer = new Button[TichuGame.TOTAL_PLAYERS];
@@ -234,6 +234,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		registerForContextMenu(getListView());
 		initListeners();
 		handleRestorageOfUnsavedUserInput(savedInstanceState);
+		GameKey.applySleepBehavior(GameKey.TICHU, getActivity());
 	}
 	
 	private void synchPlayerNames() {
@@ -301,7 +302,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 					useMercyRule, scoreLimit);
 		} else {
 			Log.d("Tichu", "Failed loading or creating game for id " + gameId);
-			mCloseRequestListener.closeDetailView(true, false);
+			mCallback.closeDetailView(true, false);
 			return;
 		}
 	}
@@ -494,26 +495,26 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	}
 	
 	private boolean getPreferencesShowDelta() {
-		SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences sharedPref = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE);
 		return sharedPref.getBoolean(PREFERENCES_SHOW_DELTA, TichuGameRoundAdapter.PREFERENCE_SHOW_DELTA_DEFAULT);
 	}
 	
 	private void setPreferencesShowDelta(boolean show) {
 		mAdapter.setShowDelta(show);
-		SharedPreferences.Editor editor = getActivity().getPreferences(Context.MODE_PRIVATE).edit();
+		SharedPreferences.Editor editor = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE).edit();
 		editor.putBoolean(PREFERENCES_SHOW_DELTA, show);
 		editor.commit();
 	}
 	
 	private void setPreferencesShowTichus(boolean show) {
 		mAdapter.setShowTichus(show);
-		SharedPreferences.Editor editor = getActivity().getPreferences(Context.MODE_PRIVATE).edit();
+		SharedPreferences.Editor editor = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE).edit();
 		editor.putBoolean(PREFERENCES_SHOW_TICHUS, show);
 		editor.commit();
 	}
 	
 	private boolean getPreferencesShowTichus() {
-		SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences sharedPref = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE);
 		return sharedPref.getBoolean(PREFERENCES_SHOW_TICHUS, TichuGameRoundAdapter.PREFERENCE_SHOW_TICHUS_DEFAULT);
 	}
 	
@@ -559,7 +560,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			mStateMachine.updateUI();
 		} else {
 			Toast.makeText(getActivity(), getResources().getString(R.string.game_failed_loading), Toast.LENGTH_LONG).show();
-			mCloseRequestListener.closeDetailView(true, false); // nothing to show here
+			mCallback.closeDetailView(true, false); // nothing to show here
 		}
 	}
 
@@ -588,7 +589,8 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			// this must also work when round is already deselected as it could get called more than once
 			mCurrRound = null;
 			mCurrRoundIndex = -1;
-			mAdapter.setMarkedRow(mCurrRoundIndex);
+			getListView().clearChoices();
+			getListView().requestLayout();
 			makeUserInputAvailable(!mGame.isFinished());
 			setScoreSilent(true, "");
 			setScoreSilent(false, "");
@@ -602,7 +604,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			// existing round (that can be edited)
 			makeUserInputAvailable(true);
 			mCurrRoundIndex = index;
-			mAdapter.setMarkedRow(mCurrRoundIndex);
+			getListView().setItemChecked(mCurrRoundIndex, true);
 			mCurrRound = (TichuRound) mGame.getRound(index);
 			// scores
 			setScoreSilent(true, String.valueOf(mCurrRound.getRawScoreTeam1()));
@@ -738,7 +740,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		if (getDisplayedGameId() == Game.NO_ID) {
 			saveState();
 		}
-		mCloseRequestListener.closeDetailView(false, true);
+		mCallback.closeDetailView(false, true);
 	}
 	
 	private void onRoundDataChange() {
@@ -839,14 +841,10 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 				roundScore.append(':');
 				roundScore.append(mCurrRound.getScoreTeam2(mGame.usesMercyRule()));
 			}
-			StringBuilder gameScore = new StringBuilder(20);
-			gameScore.append(' ');
-			gameScore.append(mGame.getScoreTeam1());
-			gameScore.append(':');
-			gameScore.append(mGame.getScoreTeam2());
+
 			switch(mState) {
 			case STATE_REMATCH:
-				return getResources().getString(R.string.tichu_game_state_rematch) + gameScore.toString();
+				return getResources().getString(R.string.tichu_game_state_rematch);
 			case STATE_EXPECT_DATA:
 				return getResources().getString(R.string.tichu_game_state_expect_data);
 			case STATE_ADD_ROUND:
@@ -892,28 +890,25 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			}
 		}
 		
-		private CharSequence getInfoText() {
-			StringBuilder builder = new StringBuilder();
-			if (mGame.isFinished()) {
-				List<Player> winners = mGame.getWinner().getPlayers();
-				builder.append(' ');
-				builder.append(getResources().getString(R.string.game_winner));
-				builder.append(": ");
-				builder.append(winners.get(0));
-				builder.append('+');
-				builder.append(winners.get(1));
-			} else {
-				builder.append(' ');
-				builder.append(mGame.getScoreTeam1());
-				builder.append(':');
-				builder.append(mGame.getScoreTeam2());
-			}			
+		private CharSequence getMainInfoText() {
+			StringBuilder builder = new StringBuilder(20);
+			builder.append(GameKey.getGameName(GameKey.TICHU));
+			builder.append(' ');
+			builder.append(mGame.getScoreTeam1());
+			builder.append(':');
+			builder.append(mGame.getScoreTeam2());
+			return builder.toString();
+		}
+		
+		private CharSequence getExtraInfoText() {
+			StringBuilder builder = new StringBuilder();		
 			if (mGame.usesMercyRule()) {
-				builder.append(' ');
 				builder.append(getResources().getString(R.string.tichu_game_mery_rule_short));
 			}
 			if (mGame.getScoreLimit() != TichuGame.DEFAULT_SCORE_LIMIT) {
-				builder.append(' ');
+				if (builder.length() > 0) {
+					builder.append(", ");
+				}
 				builder.append(getResources().getString(R.string.tichu_game_score_limit_short));
 				builder.append(' ');
 				builder.append(mGame.getScoreLimit());
@@ -924,10 +919,17 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		private void updateUI() {
 			determineState();
 			mStatusText.setText(getStateText());
-			mInfoText.setText(getInfoText());
+			mCallback.setInfo(getMainInfoText(), getExtraInfoText());
 			mLockIn.setEnabled(lockinButtonEnabled());
 			mLockIn.setImageResource(getLockInButtonDrawableId());
 		}
+	}
+	
+	public void setInfoText(CharSequence main, CharSequence extra) {
+		if (mInfoText.getVisibility() != View.VISIBLE) {
+			mInfoText.setVisibility(View.VISIBLE);
+		}
+		mInfoText.setText(main + " " + extra);
 	}
 	
 	@Override
@@ -998,6 +1000,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		super.onDestroy();
 		getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 		getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+		getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
 	public long getDisplayedGameId() {

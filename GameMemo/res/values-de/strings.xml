@@ -76,9 +76,13 @@
 	<string name ="share_storage_unavailable">Externer Speicher nicht verfügbar</string>
 	<string name="open_data_exchanger">Teilen</string>
 	<string name="open_data_exchanger_bluetooth">Sync über Bluetooth</string>
-	<string name="confirm_delete">Löschen bestätigen</string>
-	<string name="confirm_delete_tichu_game">Dieses Spiel wirklich löschen?</string>
-	<string name="data_exchange_games_received_sent">Empfangen %1$d / Gesendet %2$d</string>
+	<string name="confirm_delete">Löschen bestätigen</string>	
+	<plurals name="confirm_delete_games">
+        <item quantity="one">Dieses Spiel löschen?</item>
+        <item quantity="other">Diese %1$d Spiele löschen?</item>
+    </plurals>
+	<string name="data_exchange_games_received">Empfangen %1$d</string>
+	<string name="data_exchange_games_sent">Gesendet %1$d</string>
 	<string name="bluetooth_devices_state_bonded">Gekoppelt</string>
     <string name ="GamesDBAccessPermissionDescription">Zugriff auf die Spiele Datenbank</string>
 	<string name="bluetooth_confirm_turn_off_title">Bluetooth ausschalten?</string>
@@ -143,6 +147,8 @@
 	<string name="games_selection_title">Spiele zum Tauschen</string>
 	<string name="share">Teilen</string>
 	<string name="share_subject">GameMemo Spielstände</string>
+	<string name="share_text">Spielstände für die App GameMemo. Speicher die Datei und importiere gewünschte Spiele durch einen Klick.</string>
 	<string name="share_accept">Akzeptieren</string>
 	<string name="share_accept_and_close">Akzeptieren und schließen</string>
+	<string name="share_no_data">Nichts zum Teilen</string>
 </resources>

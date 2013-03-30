@@ -3,8 +3,12 @@ package dan.dit.gameMemo.appCore.tichu;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -13,10 +17,15 @@ import android.os.Build;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
+import dan.dit.gameMemo.gameData.game.Game.GamesDeletionListener;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.storage.GameStorageHelper;
@@ -29,19 +38,21 @@ import dan.dit.gameMemo.util.compression.Compressor;
  * @author Daniel
  *
  */
-public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
+public class TichuGameOverviewAdapter extends SimpleCursorAdapter implements GamesDeletionListener {
 	private static final DateFormat TIME_FORMAT = SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT);
 	private static final DateFormat DATE_FORMAT = SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM);
 	private static final Calendar CALENDAR_CHECKER1 = Calendar.getInstance();
 	private static final Calendar CALENDAR_CHECKER2 = Calendar.getInstance();
     private int layout;
     private Context context;
+    private Map<Long, Long> checked; // mapping id to starttime
 
     @SuppressWarnings("deprecation") // needed for support library (cursor loader)
 	public TichuGameOverviewAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
     	super(context, layout, c, from, to);
     	this.context = context;
     	this.layout = layout;
+    	checked = new HashMap<Long, Long>();
     }
     
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -49,6 +60,7 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
         super(context, layout, c, from, to, flag);
         this.layout = layout;
         this.context = context;
+    	checked = new HashMap<Long, Long>();
     }
 
     @Override
@@ -59,14 +71,85 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
         final LayoutInflater inflater = LayoutInflater.from(context);
         View v = inflater.inflate(layout, parent, false);
         ViewHolder holder = new ViewHolder();
-        holder.team1 = (TextView) v.findViewById(R.id.tichu_overview_team1);
-        holder.team2 = (TextView) v.findViewById(R.id.tichu_overview_team2);
+        holder.team1_1 = (TextView) v.findViewById(R.id.tichu_overview_team1_1);
+        holder.team1_2 = (TextView) v.findViewById(R.id.tichu_overview_team1_2);
+        holder.team2_1 = (TextView) v.findViewById(R.id.tichu_overview_team2_1);
+        holder.team2_2 = (TextView) v.findViewById(R.id.tichu_overview_team2_2);
+        holder.team1 = (ImageView) v.findViewById(R.id.tichu_overview_team1);
+        holder.team2 = (ImageView) v.findViewById(R.id.tichu_overview_team2);
         holder.time = (TextView) v.findViewById(R.id.time);
         holder.date = (TextView) v.findViewById(R.id.date);
+        holder.checker = (CheckBox) v.findViewById(R.id.selected_checker);
+        holder.checker.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				CheckBox box = (CheckBox) v;
+				Integer pos = (Integer) box.getTag();
+				Cursor cursor = getCursor();
+				int oldPos = cursor.getPosition();
+				cursor.moveToPosition(pos);
+				Long id = cursor.getLong(cursor.getColumnIndex(GameStorageHelper.COLUMN_ID));
+				if (checked.containsKey(id)) {
+					checked.remove(id);
+					box.setChecked(false);
+				} else {
+					Long starttime = cursor.getLong(cursor.getColumnIndex(GameStorageHelper.COLUMN_STARTTIME));
+					checked.put(id, starttime);
+					box.setChecked(true);
+				}
+				cursor.moveToPosition(oldPos);
+			}
+		});
+        holder.checker.setOnLongClickListener(new OnLongClickListener() {
+			
+ 			@Override
+ 			public boolean onLongClick(View v) {
+ 				CheckBox box = (CheckBox) v;
+ 				Integer pos = (Integer) box.getTag();
+				Cursor cursor = getCursor();
+				int oldPos = cursor.getPosition();
+				cursor.moveToPosition(pos);
+				Long id = cursor.getLong(cursor.getColumnIndex(GameStorageHelper.COLUMN_ID));
+ 				if (checked.containsKey(id)) {
+ 					clearChecked();
+ 				} else {
+ 					checkAll();
+ 				}
+ 				cursor.moveToPosition(oldPos);
+ 				return true;
+ 			}
+ 		});
         v.setTag(holder);
         updateViewInfo(v, c);
 
         return v;
+    }
+    
+    public void checkAll() {
+    	Cursor data = getCursor();
+    	int pos = data.getPosition();
+    	data.moveToFirst();
+    	while (!data.isAfterLast()) {
+    		checked.put(data.getLong(data.getColumnIndex(GameStorageHelper.COLUMN_ID)), 
+    				data.getLong(data.getColumnIndex(GameStorageHelper.COLUMN_STARTTIME)));
+    		data.moveToNext();
+    	}
+    	data.moveToPosition(pos);
+		notifyDataSetChanged();
+    }
+    
+    public Set<Long> getChecked() {
+    	return checked.keySet();
+    }
+
+	public Collection<Long> getCheckedStarttimes() {
+		return checked.values();
+	}
+	
+    public void clearChecked() {
+    	checked.clear();
+    	notifyDataSetChanged();
     }
     
     @Override
@@ -102,6 +185,11 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
         boolean hasWinner = winner != Game.WINNER_NONE;
         boolean team1Wins = winner == TichuGame.WINNER_TEAM1;
         ViewHolder holder = (ViewHolder) tichuRow.getTag();
+        
+        // checked state
+        holder.checker.setChecked(checked.containsKey(id));
+        holder.checker.setTag(c.getPosition());
+        
         // show the start time
         holder.time.setText(TIME_FORMAT.format(startDate));
 
@@ -118,11 +206,11 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
         	applyDate(holder.date, startDate);
         }
         
-        // show players of the first team
-        holder.team1.setText(new StringBuilder(20).append(playerOne).append('\n').append(playerTwo).toString());
-
-        // show players of the second team
-        holder.team2.setText(new StringBuilder(20).append(playerThree).append('\n').append(playerFour).toString());
+        // show players names
+        holder.team1_1.setText(playerOne);
+        holder.team1_2.setText(playerTwo);
+        holder.team2_1.setText(playerThree);
+        holder.team2_2.setText(playerFour);
         
         // show images giving an indication of the game, like the score leader or winner
         int team1Image = 0;
@@ -151,8 +239,8 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
         		}
         	}
         }
-        holder.team1.setCompoundDrawablesWithIntrinsicBounds(team1Image, 0, 0, 0);
-        holder.team2.setCompoundDrawablesWithIntrinsicBounds(0, 0, team2Image, 0);        
+        holder.team1.setImageResource(team1Image);
+        holder.team2.setImageResource(team2Image);     
     }
     
     private void applyDate(TextView date, Date startDate) {
@@ -178,9 +266,25 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter {
     }
 	
 	private static class ViewHolder {
-		 TextView team1;
-		 TextView team2;
+		 TextView team1_1;
+		 TextView team1_2;
+		 TextView team2_1;
+		 TextView team2_2;
+		 ImageView team1;
+		 ImageView team2;
 		 TextView date;
 		 TextView time;
+		 CheckBox checker;
+	}
+
+	@Override
+	public void deletedGames(Collection<Long> deletedIds) {
+		boolean oneWasChecked = false;
+		for (long id : deletedIds) {
+			oneWasChecked |= checked.remove(Long.valueOf(id)) != null;
+		}
+		if (oneWasChecked) {
+			notifyDataSetChanged();
+		}
 	}
 }

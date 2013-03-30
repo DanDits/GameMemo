@@ -1,10 +1,18 @@
 package dan.dit.gameMemo.gameData.game;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.view.WindowManager;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGameBuilder;
@@ -24,6 +32,9 @@ import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
  */
 public final class GameKey {
 	public static final String EXTRA_GAMEKEY = "dan.dit.gameMemo.EXTRA_GAMEKEY";
+	
+	public static int NO_GAME = 0; // game that is not supported to mark an invalid gamekey
+	
 	/**
 	 * The constant for the {@link TichuGame} class.
 	 */
@@ -41,6 +52,45 @@ public final class GameKey {
 			list.add(data);
 		}
 		return list;
+	}
+	
+	public static List<Long> toList(long[] array) {
+		if (array == null) {
+			return null;
+		}
+		ArrayList<Long> list = new ArrayList<Long>(array.length);
+		for (long data : array) {
+			list.add(data);
+		}
+		return list;
+	}
+	
+	public static long[] toArray(Collection<Long> data) {
+		if (data == null) {
+			return null;
+		}
+		long[] array = new long[data.size()];
+		int index = 0;
+		for (long m : data) {
+			array[index++] = m;
+		}
+		return array;
+	}
+	
+	public static int[] calculateUsedGames(ContentResolver resolver) {
+		// all games were something is stored for
+		LinkedList<Integer> used = new LinkedList<Integer>();
+		for (int key : ALL_GAMES) {
+			if (GameStorageHelper.getStoredGamesCount(resolver, key) > 0) {
+				used.add(key);
+			}
+		}
+		int[] data = new int[used.size()];
+		int index = 0;
+		for (int key : used) {
+			data[index++] = key;
+		}
+		return data;
 	}
 	
 	public static GameStatisticBuilder getStatisticBuilder(int gameKey, List<Player> players) {
@@ -62,6 +112,15 @@ public final class GameKey {
 	}
 	
 	public static CharSequence getGameName(int gameKey) {
+		switch(gameKey) {
+		case GameKey.TICHU:
+			return TichuGame.GAME_NAME;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);	
+		}
+	}
+	
+	public static String getGameNameString(int gameKey) {
 		switch(gameKey) {
 		case GameKey.TICHU:
 			return TichuGame.GAME_NAME;
@@ -113,6 +172,35 @@ public final class GameKey {
 		}
 	}
 	
+
+	private static final String PREFERENCES_STAY_AWAKE = "dan.dit.gameMemo.STAY_AWAKE_";
+	
+	public static void applySleepBehavior(int gameKey, Activity act) {
+		if (getStayAwake(gameKey, act)) {
+			act.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		} else {
+			act.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		}
+	}
+	
+	public static void setStayAwake(int gameKey, Activity act, boolean stayAwake) {
+		SharedPreferences.Editor editor = act.getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE).edit();
+		editor.putBoolean(PREFERENCES_STAY_AWAKE + gameKey, stayAwake);
+		editor.commit();
+		applySleepBehavior(gameKey, act);
+	}
+	
+	public static boolean getStayAwake(int gameKey, Activity act) {
+		SharedPreferences sharedPref = act.getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE);
+		boolean defaultIsAwake = false;
+		switch (gameKey) {
+		case TICHU:
+			defaultIsAwake = true;
+			break;
+		}
+		return sharedPref.getBoolean(PREFERENCES_STAY_AWAKE + gameKey, defaultIsAwake);
+	}
+	
 	public static final boolean isGameSupported(int gameKey) {
 		return gameKey == GameKey.TICHU; // add all supported game keys for the static methods that take a gamekey argument and do not throw on usage
 	}
@@ -120,9 +208,38 @@ public final class GameKey {
 	public static int getBackgroundResource(int gameKey) {
 		switch (gameKey) {
 		case GameKey.TICHU:
+			return R.drawable.tichu_color;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+		}
+	}
+	
+	public static int getButtonResource(int gameKey) {
+		switch (gameKey) {
+		case GameKey.TICHU:
 			return R.drawable.tichu_button;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
+	}
+	
+	public static int getSelectorResource(int gameKey) {
+		switch (gameKey) {
+		case GameKey.TICHU:
+			return R.drawable.tichu_list_selector;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+		}
+	}
+
+	public static void sortByName(List<Integer> mAllGames) {
+		Collections.sort(mAllGames, new Comparator<Integer>() {
+
+			@Override
+			public int compare(Integer key1, Integer key2) {
+				return getGameNameString(key1).compareTo(getGameNameString(key2));
+			}
+			
+		});
 	}
 }
