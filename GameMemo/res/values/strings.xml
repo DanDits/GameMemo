@@ -142,4 +142,5 @@
 	<string name="share_accept">Accept</string>
 	<string name="share_accept_and_close">Accept and close</string>
 	<string name="share_no_data">Nothing to share</string>
+	<string name="team_default_name">Players</string>
 </resources>

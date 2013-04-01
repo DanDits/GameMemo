@@ -197,7 +197,6 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 		values.put(GameStorageHelper.COLUMN_METADATA, metaData);
 		values.put(GameStorageHelper.COLUMN_RUNTIME, runningTime);
 		values.put(GameStorageHelper.COLUMN_ORIGIN, originData);
-
 		if (!isValidId(mId)) {
 			// New game 
 			mId = GameStorageHelper.getIdFromUri(resolver.insert( 

@@ -57,8 +57,9 @@ public class TichuGameDetailActivity extends FragmentActivity implements DetailV
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             mDetails = TichuGameDetailFragment.newInstance(getIntent().getExtras());
             ft.replace(R.id.game_detail_frame, mDetails);
-            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
             ft.commit();
+	
 		}
 	}
 	

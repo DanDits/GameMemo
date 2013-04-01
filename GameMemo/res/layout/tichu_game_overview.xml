@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/RelativeLayout1"
+<dan.dit.gameMemo.util.RelativeLayoutCheckable xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/RelativeLayoutCheckable1"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal" 
-    android:background="@drawable/tichu_list_selector">
+    android:background="@drawable/tichu_list_selector"
+    android:orientation="horizontal" >
 
     <LinearLayout
         android:id="@+id/tichu_overview_header"
@@ -35,9 +35,8 @@
             android:layout_weight="1"
             android:focusable="false"
             android:focusableInTouchMode="false" />
-
     </LinearLayout>
-    
+
     <ImageView
         android:id="@+id/image_vs"
         android:layout_width="wrap_content"
@@ -47,7 +46,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="15dp"
         android:src="@drawable/vs" />
-    
+
     <TextView
         android:id="@+id/tichu_overview_team1_1"
         android:layout_width="wrap_content"
@@ -64,8 +63,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/tichu_overview_header"
-        android:layout_toRightOf="@id/image_vs"
         android:layout_toLeftOf="@+id/tichu_overview_team2"
+        android:layout_toRightOf="@id/image_vs"
         android:gravity="right"
         android:maxLines="1"
         android:textAppearance="?android:attr/textAppearanceLarge" />
@@ -81,15 +80,15 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textAppearance="?android:attr/textAppearanceLarge" />
-    
+
     <TextView
         android:id="@+id/tichu_overview_team2_2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="false"
         android:layout_alignLeft="@+id/tichu_overview_team2_1"
-        android:layout_below="@+id/tichu_overview_team2_1"
+        android:layout_alignParentRight="false"
         android:layout_alignRight="@+id/tichu_overview_team2_1"
+        android:layout_below="@+id/tichu_overview_team2_1"
         android:ellipsize="end"
         android:gravity="right"
         android:maxLines="1"
@@ -101,7 +100,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/tichu_overview_header" />
-    
+
     <ImageView
         android:id="@+id/tichu_overview_team2"
         android:layout_width="wrap_content"
@@ -109,4 +108,4 @@
         android:layout_alignParentRight="true"
         android:layout_below="@+id/tichu_overview_header" />
 
-</RelativeLayout>
+</dan.dit.gameMemo.util.RelativeLayoutCheckable>

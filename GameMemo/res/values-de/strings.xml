@@ -151,4 +151,5 @@
 	<string name="share_accept">Akzeptieren</string>
 	<string name="share_accept_and_close">Akzeptieren und schließen</string>
 	<string name="share_no_data">Nichts zum Teilen</string>
+	<string name="team_default_name">Spieler</string>
 </resources>

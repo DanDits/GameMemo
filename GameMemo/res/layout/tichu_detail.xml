@@ -68,47 +68,10 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/LinearLayout4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/LinearLayout2" >
-
-            <ImageView
-                android:id="@+id/tichu_game_player1_pos"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <ImageView
-                android:id="@+id/tichu_game_player2_pos"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <View
-                android:layout_width="@dimen/tichu_detail_separator_line_width"
-                android:layout_height="match_parent"
-                android:background="@android:color/black" />
-
-            <ImageView
-                android:id="@+id/tichu_game_player3_pos"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <ImageView
-                android:id="@+id/tichu_game_player4_pos"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/LinearLayout3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/LinearLayout4">
+            android:layout_below="@id/LinearLayout2">
 
             <Button
                 android:id="@+id/tichu_game_player1"

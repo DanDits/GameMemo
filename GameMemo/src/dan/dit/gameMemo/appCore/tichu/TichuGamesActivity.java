@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -48,7 +49,7 @@ import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
  */
 public class TichuGamesActivity extends FragmentActivity implements DetailViewCallback, GameOverviewCallback, RenamePlayerCallback, ChoosePlayerDialogListener  {
 	public static final String EXTRA_RESULT_WANT_REMATCH = "dan.dit.gameMemo.WANT_REMATCH";
-	private static final int PLAYER_SELECTION_ACTIVITY = 1; // when user wants to start a new game and wants to continue an existing one or selected players
+	private static final int GAME_SETUP_ACTIVITY = 1; // when user wants to start a new game and wants to continue an existing one or selected players
 	private static final int[] TICHU_GAME_MIN_PLAYERS = new int[] {2, 2};
 	private static final int[] TICHU_GAME_MAX_PLAYERS = new int[] {2, 2};
 	private static final boolean[] TICHU_OPTIONS_BOOLEAN = new boolean[] {false}; // {MERCY_RULE}
@@ -80,16 +81,27 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 			Player.loadPlayers(GameKey.TICHU, TichuGame.PLAYERS, getContentResolver());
 			loadGameDetails(getIntent().getExtras());
 		}
-		restoreFromSave(savedInstanceState);
 	}
 	
 	@Override
-	public void onRestart() {
-		super.onRestart();
+	public void onStart() {
+		super.onStart();
 		checkIfHandlesDetailsFragment();
+		if (mDetailsFragment == null) {
+			// in case reference was lost 
+			mDetailsFragment = (TichuGameDetailFragment) getSupportFragmentManager().findFragmentById(R.id.game_detail_frame);
+		}
 		if (mHandlesDetailFragment) {
 			if (mDetailsFragment != null && mDetailsFragment.getDisplayedGameId() != mOverviewFragment.getHighlightedGameId()) {
 				setHighlightedGame(mDetailsFragment.getDisplayedGameId());
+			}
+		} else {
+			if (mDetailsFragment != null) {
+				// we still have a fragment we do not care about, close it
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.remove(mDetailsFragment);
+                ft.commit();
+    			mDetailsFragment = null;
 			}
 		}
 	}
@@ -97,15 +109,6 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 	private void checkIfHandlesDetailsFragment() {
 		View detailsFrame = findViewById(R.id.game_detail_frame);
 		mHandlesDetailFragment =  detailsFrame != null && detailsFrame.getVisibility() == View.VISIBLE;
-	}
-	
-	private void restoreFromSave(Bundle savedInstanceState) {
-		if (savedInstanceState == null) {
-			return; // this is no save restorage but activity got created for the first time
-		}
-		if (mHandlesDetailFragment) {
-			mDetailsFragment = (TichuGameDetailFragment) getSupportFragmentManager().findFragmentById(R.id.game_detail_frame);
-		} // else it does not keep any data that is to be restored
 	}
 
 	@Override
@@ -185,18 +188,18 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 				i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_VALUES, new boolean[] {game.usesMercyRule()});
 			}
 		}
-		startActivityForResult(i, PLAYER_SELECTION_ACTIVITY);
+		startActivityForResult(i, GAME_SETUP_ACTIVITY);
 	}
 	
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		final Bundle extras = data == null ? null : data.getExtras();
 		switch (requestCode) {
-		case PLAYER_SELECTION_ACTIVITY:
+		case GAME_SETUP_ACTIVITY:
 			if (resultCode == RESULT_OK && extras != null) {
 				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
-						reactToPlayerSelectionActivity(extras);
+						reactToGameSetupActivity(extras);
 					}
 				});
 			}
@@ -218,7 +221,7 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 		}
 	}
 	
-	private void reactToPlayerSelectionActivity(Bundle extras) {
+	private void reactToGameSetupActivity(Bundle extras) {
 		if (extras != null) {
 			if (extras.containsKey(GameStorageHelper.getCursorItemType(GameKey.TICHU))) {
 				selectGame(extras.getLong(GameStorageHelper.getCursorItemType(GameKey.TICHU)));
@@ -328,14 +331,16 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 if (Game.isValidId(gameId)) {              
                 	// Make new fragment to show this selection.
-                	mDetailsFragment = TichuGameDetailFragment.newInstance(gameId);
                 	if (mDetailsFragment == null) {
                         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 	} else {
                 		ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
                 	}
+                	Log.d("Tichu", "Detail fragment is " + mDetailsFragment + " replaced by game id " + gameId);
+                	mDetailsFragment = TichuGameDetailFragment.newInstance(gameId);
                     ft.replace(R.id.game_detail_frame, mDetailsFragment);
                 } else if (mDetailsFragment != null) {
+                	Log.d("Tichu", "Removing detail fragment");
                     ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
                 	ft.remove(mDetailsFragment);
                 	mDetailsFragment = null;
@@ -349,7 +354,6 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 			startActivityForResult(i, GAME_DETAIL_ACTIVITY);			
 		}
 	}
-	
 
 	@Override
 	public long getSelectedGameId() {
@@ -379,11 +383,10 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 	}
 	
 	private void setHighlightedGame(long highlightedGameIdHint) {
-		TichuGamesOverviewListFragment frag = (TichuGamesOverviewListFragment) getSupportFragmentManager().findFragmentById(R.id.game_list);
 		long selectedId = (highlightedGameIdHint != Game.NO_ID || mDetailsFragment == null) ? 
 				highlightedGameIdHint : 
 				mDetailsFragment.getDisplayedGameId();
-		frag.setHighlightedGameId(selectedId);
+		mOverviewFragment.setHighlightedGameId(selectedId);
 	}
 	
 	private long getHighlightedGame() {
