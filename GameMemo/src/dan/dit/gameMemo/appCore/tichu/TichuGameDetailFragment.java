@@ -32,6 +32,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -129,12 +130,13 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	private static final String STORAGE_FINISHERS_LIST = "STORAGE_FINISHERS_LIST";
 	private static final String STORAGE_BIDS_LIST = "STORAGE_BIDS_LIST";
 
-	private static final int[] PLAYER_FINISHER_POS_DRAWABLE_ID = new int[] {R.drawable.tichu_player_button_first, 
-		R.drawable.tichu_player_button_second,R.drawable.tichu_player_button_third, R.drawable.tichu_player_button_fourth};
+	private static final int[] PLAYER_FINISHER_POS_DRAWABLE_ID = new int[] {R.drawable.game_first, 
+		R.drawable.game_second,R.drawable.game_third, 0};
 
 	
 	// references the UI elements or listeners 
 	private Button mPlayer[];
+	private ImageView mPlayerPos[];
 	private ImageButton[] mPlayerTichu;
 	private TextView mInfoText;
 	private TextView mStatusText;
@@ -219,6 +221,11 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		mPlayer[1] = (Button) getView().findViewById(R.id.tichu_game_player2);
 		mPlayer[2] = (Button) getView().findViewById(R.id.tichu_game_player3);
 		mPlayer[3] = (Button) getView().findViewById(R.id.tichu_game_player4);
+		mPlayerPos = new ImageView[TichuGame.TOTAL_PLAYERS];
+		mPlayerPos[0] = (ImageView) getView().findViewById(R.id.tichu_game_player1_pos);
+		mPlayerPos[1] = (ImageView) getView().findViewById(R.id.tichu_game_player2_pos);
+		mPlayerPos[2] = (ImageView) getView().findViewById(R.id.tichu_game_player3_pos);
+		mPlayerPos[3] = (ImageView) getView().findViewById(R.id.tichu_game_player4_pos);
 		mPlayerTichu = new ImageButton[TichuGame.TOTAL_PLAYERS];
 		mPlayerTichu[0] = (ImageButton) getView().findViewById(R.id.tichu1);
 		mPlayerTichu[1] = (ImageButton) getView().findViewById(R.id.tichu2);
@@ -709,11 +716,11 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		assert playerId >= TichuGame.PLAYER_ONE_ID && playerId < TichuGame.PLAYER_ONE_ID + TichuGame.TOTAL_PLAYERS;
 		assert pos == TichuRound.FINISHER_POS_UNKNOWN || (pos > 0 && pos <= TichuRound.FINISHER_POS_LAST);
 		boolean clear = pos == TichuRound.FINISHER_POS_UNKNOWN;
-		Button button = mPlayer[playerId - TichuGame.PLAYER_ONE_ID];
+		ImageView view = mPlayerPos[playerId - TichuGame.PLAYER_ONE_ID];
 		if (clear) {
-			button.setBackgroundResource(R.drawable.tichu_button);
-		} else if (button.getBackground() != null) {
-			button.setBackgroundResource(PLAYER_FINISHER_POS_DRAWABLE_ID[pos - 1]);
+			view.setImageResource(0);
+		} else {
+			view.setImageResource(PLAYER_FINISHER_POS_DRAWABLE_ID[pos - 1]);			
 		}
 		setTichuBid(playerId, mBids[playerId - TichuGame.PLAYER_ONE_ID], false);
 	}

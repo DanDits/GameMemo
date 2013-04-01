@@ -268,20 +268,26 @@ public class GameDataExchanger implements PostRecipient {
 				close(); // game key not supported
 				return;
 			}
-			Cursor cursor = mContentResolver.query(uri, projection, null, null,
+			Cursor cursor = null;
+			try {
+				cursor = mContentResolver.query(uri, projection, null, null,
 					null);
-			if (cursor != null) {
-				cursor.moveToFirst();
-				while (!cursor.isAfterLast()) {
-					long startTime = cursor.getLong(cursor
-							.getColumnIndexOrThrow(GameStorageHelper.COLUMN_STARTTIME));
-					mOwnStarttimes.add(startTime);
-					if (cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_WINNER)) == Game.WINNER_NONE) {
-						mOwnUnfinishedGamesStarttimes.add(startTime);
+				if (cursor != null) {
+					cursor.moveToFirst();
+					while (!cursor.isAfterLast()) {
+						long startTime = cursor.getLong(cursor
+								.getColumnIndexOrThrow(GameStorageHelper.COLUMN_STARTTIME));
+						mOwnStarttimes.add(startTime);
+						if (cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_WINNER)) == Game.WINNER_NONE) {
+							mOwnUnfinishedGamesStarttimes.add(startTime);
+						}
+						cursor.moveToNext();
 					}
-					cursor.moveToNext();
 				}
-				cursor.close();
+			} finally {
+				if (cursor != null) {
+					cursor.close();
+				}
 			}
 		}
 	}

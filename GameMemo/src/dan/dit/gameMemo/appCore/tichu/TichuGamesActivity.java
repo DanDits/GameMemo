@@ -119,7 +119,7 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.setup_game:
-			startGameSetup();
+			startGameSetup(Game.NO_ID);
 			return true;
 		case R.id.show_statistics:
 			showStatistics();
@@ -143,7 +143,7 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void startGameSetup() {
+	private void startGameSetup(long id) {
 		Intent i = new Intent(this, GameSetupActivity.class);
 		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.TICHU);
 		i.putExtra(GameSetupActivity.EXTRA_TEAM_MIN_PLAYERS, TICHU_GAME_MIN_PLAYERS);
@@ -155,7 +155,8 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_NAMES, new String[] {getResources().getString(R.string.tichu_game_score_limit)});
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_NAMES, new String[] {getResources().getString(R.string.tichu_game_mery_rule)});
 		i.putExtra(GameSetupActivity.EXTRA_FLAG_SUGGEST_UNFINISHED_GAME, true);
-		long copyGameSetupId = getHighlightedGame();
+		// priority to copy info from: parameter id, highlighted id, single checked id
+		long copyGameSetupId = Game.isValidId(id) ? id : getHighlightedGame();
 		if (!Game.isValidId(copyGameSetupId)) {
 			Collection<Long> checked = mOverviewFragment.getCheckedIds();
 			if (checked.size() == 1) {
@@ -205,9 +206,10 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 				mHandler.post(new Runnable() {
 					@Override
 					public void run() {
-						setHighlightedGame(extras.getLong(GameStorageHelper.getCursorItemType(GameKey.TICHU), Game.NO_ID));
+						long id = extras.getLong(GameStorageHelper.getCursorItemType(GameKey.TICHU), Game.NO_ID);
+						setHighlightedGame(id);
 						if (extras.getBoolean(EXTRA_RESULT_WANT_REMATCH)) {
-							startGameSetup();
+							startGameSetup(id);
 						}
 					}
 				});
@@ -310,7 +312,7 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 			if (displayedId) {
 				setHighlightedGame(idToDisplay);
 				if (rematch) {
-					startGameSetup();
+					startGameSetup(idToDisplay);
 				}
 			}
 		}
@@ -424,13 +426,15 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 	@Override
 	public void setupGame() {
 		if (mIsActivityInitialLaunch) {
-			startGameSetup();
+			startGameSetup(Game.NO_ID);
 		}
 	}
 
 	@Override
 	public void setInfo(CharSequence main, CharSequence extra) {
-		mDetailsFragment.setInfoText(main, extra);
+		if (mDetailsFragment != null) {
+			mDetailsFragment.setInfoText(main, extra);
+		}
 	}
 
 }

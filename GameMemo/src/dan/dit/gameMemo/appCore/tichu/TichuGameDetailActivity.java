@@ -119,10 +119,11 @@ public class TichuGameDetailActivity extends FragmentActivity implements DetailV
 		mDetails.playerChosen(chosen);
 	}
 
-	@SuppressLint("NewApi") // if mBar is not null then this is over honeycomb
+	@SuppressLint("NewApi") 
 	@Override
 	public void setInfo(CharSequence main, CharSequence extra) {
-		if (mBar != null) {
+		// if mBar is not null then this is over honeycomb
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && mBar != null) {
 			mBar.setTitle(main);
 			if (TextUtils.isEmpty(extra)) {
 				mBar.setSubtitle(null);

@@ -246,12 +246,16 @@ public class TichuGamesOverviewListFragment extends ListFragment implements Load
 
 		@Override
 		public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-			Cursor oldCursor = adapter.swapCursor(data);
-			if (data.getCount() == 0) {
-				mGameOverviewCallback.setupGame();
-			}
-			if (oldCursor != null) {
-				oldCursor.close();
+			Cursor oldCursor = null;
+			try {
+				adapter.swapCursor(data);
+				if (data.getCount() == 0) {
+					mGameOverviewCallback.setupGame();
+				}
+			} finally {
+				if (oldCursor != null) {
+					oldCursor.close();
+				}
 			}
 		}
 

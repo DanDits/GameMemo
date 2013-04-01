@@ -231,34 +231,40 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 			selectionArgs[index] = '%' + p.getName() + '%';
 			index++;
 		}
-		Cursor cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), selectionArgs,
+		Cursor cursor = null;
+		try {
+			cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), selectionArgs,
 				null);
-		if (cursor != null) {
-			cursor.moveToFirst();
-			while (!cursor.isAfterLast()) {
-				// check if the game really contains the given players (in arbitrary order)
-				Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
-				if (playersData.getSize() == matchTeam.size()) {
-					boolean allPlayersContained = true;
-					for (Player currP : matchTeam) {
-						boolean foundEqual = false;
-						for (int i = 0; i < playersData.getSize(); i++) {
-							if (currP.getName().equals(playersData.getData(i))) {
-								foundEqual = true;
+			if (cursor != null) {
+				cursor.moveToFirst();
+				while (!cursor.isAfterLast()) {
+					// check if the game really contains the given players (in arbitrary order)
+					Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
+					if (playersData.getSize() == matchTeam.size()) {
+						boolean allPlayersContained = true;
+						for (Player currP : matchTeam) {
+							boolean foundEqual = false;
+							for (int i = 0; i < playersData.getSize(); i++) {
+								if (currP.getName().equals(playersData.getData(i))) {
+									foundEqual = true;
+								}
+							}
+							if (!foundEqual) {
+								allPlayersContained = false;
 							}
 						}
-						if (!foundEqual) {
-							allPlayersContained = false;
+						if (allPlayersContained) {
+							long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
+							return id;
 						}
 					}
-					if (allPlayersContained) {
-						long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
-						return id;
-					}
+					cursor.moveToNext();
 				}
-				cursor.moveToNext();
 			}
-			cursor.close();
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+			}
 		}
 		return Game.NO_ID;
 	}
@@ -275,19 +281,25 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 		where.append(GameStorageHelper.COLUMN_STARTTIME);
 		where.append(" = ");
 		where.append(String.valueOf(startTime));
-		Cursor cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), null,
+		Cursor cursor = null;
+		long id = Game.NO_ID;
+		try {
+			cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), null,
 				null);
-		// since start times are like id's unique this is meant to only return a cursor of length 0 or 1
-		if (cursor != null) {
-			cursor.moveToFirst();
-			if (cursor.isAfterLast()) {
-				return Game.NO_ID;
+			// since start times are like id's unique this is meant to only return a cursor of length 0 or 1
+			if (cursor != null) {
+				cursor.moveToFirst();
+				if (cursor.isAfterLast()) {
+					return Game.NO_ID;
+				}
+				id = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
 			}
-			long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
-			cursor.close();
-			return id;
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+			}
 		}
-		return Game.NO_ID;
+		return id;
 	}
 	
 	public interface GamesDeletionListener {

@@ -99,35 +99,41 @@ public class Player extends PlayerTeam {
 		where.append(" like ?");
 		String[] selectionArgs = new String[1];
 		selectionArgs[0] = '%' + oldName + '%';
-		Cursor cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), selectionArgs,
+		Cursor cursor = null;
+		try {
+			cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), selectionArgs,
 				null);
-		if (cursor != null) {
-			cursor.moveToFirst();
-			// check all candidates: if this player actually participated in this game, change the player data
-			while (!cursor.isAfterLast()) {
-				Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
-				Compressor newPlayersdata = new Compressor(playersData.getSize());
-				boolean foundChange = false;
-				for (String playerName : playersData) {
-					if (playerName.equalsIgnoreCase(oldName) || playerName.equalsIgnoreCase(newName)) {
-						foundChange = true;
-						newPlayersdata.appendData(newName);
-					} else {
-						newPlayersdata.appendData(playerName);
+			if (cursor != null) {
+				cursor.moveToFirst();
+				// check all candidates: if this player actually participated in this game, change the player data
+				while (!cursor.isAfterLast()) {
+					Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
+					Compressor newPlayersdata = new Compressor(playersData.getSize());
+					boolean foundChange = false;
+					for (String playerName : playersData) {
+						if (playerName.equalsIgnoreCase(oldName) || playerName.equalsIgnoreCase(newName)) {
+							foundChange = true;
+							newPlayersdata.appendData(newName);
+						} else {
+							newPlayersdata.appendData(playerName);
+						}
 					}
-				}
-				if (foundChange) {
-					ContentValues values = new ContentValues();
-					values.put(GameStorageHelper.COLUMN_PLAYERS, newPlayersdata.compress());
-					long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
-					Uri uri = GameStorageHelper.getUri(gameKey, id);
-					if (uri != null) {
-						resolver.update(uri, values, null, null);
+					if (foundChange) {
+						ContentValues values = new ContentValues();
+						values.put(GameStorageHelper.COLUMN_PLAYERS, newPlayersdata.compress());
+						long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
+						Uri uri = GameStorageHelper.getUri(gameKey, id);
+						if (uri != null) {
+							resolver.update(uri, values, null, null);
+						}
 					}
+					cursor.moveToNext();
 				}
-				cursor.moveToNext();
 			}
-			cursor.close();
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+			}
 		}
 		this.name = newName;
 		return true;
@@ -135,20 +141,26 @@ public class Player extends PlayerTeam {
 
 	public static void loadPlayers(int gameKey, PlayerPool pool, ContentResolver resolver) {
 		String[] projection = {GameStorageHelper.COLUMN_PLAYERS};
-		Cursor cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, null, null,
+		Cursor cursor = null;
+		try {
+			cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, null, null,
 				null);
-		if (cursor != null) {
-			cursor.moveToFirst();
-			while (!cursor.isAfterLast()) {
-				Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
-				for (String playerName : playersData) {
-					if (Player.isValidPlayerName(playerName)) {
-						pool.populatePlayer(playerName);
+			if (cursor != null) {
+				cursor.moveToFirst();
+				while (!cursor.isAfterLast()) {
+					Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
+					for (String playerName : playersData) {
+						if (Player.isValidPlayerName(playerName)) {
+							pool.populatePlayer(playerName);
+						}
 					}
+					cursor.moveToNext();
 				}
-				cursor.moveToNext();
 			}
-			cursor.close();
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+			}
 		}
 	}
 

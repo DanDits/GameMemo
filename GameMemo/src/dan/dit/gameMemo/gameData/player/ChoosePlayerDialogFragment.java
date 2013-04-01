@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
@@ -40,6 +41,7 @@ public class ChoosePlayerDialogFragment extends DialogFragment {
 	    public Dialog onCreateDialog(Bundle savedInstanceState) {
 		   View baseView = getActivity().getLayoutInflater().inflate(R.layout.choose_player, null);
 	        mNewName = (AutoCompleteTextView) baseView.findViewById(R.id.choose_player_new_name);
+	        mNewName.setTextColor(Color.BLACK);
 	        mPlayers = (Spinner) baseView.findViewById(R.id.choose_player_list);
 			mPool = mListener.getPool();
 			mPlayersAdapter = mPool.makeAdapter(getActivity(), mListener.toFilter(), false);

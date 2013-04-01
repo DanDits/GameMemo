@@ -274,51 +274,57 @@ public class TichuGame extends Game {
 	private static List<Game> loadGames(ContentResolver resolver, Uri uri,
 			String selection, String[] selectionArgs, boolean throwAtFailure) throws CompressedDataCorruptException {
 		String[] projection = TichuTable.AVAILABLE_COLUMNS;
-		Cursor cursor = resolver.query(uri, projection, selection, selectionArgs,
+		Cursor cursor = null;
+		try {
+			cursor = resolver.query(uri, projection, selection, selectionArgs,
 				null);
-		List<Game> games = null;
-		if (cursor != null) {
-			games = new LinkedList<Game>();
-			cursor.moveToFirst();
-			while (!cursor.isAfterLast()) {
-				String playerData = cursor.getString(cursor
-						.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS));
-				String roundsData = cursor.getString(cursor
-						.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ROUNDS));
-				String metaData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_METADATA));
-				long startTime = cursor.getLong(cursor
-						.getColumnIndexOrThrow(GameStorageHelper.COLUMN_STARTTIME));
-				long id = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
-				long runningTime = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_RUNTIME));
-				String originData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ORIGIN));
-				
-				GameBuilder builder = new TichuGameBuilder();
-				try {
-					builder.loadMetadata(new Compressor(metaData))
-					.setStarttime(startTime)
-					.setRunningTime(runningTime)
-					.setId(id)
-					.loadPlayer(new Compressor(playerData))
-					.loadOrigin(new Compressor(originData))
-					.loadRounds(new Compressor(roundsData));
+			List<Game> games = null;
+			if (cursor != null) {
+				games = new LinkedList<Game>();
+				cursor.moveToFirst();
+				while (!cursor.isAfterLast()) {
+					String playerData = cursor.getString(cursor
+							.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS));
+					String roundsData = cursor.getString(cursor
+							.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ROUNDS));
+					String metaData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_METADATA));
+					long startTime = cursor.getLong(cursor
+							.getColumnIndexOrThrow(GameStorageHelper.COLUMN_STARTTIME));
+					long id = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
+					long runningTime = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_RUNTIME));
+					String originData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ORIGIN));
 					
-				} catch (CompressedDataCorruptException e) {
-					if (throwAtFailure) {
-						throw e;
+					GameBuilder builder = new TichuGameBuilder();
+					try {
+						builder.loadMetadata(new Compressor(metaData))
+						.setStarttime(startTime)
+						.setRunningTime(runningTime)
+						.setId(id)
+						.loadPlayer(new Compressor(playerData))
+						.loadOrigin(new Compressor(originData))
+						.loadRounds(new Compressor(roundsData));
+						
+					} catch (CompressedDataCorruptException e) {
+						if (throwAtFailure) {
+							throw e;
+						}
+						builder = null;
 					}
-					builder = null;
+					if (builder != null) {
+						games.add(builder.build());
+					}
+					cursor.moveToNext();
 				}
-				if (builder != null) {
-					games.add(builder.build());
-				}
-				cursor.moveToNext();
 			}
+			return games;
+		} finally {
 			// Always close the cursor
-			cursor.close();
+			if (cursor != null) {
+				cursor.close();
+			}
 		}
-		return games;
 	}
-
+	
 	@Override
 	public int getKey() {
 		return GameKey.TICHU;

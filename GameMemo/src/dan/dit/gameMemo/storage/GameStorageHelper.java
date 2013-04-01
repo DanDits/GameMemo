@@ -51,8 +51,19 @@ public final class GameStorageHelper {
 	}
 	
 	public static int getStoredGamesCount(ContentResolver resolver, int gameKey) {
-		Cursor data = resolver.query(getUriAllItems(gameKey), new String[] {COLUMN_ID}, null, null, null);
-		return data == null ? 0 : data.getCount();
+		Cursor data = null;
+		int count = 0;
+		try {
+			data = resolver.query(getUriAllItems(gameKey), new String[] {COLUMN_ID}, null, null, null);
+			if (data != null) {
+				count = data.getCount();
+			}
+		} finally {
+			if (data != null) {
+				data.close();
+			}
+		}
+		return count;
 	}
 	
 	public static String getTableName(int gameKey) {

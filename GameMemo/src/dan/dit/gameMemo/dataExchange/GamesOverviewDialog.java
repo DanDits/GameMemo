@@ -165,8 +165,13 @@ public class GamesOverviewDialog extends DialogFragment {
 						stateText.append(res.getString(R.string.data_exchange_status_synchronizing_failed));
 						stateText.append('\n');
 					}
-					stateText.append(res.getString(R.string.data_exchange_games_received, exchanger.getGamesReceivedCount())
-							+ "\n" + res.getString(R.string.data_exchange_games_sent, exchanger.getGamesSentCount()));
+					if (exchanger.getGamesReceivedCount() > 0) {
+						stateText.append(res.getString(R.string.data_exchange_games_received, exchanger.getGamesReceivedCount()));
+						stateText.append('\n');
+					}
+					if (exchanger.getGamesSentCount() > 0) {
+						stateText.append(res.getString(R.string.data_exchange_games_sent, exchanger.getGamesSentCount()));
+					}
 					state.setText(stateText);
 					
 				}
