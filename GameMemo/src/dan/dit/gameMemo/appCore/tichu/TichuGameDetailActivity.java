@@ -116,8 +116,8 @@ public class TichuGameDetailActivity extends FragmentActivity implements DetailV
 	}
 
 	@Override
-	public void playerChosen(Player chosen) {
-		mDetails.playerChosen(chosen);
+	public void playerChosen(int playerIndex, Player chosen) {
+		mDetails.playerChosen(playerIndex, chosen);
 	}
 
 	@SuppressLint("NewApi") 
@@ -134,6 +134,11 @@ public class TichuGameDetailActivity extends FragmentActivity implements DetailV
 		} else {
 			mDetails.setInfoText(main, extra);
 		}
+	}
+
+	@Override
+	public void onPlayerColorChanged(int arg, Player concernedPlayer) {
+		mDetails.onPlayerColorChanged(arg, concernedPlayer);
 	}
 
 }

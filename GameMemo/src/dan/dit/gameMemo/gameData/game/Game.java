@@ -210,7 +210,7 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 	}
 	
 	// players in given team must be pairwise unequal
-	public static long getUnfinishedGame(int gameKey, ContentResolver resolver, List<Player> matchTeam) {
+	public static long getUnfinishedGame(int gameKey, ContentResolver resolver, List<Player> matchTeam, boolean subsetOk) {
 		String[] projection = { GameStorageHelper.COLUMN_ID, GameStorageHelper.COLUMN_PLAYERS};
 		StringBuilder where = new StringBuilder();
 		// search unfinished games
@@ -239,12 +239,12 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 				while (!cursor.isAfterLast()) {
 					// check if the game really contains the given players (in arbitrary order)
 					Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
-					if (playersData.getSize() == matchTeam.size()) {
+					if (subsetOk || playersData.getSize() == matchTeam.size()) {
 						boolean allPlayersContained = true;
 						for (Player currP : matchTeam) {
 							boolean foundEqual = false;
 							for (int i = 0; i < playersData.getSize(); i++) {
-								if (currP.getName().equals(playersData.getData(i))) {
+								if (currP.getName().equalsIgnoreCase(playersData.getData(i))) {
 									foundEqual = true;
 								}
 							}

@@ -43,10 +43,6 @@ public class RenamePlayerDialogFragment extends DialogFragment {
 		void onRenameSuccess(Player newPlayer, String oldName);
 	}
 	
-	public RenamePlayerDialogFragment() {
-		super();
-	}
-	
 	public void wantsToRename(Player selected, String pNewName) {
 		String newName = pNewName.trim();
 		if (selected != null && Player.isValidPlayerName(newName)) {
@@ -106,13 +102,8 @@ public class RenamePlayerDialogFragment extends DialogFragment {
 	   @Override
 	    public Dialog onCreateDialog(Bundle savedInstanceState) {
 		   Bundle args = getArguments();
-		   if (savedInstanceState == null) {
-			   mGameKey = args.getInt(GameKey.EXTRA_GAMEKEY);
-			   mRenameForAll = args.getBoolean(EXTRA_RENAME_FOR_ALL_GAMES);
-		   } else {
-			   mGameKey = savedInstanceState.getInt(GameKey.EXTRA_GAMEKEY);
-			   mRenameForAll = savedInstanceState.getBoolean(EXTRA_RENAME_FOR_ALL_GAMES);
-		   }
+		   mGameKey = args.getInt(GameKey.EXTRA_GAMEKEY);
+		   mRenameForAll = args.getBoolean(EXTRA_RENAME_FOR_ALL_GAMES);
 		   View baseView = getActivity().getLayoutInflater().inflate(R.layout.rename_player, null);
 	        mNewName = (EditText) baseView.findViewById(R.id.rename_new_name);
 	        mPlayers = (Spinner) baseView.findViewById(R.id.rename_select_players);
@@ -135,18 +126,16 @@ public class RenamePlayerDialogFragment extends DialogFragment {
 	        // Create the AlertDialog object and return it
 	        return builder.create();
 	    }
-	   
+	
 	   @Override
 	   public void onStart() {
 		   super.onStart();
+		   if (GameKey.getPool(mGameKey).size() == 0) {
+			   Toast.makeText(getActivity(), getResources().getString(R.string.rename_no_players), Toast.LENGTH_SHORT).show();
+			   dismiss();
+			   return;
+		   }
 		   mPlayersAdapter.sort(Player.NAME_COMPARATOR);
-	   }
-	  
-	   @Override
-	   public void onSaveInstanceState(Bundle outState) {
-		   super.onSaveInstanceState(outState);
-		   outState.putBoolean(EXTRA_RENAME_FOR_ALL_GAMES, mRenameForAll);
-		   outState.putInt(GameKey.EXTRA_GAMEKEY, mGameKey);
 	   }
 	   
 	   @Override

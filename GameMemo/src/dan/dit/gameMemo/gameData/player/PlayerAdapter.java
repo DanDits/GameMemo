@@ -87,7 +87,7 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
 			}
 		}
 	};
-	public void setFilterPlayers(List<Player> toFilter) {
+	public void addFilterPlayers(List<Player> toFilter) {
 		if (toFilter != null) {
 			for (Player p : toFilter) {
 				if (p != null) {

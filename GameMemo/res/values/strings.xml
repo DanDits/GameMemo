@@ -8,7 +8,7 @@
     <string name="menu_info_game">Info</string>
     <string name="game_starttime">Starttime</string>
     <string name="game_runtime">Duration</string>
-    <string name="game_team">Team</string>
+    <string name="game_team_X">Team %1$d</string>
     <string name="no_tichu_rounds">No rounds yet</string>
     <string name="default_tichu_round_score"> </string><string name="default_player_name">Player</string>
     <string name="game_setup_select_player">Select player</string>
@@ -42,7 +42,7 @@
 	<string name="statistics_by_player">By player</string>
 	<string name="statistics_by_genre">By genre</string>
 	<string name="statistics_by_genre_value_column_descr">Value</string>
-	<string name="data_exchange_button_refresh_devices_list">Refresh</string>
+	<string name="data_exchange_button_refresh_devices_list">Scan</string>
 	<string name="data_exchange_connection_status_none">State: Idle</string>
 	<string name="data_exchange_connection_status_listen">State: Waiting</string>
 	<string name="data_exchange_connection_status_connecting">State: Connecting</string>
@@ -87,8 +87,9 @@
 	<string name="hint_new_player_name">New player name</string>
 	<string name="rename_conflict_title">Name in use</string>
 	<string name="rename_conflict">Merge %1$s and %2$s to %3$s? Can invalidate save games!</string>
-	<string name="rename_success">Renaming successful.</string>
-	<string name="rename_failure">Renaming failed.</string>
+	<string name="rename_success">Renaming successful</string>
+	<string name="rename_failure">Renaming failed</string>
+	<string name="rename_no_players">Nobody to rename</string>
 	<string name="help">Help</string>
 	<string name="about">About GameMemo</string>
 	<string name="about_summary">GameMemo version %1$s Daniel Dittmar Da.dittmar@t-online.de</string>
@@ -128,8 +129,8 @@
 	<string name="tichu_game_state_expect_data">Enter new round</string>
 	<string name="tichu_game_enter_hand_score">Score</string>
 	<string name="tichu_game_lock_button_content_description">Start new round, edit selected or leave finished game.</string>
-	<string name="clear">Clear</string>
-	<string name="game_options">Options</string>
+	<string name="game_setup_reset">Reset</string>
+	<string name="game_setup_options">Options</string>
 	<string name="today">Today</string>
 	<string name="yesterday">Yesterday</string>
 	<string name="games_selected_single">%1$s selected</string>
@@ -142,5 +143,13 @@
 	<string name="share_accept">Accept</string>
 	<string name="share_accept_and_close">Accept and close</string>
 	<string name="share_no_data">Nothing to share</string>
-	<string name="team_default_name">Players</string>
+	<string name="team_default_name">Team %1$d</string>
+	<string name="player_dummy_name">Player %1$d</string>
+	<!-- Do not use the dash, the regex does not work then.
+		This regex should match all translations of player_dummy_name and only capture the number. 
+		Do not add this string resource to translations -->
+	<string name="player_dummy_name_regex">(?:Spieler ([0-9]+))|(?:Player ([0-9]+))</string>
+	<string name="color">Color</string>
+	<string name="choose_color">Choose color</string>
+	<string name="game_setup_new_team">New team</string>
 </resources>

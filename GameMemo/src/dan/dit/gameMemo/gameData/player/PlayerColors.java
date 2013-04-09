@@ -14,7 +14,11 @@ public final class PlayerColors {
 	private PlayerColors() {}
 	
 	public static int get(int index) {
-		return COLORS[index];
+		if (index < COLORS.length) {
+			return COLORS[index];
+		} else {
+			return getRandom();
+		}
 	}
 	
 	public static int getRandom() {
@@ -28,7 +32,7 @@ public final class PlayerColors {
 		}
 		List<Integer> remaining = new ArrayList<Integer>(possibleRemaining);
 		for (int col : COLORS) {
-			if (!exclude.contains(Integer.valueOf(col))) {
+			if (exclude == null || !exclude.contains(Integer.valueOf(col))) {
 				remaining.add(col);
 			}
 		}
@@ -41,7 +45,7 @@ public final class PlayerColors {
 	
 	public static final int getNext(Collection<Integer> exclude) {
 		for (int col : COLORS) {
-			if (!exclude.contains(Integer.valueOf(col))) {
+			if (exclude == null || !exclude.contains(Integer.valueOf(col))) {
 				return col;
 			}
 		}

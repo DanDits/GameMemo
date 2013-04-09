@@ -12,7 +12,7 @@
     <string name="tichu_row_time_heading">Startzeit</string>
     <string name="game_starttime">Startzeit</string>
     <string name="game_runtime">Dauer</string>
-    <string name="game_team">Team</string>
+    <string name="game_team_X">Team %1$d</string>
     <string name="no_tichu_rounds">Noch keine Runden</string>
     <string name="default_tichu_round_score"> </string><string name="default_player_name">Spieler</string>
     <string name="tichu_team_select_team1">Team 1</string>
@@ -48,7 +48,7 @@
 	<string name="statistics_by_player">Nach Spielern</string>
 	<string name="statistics_by_genre">Nach Typ</string>
 	<string name="statistics_by_genre_value_column_descr">Wert</string>
-	<string name="data_exchange_button_refresh_devices_list">Erneuern</string>
+	<string name="data_exchange_button_refresh_devices_list">Scannen</string>
 	<string name="data_exchange_connection_status_none">Status: Ruhend</string>
 	<string name="data_exchange_connection_status_listen">Status: Wartend</string>
 	<string name="data_exchange_connection_status_connecting">Status: Verbinden</string>
@@ -93,8 +93,9 @@
 	<string name="hint_new_player_name">Neuer Spielername</string>
 	<string name="rename_conflict_title">Doppelter Name</string>
 	<string name="rename_conflict">%1$s und %2$s zusammenfügen zu %3$s? Kann Spielstände ungültig machen!</string>
-	<string name="rename_success">Umbenennen erfolgreich.</string>
-	<string name="rename_failure">Umbenennen fehlgeschlagen.</string>
+	<string name="rename_success">Umbenennen erfolgreich</string>
+	<string name="rename_failure">Umbenennen fehlgeschlagen</string>
+	<string name="rename_no_players">Niemanden zum Umbenennen</string>
 	<string name="help">Hilfe</string>
 	<string name="about">Über GameMemo</string>
 	<string name="about_summary">GameMemo Version %1$s Daniel Dittmar Da.dittmar@t-online.de</string>
@@ -137,8 +138,8 @@
 	<string name="tichu_game_state_expect_data">Neue Runde eingeben</string>
 	<string name="tichu_game_enter_hand_score">Punkte</string>
 	<string name="tichu_game_lock_button_content_description">Beginne neue Runde, ändere die gewählte oder verlasse das Spiel.</string>
-	<string name="clear">Zurücksetzen</string>
-	<string name="game_options">Optionen</string>
+	<string name="game_setup_reset">Zurücksetzen</string>
+	<string name="game_setup_options">Optionen</string>
 	<string name="today">Heute</string>
 	<string name="yesterday">Gestern</string>	
 	<string name="games_selected_single">%1$s gewählt</string>
@@ -151,5 +152,9 @@
 	<string name="share_accept">Akzeptieren</string>
 	<string name="share_accept_and_close">Akzeptieren und schließen</string>
 	<string name="share_no_data">Nichts zum Teilen</string>
-	<string name="team_default_name">Spieler</string>
+	<string name="team_default_name">Team %1$d</string>
+	<string name="player_dummy_name">Spieler %1$d</string>
+	<string name="choose_color">Farbe wählen</string>
+	<string name="color">Farbe</string>
+	<string name="game_setup_new_team">Neues Team</string>
 </resources>

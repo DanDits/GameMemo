@@ -6,11 +6,9 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import dan.dit.gameMemo.R;
-
 import android.content.ContentResolver;
 import android.content.Context;
-import android.widget.ArrayAdapter;
+import dan.dit.gameMemo.R;
 /**
  * A PlayerPool holds a set of players. 
  *  A player contained in a pool can be renamed for this pool. To rename a
@@ -91,19 +89,19 @@ public class PlayerPool {
 		return res;
 	}
 	
-	public ArrayAdapter<Player> makeAdapter(Context context, boolean big) {
+	public PlayerAdapter makeAdapter(Context context, boolean big) {
 		int layoutId = big ? R.layout.dropdown_item_big : android.R.layout.simple_dropdown_item_1line;
-		ArrayAdapter<Player> adapter = new PlayerAdapter(context, layoutId, android.R.id.text1);
+		PlayerAdapter adapter = new PlayerAdapter(context, layoutId, android.R.id.text1);
 		for (Player p : getAllSortByName(true)) {
 			adapter.add(p);
 		}
 		return adapter;
 	}
 	
-	public ArrayAdapter<Player> makeAdapter(Context context,
+	public PlayerAdapter makeAdapter(Context context,
 			List<Player> toFilter, boolean big) {
 		PlayerAdapter adapter = (PlayerAdapter) makeAdapter(context, big);
-		adapter.setFilterPlayers(toFilter);
+		adapter.addFilterPlayers(toFilter);
 		return adapter;
 	}
 

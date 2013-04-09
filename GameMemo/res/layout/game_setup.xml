@@ -25,40 +25,11 @@
                 android:id="@+id/teams_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:dividerPadding="5dp"
                 android:orientation="vertical" >
-            </LinearLayout>
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <LinearLayout
-                android:id="@+id/LinearLayout1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-
-                <Button
-                    android:id="@+id/shuffle"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="3"
-                    android:text="@string/game_setup_shuffle" />
-
-                <Button
-                    android:id="@+id/clear"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2"
-                    android:text="@string/clear" />
 
             </LinearLayout>
-
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="3dp"
-                android:background="@android:color/black" />
 
             <LinearLayout
                 android:id="@+id/options_container"

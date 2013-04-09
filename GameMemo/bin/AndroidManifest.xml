@@ -39,7 +39,7 @@
         </activity>
         <activity
             android:name=".appCore.GameSetupActivity"
-            android:windowSoftInputMode="stateAlwaysHidden" >
+            android:windowSoftInputMode="stateAlwaysHidden|adjustPan" >
         </activity>
         <activity
             android:name=".util.DebugShowStacktraceActivity">

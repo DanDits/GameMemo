@@ -17,8 +17,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/choose_player_list"
+        android:layout_below="@+id/color_picker"
+        android:layout_toLeftOf="@+id/choose_color"
         android:ems="10"
         android:hint="@string/game_enter_name"
         android:imeOptions="actionDone"
@@ -26,5 +26,23 @@
 		
         <requestFocus />
     </AutoCompleteTextView>
+
+    <dan.dit.gameMemo.util.ColorPickerView
+        android:id="@+id/color_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/choose_player_list"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/choose_color"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="false"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/color_picker"
+        android:text="@string/color"
+        android:visibility="gone" />
 
 </RelativeLayout>

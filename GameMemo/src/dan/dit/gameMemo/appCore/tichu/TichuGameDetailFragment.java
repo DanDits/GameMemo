@@ -165,7 +165,6 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	private List<Integer> mFinisher;
 	private TichuBidType[] mBids;
 	private TichuGameStateMachine mStateMachine;
-	private int mWantsToExchangePlayerId;
 	
 	public static TichuGameDetailFragment newInstance(long gameId) {
 		TichuGameDetailFragment f = new TichuGameDetailFragment();
@@ -403,8 +402,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 					}
 					playerId++;
 				}
-				mWantsToExchangePlayerId = playerId;
-		        DialogFragment dialog = new ChoosePlayerDialogFragment();
+		        DialogFragment dialog = ChoosePlayerDialogFragment.newInstance(playerId, null, false);
 		        dialog.show(getActivity().getSupportFragmentManager(), "ChoosePlayerDialogFragment");
 				return true;
 			}
@@ -1027,11 +1025,11 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	}
 
 	@Override
-	public void playerChosen(Player chosen) {
+	public void playerChosen(int playerId, Player chosen) {
 		if (chosen == null || mGame.getTeam1().contains(chosen) || mGame.getTeam2().contains(chosen)) {
 			return;
 		}
-		switch (mWantsToExchangePlayerId) {
+		switch (playerId) {
 		case TichuGame.PLAYER_ONE_ID:
 			mGame.setupPlayers(chosen, mGame.getTeam1().getSecond(), mGame.getTeam2().getFirst(), mGame.getTeam2().getSecond());
 			break;
@@ -1046,6 +1044,11 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			break;
 		}
 		synchPlayerNames();
+	}
+
+	@Override
+	public void onPlayerColorChanged(int arg, Player concernedPlayer) {
+		// ignored, tichu does not support player colors
 	}
 
 }

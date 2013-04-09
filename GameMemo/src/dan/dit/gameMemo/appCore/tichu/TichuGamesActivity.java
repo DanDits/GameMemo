@@ -50,8 +50,8 @@ import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
 public class TichuGamesActivity extends FragmentActivity implements DetailViewCallback, GameOverviewCallback, RenamePlayerCallback, ChoosePlayerDialogListener  {
 	public static final String EXTRA_RESULT_WANT_REMATCH = "dan.dit.gameMemo.WANT_REMATCH";
 	private static final int GAME_SETUP_ACTIVITY = 1; // when user wants to start a new game and wants to continue an existing one or selected players
-	private static final int[] TICHU_GAME_MIN_PLAYERS = new int[] {2, 2};
-	private static final int[] TICHU_GAME_MAX_PLAYERS = new int[] {2, 2};
+	private static final int[] TICHU_GAME_MIN_PLAYERS = new int[] {2, 2, 0, 2};
+	private static final int[] TICHU_GAME_MAX_PLAYERS = new int[] {2, 4, 5, 1};
 	private static final boolean[] TICHU_OPTIONS_BOOLEAN = new boolean[] {false}; // {MERCY_RULE}
 	private static final int[] TICHU_OPTIONS_NUMBER = new int[] {TichuGame.DEFAULT_SCORE_LIMIT};//{SCORE_LIMIT}
 	private static final int[] TICHU_OPTIONS_MIN_NUMBERS = new int[] {TichuGame.MIN_SCORE_LIMIT};
@@ -148,6 +148,7 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 
 	private void startGameSetup(long id) {
 		Intent i = new Intent(this, GameSetupActivity.class);
+		//TODO changes made here and to constants for debugging and testing purposes
 		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.TICHU);
 		i.putExtra(GameSetupActivity.EXTRA_TEAM_MIN_PLAYERS, TICHU_GAME_MIN_PLAYERS);
 		i.putExtra(GameSetupActivity.EXTRA_TEAM_MAX_PLAYERS, TICHU_GAME_MAX_PLAYERS);
@@ -158,6 +159,12 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_NAMES, new String[] {getResources().getString(R.string.tichu_game_score_limit)});
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_NAMES, new String[] {getResources().getString(R.string.tichu_game_mery_rule)});
 		i.putExtra(GameSetupActivity.EXTRA_FLAG_SUGGEST_UNFINISHED_GAME, true);
+		i.putExtra(GameSetupActivity.EXTRA_FLAG_ALLOW_PLAYER_COLOR_EDITING, true);
+		i.putExtra(GameSetupActivity.EXTRA_FLAG_ALLOW_TEAM_COLOR_EDITING, true);
+		i.putExtra(GameSetupActivity.EXTRA_FLAG_ALLOW_TEAM_NAME_EDITING, true);
+		i.putExtra(GameSetupActivity.EXTRA_FLAG_USE_DUMMY_PLAYERS, true);
+		i.putExtra(GameSetupActivity.EXTRA_TEAM_COLORS, new int[] {0xFFFF6543, 0xFFAA1245});
+		i.putExtra(GameSetupActivity.EXTRA_TEAM_IS_OPTIONAL, new boolean[] {false, false, true, true});
 		// priority to copy info from: parameter id, highlighted id, single checked id
 		long copyGameSetupId = Game.isValidId(id) ? id : getHighlightedGame();
 		if (!Game.isValidId(copyGameSetupId)) {
@@ -420,9 +427,9 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 	}
 
 	@Override
-	public void playerChosen(Player chosen) {
+	public void playerChosen(int playerIndex, Player chosen) {
 		if (mDetailsFragment != null) {
-			mDetailsFragment.playerChosen(chosen);
+			mDetailsFragment.playerChosen(playerIndex, chosen);
 		}
 	}
 
@@ -437,6 +444,13 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 	public void setInfo(CharSequence main, CharSequence extra) {
 		if (mDetailsFragment != null) {
 			mDetailsFragment.setInfoText(main, extra);
+		}
+	}
+
+	@Override
+	public void onPlayerColorChanged(int arg, Player concernedPlayer) {
+		if (mDetailsFragment != null) {
+			mDetailsFragment.onPlayerColorChanged(arg, concernedPlayer);
 		}
 	}
 

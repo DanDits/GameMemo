@@ -3,46 +3,58 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    android:layout_marginBottom="5dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical"
+    android:paddingTop="3dp" >
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" 
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/team_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Large Text"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <ImageButton
-            android:id="@+id/team_delete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_menu_delete" />
-
-        <Button
-            android:id="@+id/team_color"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Color" />
-
-        <ImageButton
-            android:id="@+id/team_add_player"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_menu_add" />
-
-    </LinearLayout>
-
-    <GridView
+        android:id="@+id/root_1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:numColumns="auto_fit" >
-    </GridView>
+        android:background="@drawable/black_frame"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <EditText
+                android:id="@+id/team_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="textCapWords"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            <ImageButton
+                android:id="@+id/team_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_menu_delete" />
+
+            <Button
+                android:id="@+id/team_color"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Color" />
+
+            <ImageButton
+                android:id="@+id/team_add_player"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_menu_add" />
+        </LinearLayout>
+
+        <dan.dit.gameMemo.util.LinearLayoutList
+            android:id="@+id/player_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+        </dan.dit.gameMemo.util.LinearLayoutList>
+    </LinearLayout>
 
 </LinearLayout>
