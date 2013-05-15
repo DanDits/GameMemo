@@ -14,12 +14,12 @@ import dan.dit.gameMemo.dataExchange.DirectAnswerService;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
 import dan.dit.gameMemo.dataExchange.GameDataRequester;
 import dan.dit.gameMemo.dataExchange.Postman.PostRecipient;
-import dan.dit.gameMemo.util.compression.Compressor;
+import dan.dit.gameMemo.util.compaction.Compacter;
 
 public class FileWriteService implements ExchangeService {
-	private static final String HEADER_START = "START_MESSAGE_HEADER" + Compressor.SEPARATOR;
+	private static final String HEADER_START = "START_MESSAGE_HEADER" + Compacter.SEPARATOR;
 	private static final String HEADER_MID = "_MID_";
-	private static final String HEADER_END = Compressor.SEPARATOR + "HEADER_END";
+	private static final String HEADER_END = Compacter.SEPARATOR + "HEADER_END";
 	
 	/**
 	 * Pattern to match a header for a message. The message is followed directly by the header until the next header or the end.

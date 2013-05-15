@@ -29,8 +29,8 @@ import dan.dit.gameMemo.gameData.game.Game.GamesDeletionListener;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
-import dan.dit.gameMemo.util.compression.Compressor;
+import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
+import dan.dit.gameMemo.util.compaction.Compacter;
 
 /**
  * This adapter is used display tichu games in a ListView, showing
@@ -46,6 +46,11 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter implements Gam
     private int layout;
     private Context context;
     private Map<Long, Long> checked; // mapping id to starttime
+    private GameCheckedChangeListener mListener;
+    
+    public interface GameCheckedChangeListener {
+    	void onGameCheckedChange(Collection<Long> checkedIds);
+    }
 
     @SuppressWarnings("deprecation") // needed for support library (cursor loader)
 	public TichuGameOverviewAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
@@ -63,6 +68,10 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter implements Gam
     	checked = new HashMap<Long, Long>();
     }
 
+    public void setOnGameCheckedChangeListener(GameCheckedChangeListener listener) {
+    	mListener = listener;
+    }
+    
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
 
@@ -98,6 +107,7 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter implements Gam
 					checked.put(id, starttime);
 					box.setChecked(true);
 				}
+				notifyGameCheckedChanged();
 				cursor.moveToPosition(oldPos);
 			}
 		});
@@ -116,6 +126,7 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter implements Gam
  				} else {
  					checkAll();
  				}
+				notifyGameCheckedChanged();
  				cursor.moveToPosition(oldPos);
  				return true;
  			}
@@ -124,6 +135,12 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter implements Gam
         updateViewInfo(v, c);
 
         return v;
+    }
+    
+    private void notifyGameCheckedChanged() {
+		if (mListener != null) {
+			mListener.onGameCheckedChange(getChecked());
+		}
     }
     
     public void checkAll() {
@@ -175,7 +192,7 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter implements Gam
         long id = c.getLong(idCol);
 
         // prepare information
-        Compressor cmp = new Compressor(players);
+        Compacter cmp = new Compacter(players);
         String playerOne = cmp.getData(0);
         String playerTwo = cmp.getData(1);
         String playerThree = cmp.getData(2);
@@ -222,7 +239,7 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter implements Gam
         	List<Game> game = null;
 			try {
 				game = TichuGame.loadGames(context.getContentResolver(), GameStorageHelper.getUri(GameKey.TICHU, id), false);
-			} catch (CompressedDataCorruptException e) {
+			} catch (CompactedDataCorruptException e) {
 				assert false; // will not throw
 			}
         	if (game != null && game.size() > 0) {

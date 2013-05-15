@@ -22,8 +22,8 @@ import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.player.PlayerTeam;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.storage.database.TichuTable;
-import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
-import dan.dit.gameMemo.util.compression.Compressor;
+import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
+import dan.dit.gameMemo.util.compaction.Compacter;
 
 public class TichuGame extends Game {
 	public static final int MIN_SCORE_LIMIT = 5;
@@ -71,7 +71,7 @@ public class TichuGame extends Game {
 	
 	@Override
 	protected String getPlayerData() {
-		Compressor cmp = new Compressor(TichuGame.TOTAL_PLAYERS);
+		Compacter cmp = new Compacter(TichuGame.TOTAL_PLAYERS);
 		cmp.appendData(firstTeam.getFirst().getName());
 		cmp.appendData(firstTeam.getSecond().getName());
 		cmp.appendData(secondTeam.getFirst().getName());
@@ -105,7 +105,7 @@ public class TichuGame extends Game {
 	
 	@Override
 	protected String getRoundsData() {
-		Compressor cmp = new Compressor(rounds.size());
+		Compacter cmp = new Compacter(rounds.size());
 		for (GameRound round : rounds) {
 			cmp.appendData(round.compress());
 		}
@@ -239,12 +239,12 @@ public class TichuGame extends Game {
 		super.saveGame(null, resolver);
 	}
 	
-	public static List<Game> loadGames(ContentResolver resolver, Uri uri, boolean throwAtFailure) throws CompressedDataCorruptException {
+	public static List<Game> loadGames(ContentResolver resolver, Uri uri, boolean throwAtFailure) throws CompactedDataCorruptException {
 		return loadGames(resolver, uri, null, null, throwAtFailure);
 	}
 
 	public static List<Game> loadGames(ContentResolver resolver, Uri uri, List<Long> timestamps,
-			boolean throwAtFailure) throws CompressedDataCorruptException {
+			boolean throwAtFailure) throws CompactedDataCorruptException {
 		if (timestamps.size() > 0) {
 			StringBuilder selection = new StringBuilder(GameStorageHelper.COLUMN_STARTTIME.length() + 10 + timestamps.size() * 15);
 			selection.append(GameStorageHelper.COLUMN_STARTTIME);
@@ -272,7 +272,7 @@ public class TichuGame extends Game {
 	}
 	
 	private static List<Game> loadGames(ContentResolver resolver, Uri uri,
-			String selection, String[] selectionArgs, boolean throwAtFailure) throws CompressedDataCorruptException {
+			String selection, String[] selectionArgs, boolean throwAtFailure) throws CompactedDataCorruptException {
 		String[] projection = TichuTable.AVAILABLE_COLUMNS;
 		Cursor cursor = null;
 		try {
@@ -296,15 +296,15 @@ public class TichuGame extends Game {
 					
 					GameBuilder builder = new TichuGameBuilder();
 					try {
-						builder.loadMetadata(new Compressor(metaData))
+						builder.loadMetadata(new Compacter(metaData))
 						.setStarttime(startTime)
 						.setRunningTime(runningTime)
 						.setId(id)
-						.loadPlayer(new Compressor(playerData))
-						.loadOrigin(new Compressor(originData))
-						.loadRounds(new Compressor(roundsData));
+						.loadPlayer(new Compacter(playerData))
+						.loadOrigin(new Compacter(originData))
+						.loadRounds(new Compacter(roundsData));
 						
-					} catch (CompressedDataCorruptException e) {
+					} catch (CompactedDataCorruptException e) {
 						if (throwAtFailure) {
 							throw e;
 						}
@@ -355,7 +355,7 @@ public class TichuGame extends Game {
 
 	@Override
 	protected String getMetaData() {
-		Compressor cmp = new Compressor();
+		Compacter cmp = new Compacter();
 		cmp.appendData(mMercyRuleEnabled ? META_DATA_USES_MERCY_RULE : META_DATA_DOES_NOT_USE_MERCY_RULE);
 		cmp.appendData(mScoreLimit);
 		return cmp.compress();
@@ -386,7 +386,8 @@ public class TichuGame extends Game {
 		return builder.toString();
 	}
 
-	public void onRenameSuccess(Player newPlayer, String oldName) {
+	@Override
+	public void playerNameChanged(String oldName, Player newPlayer) {
 		// possible scenario: a player is being renamed for a game and now we have two equal players in a team or in a game
 		// reaction: use vogel-strauss algorithm and ignore this.. the user is prompted that this can corrupt games
 		if (firstTeam.contains(oldName)) {

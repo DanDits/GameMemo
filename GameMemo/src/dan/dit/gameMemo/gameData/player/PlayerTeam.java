@@ -4,10 +4,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import dan.dit.gameMemo.util.compression.Compressible;
-import dan.dit.gameMemo.util.compression.Compressor;
+import dan.dit.gameMemo.util.compaction.Compactable;
+import dan.dit.gameMemo.util.compaction.Compacter;
 
-public abstract class PlayerTeam implements Compressible, Iterable<Player> {
+public abstract class PlayerTeam implements Compactable, Iterable<Player> {
 	protected int mColor = PlayerColors.DEFAULT_COLOR;
 	
 	public abstract Player getFirst();
@@ -62,7 +62,7 @@ public abstract class PlayerTeam implements Compressible, Iterable<Player> {
 	
 	@Override
 	public String compress() {
-		Compressor cmp = new Compressor(getPlayerCount());
+		Compacter cmp = new Compacter(getPlayerCount());
 		for (Player p : getPlayers()) {
 			cmp.appendData(p.getName());
 		}

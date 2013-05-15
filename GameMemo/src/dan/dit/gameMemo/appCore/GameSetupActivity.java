@@ -92,7 +92,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	private static final String STORAGE_CHOOSING_COLOR_CONTROLLER_INDEX = "STORAGE_CHOOSING_COLOR_CONTROLLER_INDEX"; //int ignored if no color chooser dialog open, index of controller to chose color for
 	private static final DummyPool DUMMY_PLAYERS = new DummyPool();
 	private static final long SHUFFLE_PERIOD = 200; // in ms
-	protected static final long SHUFFLE_DURATION = 2000; // in ms
+	protected static final long SHUFFLE_DURATION = 1500; // in ms
 	
 	private int mGameKey;
 	private boolean mSuggestUnfinished;
@@ -118,6 +118,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	
 	private ScrollView mScrollView;
 	private LinearLayout mOptionsContainer;
+	private Button mShowOptions;
 	private LinearLayout mTeamsContainer;
 	private Button mStartGame;
 	private SortedSet<Integer> mHiddenTeams;
@@ -149,6 +150,15 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		mTeamsContainer = (LinearLayout) findViewById(R.id.teams_container);
 		mOptionsContainer = (LinearLayout) findViewById(R.id.options_container);
 		mStartGame = (Button) findViewById(R.id.startGame);
+		mShowOptions = (Button) findViewById(R.id.options_show);
+		mShowOptions.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				showOptions();
+			}
+			
+		});
 		// load flags and immutable parameters here, the rest after all creation is done
 		mSuggestUnfinished = getIntent().getExtras().getBoolean(EXTRA_FLAG_SUGGEST_UNFINISHED_GAME);
 		mUseDummys = getIntent().getExtras().getBoolean(EXTRA_FLAG_USE_DUMMY_PLAYERS);
@@ -158,12 +168,18 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		initListeners();
 	}
 	
+	private void showOptions() {
+		mShowOptions.setVisibility(View.GONE);
+		mOptionsContainer.setVisibility(View.VISIBLE);
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.game_setup, menu);
 		mAddTeam = menu.findItem(R.id.add_team);
 		mShuffle = menu.findItem(R.id.shuffle);
+		applyButtonsState();
 		return true;
 	}
 	
@@ -640,6 +656,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	private void applyBackgroundTheme() {
 		int btnResId = GameKey.getButtonResource(mGameKey);
 		mStartGame.setBackgroundResource(btnResId);
+		mShowOptions.setBackgroundResource(btnResId);
 		for (TeamSetupViewController ctr : mTeamControllers.values()) {
 			ctr.applyBackgroundTheme(btnResId);
 		}

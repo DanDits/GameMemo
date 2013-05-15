@@ -32,10 +32,9 @@ import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerD
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.player.RenamePlayerDialogFragment;
-import dan.dit.gameMemo.gameData.player.RenamePlayerDialogFragment.RenamePlayerCallback;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.ShowStacktraceUncaughtExceptionHandler;
-import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
+import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 /**
  * This fragment activity is the home activity for tichu games. It holds
@@ -47,11 +46,11 @@ import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
  * @author Daniel
  *
  */
-public class TichuGamesActivity extends FragmentActivity implements DetailViewCallback, GameOverviewCallback, RenamePlayerCallback, ChoosePlayerDialogListener  {
+public class TichuGamesActivity extends FragmentActivity implements DetailViewCallback, GameOverviewCallback, ChoosePlayerDialogListener  {
 	public static final String EXTRA_RESULT_WANT_REMATCH = "dan.dit.gameMemo.WANT_REMATCH";
 	private static final int GAME_SETUP_ACTIVITY = 1; // when user wants to start a new game and wants to continue an existing one or selected players
-	private static final int[] TICHU_GAME_MIN_PLAYERS = new int[] {2, 2, 0, 2};
-	private static final int[] TICHU_GAME_MAX_PLAYERS = new int[] {2, 4, 5, 1};
+	private static final int[] TICHU_GAME_MIN_PLAYERS = new int[] {2, 2};
+	private static final int[] TICHU_GAME_MAX_PLAYERS = new int[] {2, 2};
 	private static final boolean[] TICHU_OPTIONS_BOOLEAN = new boolean[] {false}; // {MERCY_RULE}
 	private static final int[] TICHU_OPTIONS_NUMBER = new int[] {TichuGame.DEFAULT_SCORE_LIMIT};//{SCORE_LIMIT}
 	private static final int[] TICHU_OPTIONS_MIN_NUMBERS = new int[] {TichuGame.MIN_SCORE_LIMIT};
@@ -66,6 +65,7 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 	private boolean mIsActivityInitialLaunch;
 	private TichuGameDetailFragment mDetailsFragment;
 	private TichuGamesOverviewListFragment mOverviewFragment;
+	private MenuItem mDeleteOption;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -115,6 +115,7 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.tichu_list, menu);
+		mDeleteOption = menu.findItem(R.id.delete);
 		return true;
 	}
 
@@ -142,13 +143,47 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 		case R.id.hints:
 			showHintsDialog();
 			return true;
+		case R.id.delete:
+			askAndPerformDelete();
+			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
+ 	@Override
+ 	public void onStop() {
+ 		super.onStop();
+ 		closeContextMenu();
+ 		closeOptionsMenu();
+ 	}
+ 	
+ 	private void askAndPerformDelete() {
+    	Collection<Long> checked = mOverviewFragment.getCheckedIds();
+    	if (checked.size() == 0) {
+    		showDeleteButton(false);
+    		return; //nothing to delete
+    	}
+    	if (checked.contains(getSelectedGameId())) {
+    		selectGame(Game.NO_ID);
+    	}
+    	// ask to delete all checked, tell this the fragment so we have no zombies
+		showDeleteButton(false);
+        Game.deleteConfirmed(this, checked, GameKey.TICHU, mOverviewFragment);   
+ 	}
+ 	
+ 	private void showDeleteButton(boolean show) {
+ 		mDeleteOption.setVisible(show);
+ 		mDeleteOption.setEnabled(show);
+ 	}
+ 	
+ 	@Override
+ 	public void onGameCheckedChange(Collection<Long> checkedIds) {
+ 		boolean hasChecked = checkedIds != null && checkedIds.size() > 0;
+ 		showDeleteButton(hasChecked);
+ 	}
+ 	
 	private void startGameSetup(long id) {
 		Intent i = new Intent(this, GameSetupActivity.class);
-		//TODO changes made here and to constants for debugging and testing purposes
 		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.TICHU);
 		i.putExtra(GameSetupActivity.EXTRA_TEAM_MIN_PLAYERS, TICHU_GAME_MIN_PLAYERS);
 		i.putExtra(GameSetupActivity.EXTRA_TEAM_MAX_PLAYERS, TICHU_GAME_MAX_PLAYERS);
@@ -159,12 +194,12 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_NAMES, new String[] {getResources().getString(R.string.tichu_game_score_limit)});
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_NAMES, new String[] {getResources().getString(R.string.tichu_game_mery_rule)});
 		i.putExtra(GameSetupActivity.EXTRA_FLAG_SUGGEST_UNFINISHED_GAME, true);
-		i.putExtra(GameSetupActivity.EXTRA_FLAG_ALLOW_PLAYER_COLOR_EDITING, true);
+		/*i.putExtra(GameSetupActivity.EXTRA_FLAG_ALLOW_PLAYER_COLOR_EDITING, true);
 		i.putExtra(GameSetupActivity.EXTRA_FLAG_ALLOW_TEAM_COLOR_EDITING, true);
 		i.putExtra(GameSetupActivity.EXTRA_FLAG_ALLOW_TEAM_NAME_EDITING, true);
 		i.putExtra(GameSetupActivity.EXTRA_FLAG_USE_DUMMY_PLAYERS, true);
 		i.putExtra(GameSetupActivity.EXTRA_TEAM_COLORS, new int[] {0xFFFF6543, 0xFFAA1245});
-		i.putExtra(GameSetupActivity.EXTRA_TEAM_IS_OPTIONAL, new boolean[] {false, false, true, true});
+		i.putExtra(GameSetupActivity.EXTRA_TEAM_IS_OPTIONAL, new boolean[] {false, false, true, true});*/
 		// priority to copy info from: parameter id, highlighted id, single checked id
 		long copyGameSetupId = Game.isValidId(id) ? id : getHighlightedGame();
 		if (!Game.isValidId(copyGameSetupId)) {
@@ -177,7 +212,7 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 			List<Game> games = null;
 			try {
 				games = GameKey.loadGames(GameKey.TICHU, getContentResolver(), GameStorageHelper.getUri(GameKey.TICHU, copyGameSetupId));
-			} catch (CompressedDataCorruptException e) {
+			} catch (CompactedDataCorruptException e) {
 				// fail silently and do not change default information
 			}
 			if (games != null && games.size() > 0) {
@@ -306,6 +341,7 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
         DialogFragment dialog = new RenamePlayerDialogFragment();
         Bundle args = new Bundle();
         args.putInt(GameKey.EXTRA_GAMEKEY, GameKey.TICHU);
+        args.putLongArray(RenamePlayerDialogFragment.EXTRA_RENAME_IN_GAME_IDS, GameKey.toArray(mOverviewFragment.getCheckedIds()));
         dialog.setArguments(args);
         dialog.show(getSupportFragmentManager(), "RenamePlayerDialogFragment");
 	}
@@ -402,13 +438,6 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 	}
 
 	@Override
-	public void onRenameSuccess(Player newPlayer, String oldName) {
-		if (mDetailsFragment != null) {
-			mDetailsFragment.onRenameSuccess(newPlayer, oldName);
-		}
-	}
-
-	@Override
 	public PlayerPool getPool() {
 		if (mDetailsFragment != null) {
 			return mDetailsFragment.getPool();
@@ -416,6 +445,7 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 			return null;
 		}
 	}
+	
 
 	@Override
 	public List<Player> toFilter() {

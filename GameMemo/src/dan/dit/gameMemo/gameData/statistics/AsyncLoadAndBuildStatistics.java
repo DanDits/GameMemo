@@ -9,7 +9,7 @@ import android.os.AsyncTask;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.player.Player;
-import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
+import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 public class AsyncLoadAndBuildStatistics extends
 		AsyncTask<Uri, Integer, GameStatistic> {
@@ -46,7 +46,7 @@ public class AsyncLoadAndBuildStatistics extends
 		List<Game> games = null;
 		try {
 			games = GameKey.loadGames(gameKey, resolver, uri[0]);
-		} catch(CompressedDataCorruptException e) {
+		} catch(CompactedDataCorruptException e) {
 		}
 		publishProgress(70);
 		if (games == null || games.size() == 0 || isCancelled()) {

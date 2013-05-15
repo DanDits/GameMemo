@@ -4,7 +4,7 @@
     <string name="app_name">GameMemo</string>
     <string name="setup_game">Setup game</string>
     <string name="game_list_empty">Your games will be saved here</string>
-    <string name="menu_delete_game">Delete game</string>
+    <string name="delete_game">Delete</string>
     <string name="menu_info_game">Info</string>
     <string name="game_starttime">Starttime</string>
     <string name="game_runtime">Duration</string>
@@ -84,6 +84,12 @@
 	<string name="unfinished_game_found_title">Continue unfinished game?</string>
 	<string name="unfinished_game_found_but_start_new">Start new</string>
 	<string name="rename_player">Rename player</string>
+	<string name="rename_in_games_all">in all %1$s games</string>
+	<plurals
+        name="rename_in_games_count">
+        <item quantity="one">in one %2$s game</item>
+        <item quantity="other">in %1$d %2$s games</item>
+    </plurals>
 	<string name="hint_new_player_name">New player name</string>
 	<string name="rename_conflict_title">Name in use</string>
 	<string name="rename_conflict">Merge %1$s and %2$s to %3$s? Can invalidate save games!</string>
@@ -131,6 +137,7 @@
 	<string name="tichu_game_lock_button_content_description">Start new round, edit selected or leave finished game.</string>
 	<string name="game_setup_reset">Reset</string>
 	<string name="game_setup_options">Options</string>
+	<string name="game_setup_options_show">Show options</string>
 	<string name="today">Today</string>
 	<string name="yesterday">Yesterday</string>
 	<string name="games_selected_single">%1$s selected</string>

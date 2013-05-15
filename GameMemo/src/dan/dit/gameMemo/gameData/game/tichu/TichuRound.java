@@ -2,8 +2,8 @@ package dan.dit.gameMemo.gameData.game.tichu;
 
 import dan.dit.gameMemo.gameData.game.GameRound;
 import dan.dit.gameMemo.gameData.game.InadequateRoundInfo;
-import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
-import dan.dit.gameMemo.util.compression.Compressor;
+import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
+import dan.dit.gameMemo.util.compaction.Compacter;
 public class TichuRound extends GameRound {
 	public static final int UNKNOWN_SCORE = 1337; // any illegal score
 	public static final int FINISHER_POS_LAST = 4;
@@ -13,9 +13,9 @@ public class TichuRound extends GameRound {
 	private TichuBid[] tichus;
 	private int[] finishers; // player 1 and 2 are in team 1, player 3 and 4 are in team 2
 	
-	protected TichuRound(Compressor data) throws CompressedDataCorruptException, InadequateRoundInfo {
+	protected TichuRound(Compacter data) throws CompactedDataCorruptException, InadequateRoundInfo {
 		if (data.getSize() < 4) {
-			throw new CompressedDataCorruptException("Too little data in compressor.").setCorruptData(data);
+			throw new CompactedDataCorruptException("Too little data in compressor.").setCorruptData(data);
 		}
 		rawScoreTeam1 = Integer.parseInt(data.getData(0));
 		rawScoreTeam2 = Integer.parseInt(data.getData(1));
@@ -174,7 +174,7 @@ public class TichuRound extends GameRound {
 	
 	@Override
 	public String compress() {
-		Compressor cmp = new Compressor();
+		Compacter cmp = new Compacter();
 		// score team1 in slot 0
 		cmp.appendData(rawScoreTeam1);
 		//score team2 in slot 1

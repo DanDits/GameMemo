@@ -89,7 +89,7 @@ public class CombinedPool {
 			if (pool.contains(player)) {
 				for (int key : gameKeys) {
 					if (GameKey.isGameSupported(key) && GameKey.getPool(key).equals(pool)) {
-						if (pool.renamePlayer(key, resolver, player, newName) != null) {
+						if (pool.renamePlayer(key, resolver, player, newName, null)) {
 							count++;
 						}
 					}
@@ -101,6 +101,16 @@ public class CombinedPool {
 	
 	public int getPoolCount() {
 		return mPools.size();
+	}
+
+	public int contains(String newName) {
+		int count = 0;
+		for (PlayerPool pool : mPools) {
+			if (pool.contains(newName)) {
+				count++;
+			}
+		}
+		return count;
 	}
 	
 }

@@ -3,8 +3,8 @@ package dan.dit.gameMemo.gameData.game.tichu;
 import dan.dit.gameMemo.gameData.game.GameBuilder;
 import dan.dit.gameMemo.gameData.game.InadequateRoundInfo;
 import dan.dit.gameMemo.gameData.player.PlayerDuo;
-import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
-import dan.dit.gameMemo.util.compression.Compressor;
+import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
+import dan.dit.gameMemo.util.compaction.Compacter;
 
 public class TichuGameBuilder extends GameBuilder {
 	
@@ -13,9 +13,9 @@ public class TichuGameBuilder extends GameBuilder {
 	}
 	
 	@Override
-	public GameBuilder loadPlayer(Compressor playerData) throws CompressedDataCorruptException {
+	public GameBuilder loadPlayer(Compacter playerData) throws CompactedDataCorruptException {
 		if (playerData.getSize() != TichuGame.TOTAL_PLAYERS) {
-			throw new CompressedDataCorruptException("A tichu game needs 4 players, not " + playerData.getSize())
+			throw new CompactedDataCorruptException("A tichu game needs 4 players, not " + playerData.getSize())
 			.setCorruptData(playerData);
 		}
 		// parsing player data
@@ -24,7 +24,7 @@ public class TichuGameBuilder extends GameBuilder {
 		String player3 = playerData.getData(2);
 		String player4 = playerData.getData(3);
 		if (!TichuGame.areValidPlayers(player1, player2, player3, player4)) {
-			throw new CompressedDataCorruptException("Loading players failed. Illegal or equal names.")
+			throw new CompactedDataCorruptException("Loading players failed. Illegal or equal names.")
 			.setCorruptData(playerData);
 		}
 		PlayerDuo firstTeam = new PlayerDuo(TichuGame.PLAYERS.populatePlayer(player1), TichuGame.PLAYERS.populatePlayer(player2));
@@ -34,7 +34,7 @@ public class TichuGameBuilder extends GameBuilder {
 	}
 
 	@Override
-	public GameBuilder loadMetadata(Compressor metaData) throws CompressedDataCorruptException {
+	public GameBuilder loadMetadata(Compacter metaData) throws CompactedDataCorruptException {
 		// parsing meta data, no data is required to construct a valid game
 		
 		if (metaData.getSize() >= 1) {
@@ -48,7 +48,7 @@ public class TichuGameBuilder extends GameBuilder {
 			try {
 				scoreLimit = Integer.parseInt(scoreLimitData);
 			} catch (NumberFormatException nfe) {
-				throw new CompressedDataCorruptException("Could not parse score limit meta data.", nfe);
+				throw new CompactedDataCorruptException("Could not parse score limit meta data.", nfe);
 			}
 			if (scoreLimit >= TichuGame.MIN_SCORE_LIMIT && scoreLimit <= TichuGame.MAX_SCORE_LIMIT) {
 				((TichuGame) mInst).mScoreLimit = scoreLimit;
@@ -58,14 +58,14 @@ public class TichuGameBuilder extends GameBuilder {
 	}
 
 	@Override
-	public GameBuilder loadRounds(Compressor roundsData) throws CompressedDataCorruptException {
+	public GameBuilder loadRounds(Compacter roundsData) throws CompactedDataCorruptException {
 		// parsing round data
 		for (String round : roundsData) {
 			TichuRound currTichuRound = null;
 			try {
-				currTichuRound = new TichuRound(new Compressor(round));
+				currTichuRound = new TichuRound(new Compacter(round));
 			} catch (InadequateRoundInfo e) {
-				throw new CompressedDataCorruptException("Could not parse round, info is not adequate.", e);
+				throw new CompactedDataCorruptException("Could not parse round, info is not adequate.", e);
 			}
 			if (currTichuRound != null) {
 				if (mInst.isFinished()) {

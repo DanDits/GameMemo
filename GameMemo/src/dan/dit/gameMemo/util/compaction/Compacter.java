@@ -1,10 +1,10 @@
-package dan.dit.gameMemo.util.compression;
+package dan.dit.gameMemo.util.compaction;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 /**
- * A Compressor is a very simple object that allows 'serialization' of
+ * A Compacter is a very simple object that allows 'serialization' of
  * primitive data types by compressing data into a single string as CSV (see http://en.wikipedia.org/wiki/Comma-separated_values).
  * This data
  * that is appended to the compressor can later be read by a new compressor initialized
@@ -13,14 +13,14 @@ import java.util.List;
  * compressors is easily possible, so strings compressed by a compressor can be appended and later
  * read by another compressor.<br><br>
  * Example:<br>
- * <code>Compressor cmp = new Compressor().appendData("a").appendData("b").appendData(2);<br>
+ * <code>Compacter cmp = new Compacter().appendData("a").appendData("b").appendData(2);<br>
  * String compressed = cmp.compress();<br>
- * Compressor decompressor = new Compressor(compressed);<br>
+ * Compacter decompressor = new Compacter(compressed);<br>
  * // decompressor.getData(0) equals "a", getData(1) equals "b" and getData(2) equals String.valueOf(2) </code>
  * @author Daniel
  *
  */
-public class Compressor implements Iterable<String>, Compressible {
+public class Compacter implements Iterable<String>, Compactable {
 	private static final String SEPARATION_SYMBOL = ";"; // any length one string which is no blank symbol that gets trimmed
 	private static final String BLANK = " "; // any string of length >= 1 unequal to and does not contain SEPARATION_SYMBOL
 	public static final String SEPARATOR = BLANK + SEPARATION_SYMBOL + BLANK;
@@ -28,11 +28,11 @@ public class Compressor implements Iterable<String>, Compressible {
 	private List<String> data;
 	
 	/**
-	 * Creates a new (De)Compressor which decompresses the given compressed data.
+	 * Creates a new (De)Compacter which decompresses the given compressed data.
 	 * @param compressedData Compressed data that can then be read. 
 	 * @throws NullPointerException If given data string is <code>null</code>.
 	 */
-	public Compressor(String compressedData) {
+	public Compacter(String compressedData) {
 		data = new ArrayList<String>();
 		// search for SEPERATORS and extract data in between
 		int startIndex = 0;
@@ -62,15 +62,15 @@ public class Compressor implements Iterable<String>, Compressible {
 	/**
 	 * Creates a new empty compressor with default capacity.
 	 */
-	public Compressor() {
+	public Compacter() {
 		data = new ArrayList<String>();
 	}
 	
 	/**
 	 * Creates a new empty compressor with the given capacity.
-	 * @param capacity The capacity for the Compressor, must be positive.
+	 * @param capacity The capacity for the Compacter, must be positive.
 	 */
-	public Compressor(int capacity) {
+	public Compacter(int capacity) {
 		data = new ArrayList<String>(capacity);
 	}
 
@@ -80,7 +80,7 @@ public class Compressor implements Iterable<String>, Compressible {
 	 * @throws NullPointerException If dataString is <code>null</code>.
 	 * @return this
 	 */
-	public Compressor appendData(String dataString) {
+	public Compacter appendData(String dataString) {
 		if (dataString == null) {
 			throw new NullPointerException("Given String is null.");
 		}
@@ -93,7 +93,7 @@ public class Compressor implements Iterable<String>, Compressible {
 	 * @param dataInt The int to append.
 	 * @return this
 	 */
-	public Compressor appendData(int dataInt) {
+	public Compacter appendData(int dataInt) {
 		data.add(String.valueOf(dataInt));
 		return this;
 	}
@@ -103,7 +103,7 @@ public class Compressor implements Iterable<String>, Compressible {
 	 * @param dataChar The char to append.
 	 * @return this
 	 */
-	public Compressor appendData(char dataChar) {
+	public Compacter appendData(char dataChar) {
 		data.add(String.valueOf(dataChar));
 		return this;
 	}
@@ -113,7 +113,7 @@ public class Compressor implements Iterable<String>, Compressible {
 	 * @param dataLong The long to append.
 	 * @return this
 	 */
-	public Compressor appendData(long dataLong) {
+	public Compacter appendData(long dataLong) {
 		data.add(String.valueOf(dataLong));
 		return this;
 	}

@@ -158,10 +158,10 @@ public class ChoosePlayerDialogFragment extends DialogFragment {
 				@Override
 				public void onTextChanged(CharSequence arg0, int arg1,
 						int arg2, int arg3) {
-					if (TextUtils.isEmpty(mNewName.getText()) && (mPlayersAdapter == null || !mPlayersAdapter.isEmpty())) {
-						setShowSpinner(true);
-					} else {
-						setShowSpinner(false);
+					setShowSpinner(TextUtils.isEmpty(mNewName.getText()) && (mPlayersAdapter == null || !mPlayersAdapter.isEmpty()));
+					if (mColorPicker != null && mListener.getPool().contains(mNewName.getText().toString())) {
+			        	Player sel = mListener.getPool().populatePlayer(mNewName.getText().toString());
+			        	mColorPicker.setColor(sel.getColor());	        		
 					}
 				}
 	        	

@@ -21,7 +21,7 @@ import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.statistics.GameStatisticBuilder;
 import dan.dit.gameMemo.gameData.statistics.tichu.TichuGameStatisticBuilder;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
+import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 /**
  * This helper class stores all game keys for classes that need to separate
@@ -153,7 +153,7 @@ public final class GameKey {
 		case GameKey.TICHU:
 			try {
 				gamesToSend = TichuGame.loadGames(resolver, GameStorageHelper.getUriAllItems(gameKey), timestamps, false);
-			} catch (CompressedDataCorruptException e) {
+			} catch (CompactedDataCorruptException e) {
 				assert false; // load games will not throw as requested by the parameter
 			}
 			break;
@@ -163,7 +163,7 @@ public final class GameKey {
 		return gamesToSend;
 	}
 	
-	public static List<Game> loadGames(int gameKey, ContentResolver resolver, Uri uri) throws CompressedDataCorruptException {
+	public static List<Game> loadGames(int gameKey, ContentResolver resolver, Uri uri) throws CompactedDataCorruptException {
 		switch (gameKey) {
 		case GameKey.TICHU:
 			return TichuGame.loadGames(resolver, uri, true);
@@ -193,11 +193,8 @@ public final class GameKey {
 	public static boolean getStayAwake(int gameKey, Activity act) {
 		SharedPreferences sharedPref = act.getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE);
 		boolean defaultIsAwake = false;
-		switch (gameKey) {
-		case TICHU:
-			defaultIsAwake = true;
-			break;
-		}
+		//add all game keys that have default awake here and set var to true
+		
 		return sharedPref.getBoolean(PREFERENCES_STAY_AWAKE + gameKey, defaultIsAwake);
 	}
 	

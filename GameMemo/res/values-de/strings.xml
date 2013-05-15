@@ -4,7 +4,7 @@
     <string name="app_name">GameMemo</string>
     <string name="game_list_empty">Deine Spiele werden hier gespeichert</string>
     <string name="setup_game">Spiel einrichten</string>
-    <string name="menu_delete_game">Löschen</string>
+    <string name="delete_game">Löschen</string>
     <string name="menu_info_game">Info</string>
     <string name="tichu_row_team1_heading">Team 1</string>
     <string name="tichu_row_team2_heading">Team 2</string>
@@ -90,6 +90,12 @@
 	<string name="unfinished_game_found_title">Offenes Spiel weiter spielen?</string>
 	<string name="unfinished_game_found_but_start_new">Starte neues</string>
 	<string name="rename_player">Spieler umbenennen</string>
+    <string name="rename_in_games_all">in allen %1$s Spielen</string>
+	<plurals
+        name="rename_in_games_count">
+        <item quantity="one">in einem %2$s Spiel</item>
+        <item quantity="other">in %1$d %2$s Spielen</item>
+    </plurals>
 	<string name="hint_new_player_name">Neuer Spielername</string>
 	<string name="rename_conflict_title">Doppelter Name</string>
 	<string name="rename_conflict">%1$s und %2$s zusammenfügen zu %3$s? Kann Spielstände ungültig machen!</string>
@@ -140,6 +146,7 @@
 	<string name="tichu_game_lock_button_content_description">Beginne neue Runde, ändere die gewählte oder verlasse das Spiel.</string>
 	<string name="game_setup_reset">Zurücksetzen</string>
 	<string name="game_setup_options">Optionen</string>
+	<string name="game_setup_options_show">Optionen anzeigen</string>
 	<string name="today">Heute</string>
 	<string name="yesterday">Gestern</string>	
 	<string name="games_selected_single">%1$s gewählt</string>

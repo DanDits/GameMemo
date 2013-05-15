@@ -31,11 +31,19 @@
 
             </LinearLayout>
 
+            <Button
+                android:id="@+id/options_show"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/game_setup_options_show" />
+
             <LinearLayout
                 android:id="@+id/options_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" >
+                android:orientation="vertical"
+                android:visibility="gone" >
+
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

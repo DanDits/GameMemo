@@ -10,7 +10,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.util.compression.Compressor;
+import dan.dit.gameMemo.util.compaction.Compacter;
 
 public class Player extends PlayerTeam {	
 	public static final Comparator<Player> NAME_COMPARATOR = new Comparator<Player>() {
@@ -85,11 +85,11 @@ public class Player extends PlayerTeam {
 		return equals(p);
 	}
 	
-	boolean rename(int gameKey, ContentResolver resolver, String pNewName) {
+	double rename(int gameKey, ContentResolver resolver, String pNewName, long[] mRenameInGameIds) {
 		String oldName = name;
 		String newName = pNewName.trim();
 		if (!Player.isValidPlayerName(newName)) {
-			return false;
+			return 0;
 		}
 		
 		String[] projection = { GameStorageHelper.COLUMN_ID, GameStorageHelper.COLUMN_PLAYERS};
@@ -100,6 +100,8 @@ public class Player extends PlayerTeam {
 		String[] selectionArgs = new String[1];
 		selectionArgs[0] = '%' + oldName + '%';
 		Cursor cursor = null;
+		int count = 0;
+		int countAllGames = 0;
 		try {
 			cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), selectionArgs,
 				null);
@@ -107,8 +109,15 @@ public class Player extends PlayerTeam {
 				cursor.moveToFirst();
 				// check all candidates: if this player actually participated in this game, change the player data
 				while (!cursor.isAfterLast()) {
-					Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
-					Compressor newPlayersdata = new Compressor(playersData.getSize());
+					int currId = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
+					boolean contained = mRenameInGameIds == null || mRenameInGameIds.length == 0;
+					for (int i = 0; i < mRenameInGameIds.length; i++) {
+						if (mRenameInGameIds[i] == currId) {
+							contained = true;
+						}
+					}
+					Compacter playersData = new Compacter(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
+					Compacter newPlayersdata = new Compacter(playersData.getSize());
 					boolean foundChange = false;
 					for (String playerName : playersData) {
 						if (playerName.equalsIgnoreCase(oldName) || playerName.equalsIgnoreCase(newName)) {
@@ -119,11 +128,15 @@ public class Player extends PlayerTeam {
 						}
 					}
 					if (foundChange) {
+						countAllGames++;
+					}
+					if (contained && foundChange) {
 						ContentValues values = new ContentValues();
 						values.put(GameStorageHelper.COLUMN_PLAYERS, newPlayersdata.compress());
 						long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
 						Uri uri = GameStorageHelper.getUri(gameKey, id);
 						if (uri != null) {
+							count++;
 							resolver.update(uri, values, null, null);
 						}
 					}
@@ -136,7 +149,7 @@ public class Player extends PlayerTeam {
 			}
 		}
 		this.name = newName;
-		return true;
+		return count / (double) countAllGames;
 	}
 
 	public static void loadPlayers(int gameKey, PlayerPool pool, ContentResolver resolver) {
@@ -148,7 +161,7 @@ public class Player extends PlayerTeam {
 			if (cursor != null) {
 				cursor.moveToFirst();
 				while (!cursor.isAfterLast()) {
-					Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
+					Compacter playersData = new Compacter(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
 					for (String playerName : playersData) {
 						if (Player.isValidPlayerName(playerName)) {
 							pool.populatePlayer(playerName);

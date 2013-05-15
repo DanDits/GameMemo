@@ -7,10 +7,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,6 +29,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -47,8 +50,8 @@ import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerDuo;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
-import dan.dit.gameMemo.util.compression.Compressor;
+import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
+import dan.dit.gameMemo.util.compaction.Compacter;
 /**
  * A fragment that displays a TichuGame with all of its rounds in a list,
  * allowing adding new rounds and editing existing rounds only for unfinished games.<br>
@@ -60,7 +63,7 @@ import dan.dit.gameMemo.util.compression.Compressor;
  * @author Daniel
  *
  */
-public class TichuGameDetailFragment extends ListFragment implements ChoosePlayerDialogListener {
+public class TichuGameDetailFragment extends ListFragment implements ChoosePlayerDialogListener, PlayerPool.PlayerNameChangeListener {
 	public static final String EXTRA_NEW_GAME_USE_MERCY_RULE = "dan.dit.gameMemo.USE_MERCY_RULE";
 	public static final String EXTRA_NEW_GAME_SCORE_LIMIT = "dan.dit.gameMemo.SCORE_LIMIT";
 	
@@ -198,8 +201,6 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		setHasOptionsMenu(true);
 	}
 	
-
-	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View baseView = inflater.inflate(R.layout.tichu_detail, null);
@@ -209,8 +210,11 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState); 
-		getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-		getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+		Window window = getActivity().getWindow();
+		if (window != null) {
+			window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+			window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+		}
 		mFinisher = new ArrayList<Integer>(TichuGame.TOTAL_PLAYERS);
 		mBids = new TichuBidType[TichuGame.TOTAL_PLAYERS];
 		mPlayer = new Button[TichuGame.TOTAL_PLAYERS];
@@ -264,6 +268,18 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		if (extras.containsKey(currKey)) i.putExtra(currKey, extras.getBoolean(currKey));
 	}	
 	
+ 	public void showGameInfo() {//TODO make this accessible by options menu or action bar 
+ 		Resources res = getActivity().getResources();
+ 		if (mGame != null) {
+			String formattedInfo = mGame.getFormattedInfo(res);
+			new AlertDialog.Builder(getActivity())
+			.setTitle(getResources().getString(R.string.menu_info_game))
+			.setMessage(formattedInfo)
+			.setIcon(android.R.drawable.ic_dialog_info)
+			.setNeutralButton(android.R.string.ok, null).show();
+		}
+ 	}
+ 	
 	private void loadOrStartGame(Bundle savedInstanceState) {
 		// Check from the saved Instance
 		long gameId = (savedInstanceState == null) ? Game.NO_ID : savedInstanceState
@@ -320,7 +336,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			setScoreSilent(false, savedInstanceState.getString(STORAGE_TEXT_SCORE_TEAM2));
 			String storedFinishers = savedInstanceState.getString(STORAGE_FINISHERS_LIST);
 			if (storedFinishers != null) {
-				for (String finisher : new Compressor(storedFinishers)) {
+				for (String finisher : new Compacter(storedFinishers)) {
 					int nextFinisherId = -1;
 					try {
 						nextFinisherId = Integer.parseInt(finisher);
@@ -333,7 +349,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			String storedBids = savedInstanceState.getString(STORAGE_BIDS_LIST);
 			if (storedBids != null) {
 				int id = TichuGame.PLAYER_ONE_ID;
-				for (String bidKey : new Compressor(storedBids)) {
+				for (String bidKey : new Compacter(storedBids)) {
 					setTichuBid(id, TichuBidType.getFromKey(bidKey), false);
 					id++;
 				}
@@ -459,6 +475,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			}
 			
 		});
+		GameKey.getPool(GameKey.TICHU).registerListener(this, false);
 	}
 	
 	@Override
@@ -543,7 +560,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		List<Game> games = null;
 		try {
 			games = TichuGame.loadGames(getActivity().getContentResolver(), GameStorageHelper.getUri(GameKey.TICHU, gameId), true);
-		} catch (CompressedDataCorruptException e) {
+		} catch (CompactedDataCorruptException e) {
 			games = null;
 		}
 		if (games != null && games.size() > 0) {
@@ -947,13 +964,13 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			outState.putString(STORAGE_TEXT_SCORE_TEAM1, mScoreTeam1.getText().toString());
 			outState.putString(STORAGE_TEXT_SCORE_TEAM2, mScoreTeam2.getText().toString());
 			if (mFinisher.size() > 0) {
-				Compressor cmp = new Compressor(mFinisher.size());
+				Compacter cmp = new Compacter(mFinisher.size());
 				for (int i : mFinisher) {
 					cmp.appendData(i);
 				}
 				outState.putString(STORAGE_FINISHERS_LIST, cmp.compress());
 			}
-			Compressor cmp = new Compressor(mBids.length);
+			Compacter cmp = new Compacter(mBids.length);
 			for (TichuBidType t : mBids) {
 				cmp.appendData(t.getKey());
 			}
@@ -964,8 +981,9 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	private void hideSoftKeyboard() {
 		InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
 			      Context.INPUT_METHOD_SERVICE);
-		
+		if (imm != null) {
 			imm.hideSoftInputFromWindow(mScoreTeam1.hasFocus() ? mScoreTeam1.getWindowToken() : mScoreTeam2.getWindowToken(), 0);
+		}
 	}
 	
 	@Override
@@ -992,23 +1010,22 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	public void onDestroyView() {
         getListView().setAdapter(null);
 		super.onDestroyView();
+		GameKey.getPool(GameKey.TICHU).unregisterListener(this);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
-		getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-		getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		Window window = getActivity().getWindow();
+		if (window != null) {
+			window.clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+			window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+			window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		}
 	}
 
 	public long getDisplayedGameId() {
 		return mGame == null ? Game.NO_ID : mGame.getId();
-	}
-
-	public void onRenameSuccess(Player newPlayer, String oldName) {
-		mGame.onRenameSuccess(newPlayer, oldName);
-		synchPlayerNames();
 	}
 
 	@Override
@@ -1049,6 +1066,11 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	@Override
 	public void onPlayerColorChanged(int arg, Player concernedPlayer) {
 		// ignored, tichu does not support player colors
+	}
+
+	@Override
+	public void playerNameChanged(String oldName, Player newPlayer) {
+		synchPlayerNames();
 	}
 
 }

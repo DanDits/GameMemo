@@ -16,8 +16,8 @@ import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameBuilder;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
-import dan.dit.gameMemo.util.compression.Compressor;
+import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
+import dan.dit.gameMemo.util.compaction.Compacter;
 
 // class made for one time use only, after closing the instance must be deleted and cannot be used anymore
 // always close to free resources
@@ -219,16 +219,16 @@ public class GameDataExchanger implements PostRecipient {
 	
 	protected void onReceiveGames(String message) {
 		String compressedGames = new String(message);
-		Compressor gamesCmp = new Compressor(compressedGames);
+		Compacter gamesCmp = new Compacter(compressedGames);
 		buildOwnStarttimes(); // even though I can assert that they are already built at this point (we sent a request to receive data)
 		Game curr;
 		for (String compressedGameString : gamesCmp) {
 			curr = null;
 			GameBuilder builder = GameKey.getBuilder(mGameKey);
 			try {
-				builder.loadAll(new Compressor(compressedGameString));
+				builder.loadAll(new Compacter(compressedGameString));
 				curr = builder.build();
-			} catch (CompressedDataCorruptException e) {
+			} catch (CompactedDataCorruptException e) {
 				// received data corrupt, no game
 				Log.d(TAG, "Error creating game from received data : " + e.getMessage() + "\nCorruptData=" + e.getCorruptData());
 			}
@@ -339,7 +339,7 @@ public class GameDataExchanger implements PostRecipient {
 	}
 	
 	private void sendGames(List<Game> games) {
-		Compressor gamesCompressor = new Compressor(games.size());
+		Compacter gamesCompressor = new Compacter(games.size());
 		for (Game g : games) {
 			gamesCompressor.appendData(g.compress());
 		}
@@ -397,13 +397,13 @@ public class GameDataExchanger implements PostRecipient {
 	}
 	
 	/**
-	 * Parses the compressed starttimes from the String using a {@link Compressor}. See timesToString
+	 * Parses the compressed starttimes from the String using a {@link Compacter}. See timesToString
 	 * to invert this method.
 	 * @param compressedTimes The compressed starttimes.
 	 * @return A list of all decompressed starttimes.
 	 */
 	public static List<Long> timesFromString(String compressedTimes) {
-		Compressor cmp = new Compressor(compressedTimes);
+		Compacter cmp = new Compacter(compressedTimes);
 		List<Long> startTimes = new ArrayList<Long>(cmp.getSize());
 		for (String s : cmp) {
 			Long l = null;
@@ -427,7 +427,7 @@ public class GameDataExchanger implements PostRecipient {
 		if (startTimes == null || startTimes.size() == 0) {
 			return "";
 		}
-		Compressor starttimesCompressor = new Compressor(startTimes.size());
+		Compacter starttimesCompressor = new Compacter(startTimes.size());
 		for (Long l : startTimes) {
 			starttimesCompressor.appendData(l.toString());
 		}

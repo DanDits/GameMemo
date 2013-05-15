@@ -15,14 +15,16 @@ import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.player.Player;
+import dan.dit.gameMemo.gameData.player.PlayerPool.PlayerNameChangeListener;
 import dan.dit.gameMemo.gameData.player.PlayerTeam;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.util.compression.Compressible;
-import dan.dit.gameMemo.util.compression.Compressor;
+import dan.dit.gameMemo.util.compaction.Compactable;
+import dan.dit.gameMemo.util.compaction.Compacter;
 
-public abstract class Game implements Iterable<GameRound>, Compressible {
+public abstract class Game implements Iterable<GameRound>, Compactable, PlayerNameChangeListener {
 	public static final String PREFERENCES_FILE = "dan.dit.gameMemo.GAME_PREFERENCES";
 	public static final long NO_ID = -1; // isValidId(NO_ID) must be false
 	public static final int WINNER_NONE = 0;
@@ -37,7 +39,14 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 		this.mId = NO_ID;
 		startTime = new Date().getTime();
 		rounds = new ArrayList<GameRound>();
+		GameKey.getPool(getKey()).registerListener(this, true);	
 		assert !isFinished();
+	}
+	
+	@Override
+	protected void finalize() throws Throwable{
+		super.finalize();
+		GameKey.getPool(getKey()).unregisterListener(this); // not really necessary since PlayerPool uses weak references
 	}
 	
 	public abstract PlayerTeam getWinner();
@@ -92,13 +101,13 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 	protected abstract void setupPlayers(List<Player> players); // if not made public subclasses must provide another setupGame method with other params
 	
 	/**
-	 * Returns all players' names in a compressed that can be decompressed by a {@link Compressor}.
+	 * Returns all players' names in a compressed that can be decompressed by a {@link Compacter}.
 	 * The interpretation of the order and grouping of these players is left to the Game implementation.
 	 * @return A compressed form of all players.
 	 */
 	protected abstract String getPlayerData();
 	/**
-	 * Returns all rounds in a compressed way that can be decompressed by a {@link Compressor}.
+	 * Returns all rounds in a compressed way that can be decompressed by a {@link Compacter}.
 	 * Must be a concatenation of all rounds of the game. How the data for each round is read is up to the game implementation.
 	 * This round specific data can be changed, but regard the general hint given at getMetaData().
 	 * @return A compressed form of all game rounds.
@@ -126,7 +135,7 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 	}
 	
 	public void setOriginData(String bluetoothDeviceName, String model) {
-		Compressor cmp = new Compressor(2);
+		Compacter cmp = new Compacter(2);
 		cmp.appendData(bluetoothDeviceName == null ? "" : bluetoothDeviceName);
 		cmp.appendData(model == null ? "" : model);
 		originData = cmp.compress();
@@ -134,7 +143,7 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 	
 	@Override
 	public String compress() {
-		Compressor cmp = GameBuilder.getCompressor(this);
+		Compacter cmp = GameBuilder.getCompressor(this);
 		return cmp.compress();
 	}
 
@@ -238,7 +247,7 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 				cursor.moveToFirst();
 				while (!cursor.isAfterLast()) {
 					// check if the game really contains the given players (in arbitrary order)
-					Compressor playersData = new Compressor(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
+					Compacter playersData = new Compacter(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
 					if (subsetOk || playersData.getSize() == matchTeam.size()) {
 						boolean allPlayersContained = true;
 						for (Player currP : matchTeam) {
@@ -317,23 +326,48 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 		.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 
 		    public void onClick(DialogInterface dialog, int whichButton) {
-		    	Collection<Long> deletedGames = deleteGames(context.getContentResolver(), ids, gameKey);
-		    	if (listener != null) {
-		    		listener.deletedGames(deletedGames);
-		    	}
+		    	deleteGames(context.getContentResolver(), ids, gameKey, listener);
 		    }})
 		 .setNegativeButton(android.R.string.no, null).show();
 	}
 	
-	public static Collection<Long> deleteGames(ContentResolver resolver, Collection<Long> ids, int gameKey) {
-		Collection<Long> deleted = new HashSet<Long>();
+	private static void deleteGames(ContentResolver resolver, Collection<Long> ids, int gameKey, GamesDeletionListener listener) {
+		GamesDeleteTask deleteTask = new GamesDeleteTask(gameKey, resolver, listener);
+		Long[] idsArray = new Long[ids.size()];
+		int index = 0;
 		for (long id : ids) {
-			Uri uri = GameStorageHelper.getUri(gameKey, id);
-			if (resolver.delete(uri, null, null) > 0) {
-				deleted.add(id);
-			}
+			idsArray[index++] = Long.valueOf(id);
 		}
-		return deleted;
+		deleteTask.execute(idsArray);
+	}
+	
+	private static class GamesDeleteTask extends AsyncTask<Long, Integer, Collection<Long>> {
+		private final int mGameKey;
+		private final ContentResolver mResolver;
+		private final GamesDeletionListener mListener;
+		private GamesDeleteTask(int gameKey, ContentResolver resolver, GamesDeletionListener listener) {
+			mGameKey = gameKey;
+			mResolver = resolver;
+			mListener = listener;
+		}
+		@Override
+		protected Collection<Long> doInBackground(Long... ids) {
+			Collection<Long> deleted = new HashSet<Long>();
+			for (long id : ids) {
+				Uri uri = GameStorageHelper.getUri(mGameKey, id);
+				if (mResolver.delete(uri, null, null) > 0) {
+					deleted.add(id);
+				}
+			}
+			return deleted;
+		}
+		
+		@Override
+	    protected void onPostExecute(Collection<Long> result) {
+			if (mListener != null && result != null && result.size() > 0) {
+				mListener.deletedGames(result);
+			}
+	    }
 	}
 	
 	//maybe this will be needed in some other situation, but best is too avoid reading only single columns
@@ -347,7 +381,7 @@ public abstract class Game implements Iterable<GameRound>, Compressible {
 			cursor.moveToFirst();
 			if (!cursor.isAfterLast()) {
 				String playerData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS));
-				Compressor playerNames = new Compressor(playerData);
+				Compacter playerNames = new Compacter(playerData);
 				List<Player> players = new ArrayList<Player>(playerNames.getSize());
 				for (String player : playerNames) {
 					players.add(GameKey.getPool(gameKey).populatePlayer(player));

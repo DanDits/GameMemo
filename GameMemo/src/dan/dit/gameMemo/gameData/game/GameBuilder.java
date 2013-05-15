@@ -1,13 +1,13 @@
 package dan.dit.gameMemo.gameData.game;
 
-import dan.dit.gameMemo.util.compression.CompressedDataCorruptException;
-import dan.dit.gameMemo.util.compression.Compressor;
+import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
+import dan.dit.gameMemo.util.compaction.Compacter;
 
 public abstract class GameBuilder {
 	protected Game mInst;
 	
-	public static Compressor getCompressor(Game game) { // works together with loadAll
-		Compressor cmp = new Compressor(6);
+	public static Compacter getCompressor(Game game) { // works together with loadAll
+		Compacter cmp = new Compacter(6);
 		cmp.appendData(game.startTime);
 		cmp.appendData(game.mRunningTime);
 		cmp.appendData(game.getPlayerData());
@@ -17,24 +17,24 @@ public abstract class GameBuilder {
 		return cmp;
 	}
 	
-	public final GameBuilder loadAll(Compressor allData) throws CompressedDataCorruptException {
+	public final GameBuilder loadAll(Compacter allData) throws CompactedDataCorruptException {
 		if (allData.getSize() < 6) {
-			throw new CompressedDataCorruptException("Too little data provided to construct a game.");
+			throw new CompactedDataCorruptException("Too little data provided to construct a game.");
 		}
 		try {
 			setStarttime(Long.parseLong(allData.getData(0)));
 		} catch (NumberFormatException nfe) {
-			throw new CompressedDataCorruptException("Could not parse start time.", nfe);
+			throw new CompactedDataCorruptException("Could not parse start time.", nfe);
 		}
 		try {
 			setRunningTime(Long.parseLong(allData.getData(1)));
 		} catch (NumberFormatException nfe) {
-			throw new CompressedDataCorruptException("Could not parse run time.", nfe);
+			throw new CompactedDataCorruptException("Could not parse run time.", nfe);
 		}
-		Compressor playerData = new Compressor(allData.getData(2));
-		Compressor roundsData = new Compressor(allData.getData(3));
-		Compressor metaData = new Compressor(allData.getData(4));
-		Compressor originData = new Compressor(allData.getData(5));
+		Compacter playerData = new Compacter(allData.getData(2));
+		Compacter roundsData = new Compacter(allData.getData(3));
+		Compacter metaData = new Compacter(allData.getData(4));
+		Compacter originData = new Compacter(allData.getData(5));
 		loadMetadata(metaData);
 		loadPlayer(playerData);
 		loadRounds(roundsData);
@@ -60,11 +60,11 @@ public abstract class GameBuilder {
 		return this;
 	}
 
-	public abstract GameBuilder loadMetadata(Compressor metaData) throws CompressedDataCorruptException; // must be invoked before loadPlayer and before loadRounds
-	public abstract GameBuilder loadPlayer(Compressor playerData) throws CompressedDataCorruptException;
-	public abstract GameBuilder loadRounds(Compressor roundData) throws CompressedDataCorruptException; // must be invoked after loadPlayer and loadMetaData
+	public abstract GameBuilder loadMetadata(Compacter metaData) throws CompactedDataCorruptException; // must be invoked before loadPlayer and before loadRounds
+	public abstract GameBuilder loadPlayer(Compacter playerData) throws CompactedDataCorruptException;
+	public abstract GameBuilder loadRounds(Compacter roundData) throws CompactedDataCorruptException; // must be invoked after loadPlayer and loadMetaData
 	
-	public GameBuilder loadOrigin(Compressor originData) {
+	public GameBuilder loadOrigin(Compacter originData) {
 		mInst.originData = originData.compress();
 		return this;
 	}
