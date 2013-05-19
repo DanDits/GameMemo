@@ -15,5 +15,5 @@ public interface Compactable {
 	 * to a single String. The object should be able to rebuilt itself (completely) from this string.
 	 * @return A string that contains the data of this object.
 	 */
-	String compress();
+	String compact();
 }

@@ -5,18 +5,18 @@ import java.util.Iterator;
 import java.util.List;
 /**
  * A Compacter is a very simple object that allows 'serialization' of
- * primitive data types by compressing data into a single string as CSV (see http://en.wikipedia.org/wiki/Comma-separated_values).
+ * primitive data types by compacting data into a single string as CSV (see http://en.wikipedia.org/wiki/Comma-separated_values).
  * This data
- * that is appended to the compressor can later be read by a new compressor initialized
- * with the compressed string in the same order. Strings must not be null, but can contain any data! So there is no special character excluded.
+ * that is appended to the Compacter can later be read by a new Compacter initialized
+ * with the compacted string in the same order. Strings must not be null, but can contain any data! So there is no special character excluded.
  * <br> Nesting of
- * compressors is easily possible, so strings compressed by a compressor can be appended and later
- * read by another compressor.<br><br>
+ * Compacters is easily possible, so strings compacted by a Compacter can be appended and later
+ * read by another Compacter.<br><br>
  * Example:<br>
  * <code>Compacter cmp = new Compacter().appendData("a").appendData("b").appendData(2);<br>
- * String compressed = cmp.compress();<br>
- * Compacter decompressor = new Compacter(compressed);<br>
- * // decompressor.getData(0) equals "a", getData(1) equals "b" and getData(2) equals String.valueOf(2) </code>
+ * String compacted = cmp.compact();<br>
+ * Compacter decompacter = new Compacter(compacted);<br>
+ * // decompacter.getData(0) equals "a", getData(1) equals "b" and getData(2) equals String.valueOf(2) </code>
  * @author Daniel
  *
  */
@@ -28,26 +28,26 @@ public class Compacter implements Iterable<String>, Compactable {
 	private List<String> data;
 	
 	/**
-	 * Creates a new (De)Compacter which decompresses the given compressed data.
-	 * @param compressedData Compressed data that can then be read. 
+	 * Creates a new (De)Compacter which decompacts the given compacted data.
+	 * @param compactedData Compacted data that can then be read. 
 	 * @throws NullPointerException If given data string is <code>null</code>.
 	 */
-	public Compacter(String compressedData) {
+	public Compacter(String compactedData) {
 		data = new ArrayList<String>();
 		// search for SEPERATORS and extract data in between
 		int startIndex = 0;
-		final int dataLength = compressedData.length();
+		final int dataLength = compactedData.length();
 		final int seperatorLength = SEPERATOR_CHARS.length;
 		for (int curIndex = 0; curIndex < dataLength - seperatorLength + 1; ) {
 			boolean foundSeparator = true;
 			for (int s = 0; s < seperatorLength; s++) {
-				if (SEPERATOR_CHARS[s] != compressedData.charAt(curIndex + s)) {
+				if (SEPERATOR_CHARS[s] != compactedData.charAt(curIndex + s)) {
 					foundSeparator = false;
 					break;
 				}
 			}
 			if (foundSeparator) {
-				data.add(compressedData.substring(startIndex, curIndex).replace(SEPARATION_SYMBOL + SEPARATION_SYMBOL, SEPARATION_SYMBOL));
+				data.add(compactedData.substring(startIndex, curIndex).replace(SEPARATION_SYMBOL + SEPARATION_SYMBOL, SEPARATION_SYMBOL));
 				curIndex += seperatorLength;
 				startIndex = curIndex;
 			} else {
@@ -55,19 +55,19 @@ public class Compacter implements Iterable<String>, Compactable {
 			}
 		}
 		if (startIndex < dataLength) {
-			data.add(compressedData.substring(startIndex).replace(SEPARATION_SYMBOL + SEPARATION_SYMBOL, SEPARATION_SYMBOL));
+			data.add(compactedData.substring(startIndex).replace(SEPARATION_SYMBOL + SEPARATION_SYMBOL, SEPARATION_SYMBOL));
 		}
 	}
 	
 	/**
-	 * Creates a new empty compressor with default capacity.
+	 * Creates a new empty Compacter with default capacity.
 	 */
 	public Compacter() {
 		data = new ArrayList<String>();
 	}
 	
 	/**
-	 * Creates a new empty compressor with the given capacity.
+	 * Creates a new empty Compacter with the given capacity.
 	 * @param capacity The capacity for the Compacter, must be positive.
 	 */
 	public Compacter(int capacity) {
@@ -75,7 +75,7 @@ public class Compacter implements Iterable<String>, Compactable {
 	}
 
 	/**
-	 * Appends data to the compressor.
+	 * Appends data to the Compacter.
 	 * @param dataString The data string to append.
 	 * @throws NullPointerException If dataString is <code>null</code>.
 	 * @return this
@@ -135,16 +135,16 @@ public class Compacter implements Iterable<String>, Compactable {
 	}
 	
 	/**
-	 * Returns the size of this compressor, which is the amount
+	 * Returns the size of this Compacter, which is the amount
 	 * of data packages stored with it.
-	 * @return The size of this compressor.
+	 * @return The size of this Compacter.
 	 */
 	public int getSize() {
 		return data.size();
 	}
 
 	@Override
-	public String compress() { // compressing is always possible
+	public String compact() { // compacting is always possible
 		if (data.size() == 0) {
 			return "";
 		}

@@ -173,7 +173,7 @@ public class TichuRound extends GameRound {
 	}
 	
 	@Override
-	public String compress() {
+	public String compact() {
 		Compacter cmp = new Compacter();
 		// score team1 in slot 0
 		cmp.appendData(rawScoreTeam1);
@@ -191,7 +191,7 @@ public class TichuRound extends GameRound {
 			tichuData.append(bid.getType().getKey());
 		}
 		cmp.appendData(tichuData.toString());
-		return cmp.compress();
+		return cmp.compact();
 	}
 	
 	/**

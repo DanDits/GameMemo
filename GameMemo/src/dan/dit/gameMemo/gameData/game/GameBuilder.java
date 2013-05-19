@@ -65,7 +65,7 @@ public abstract class GameBuilder {
 	public abstract GameBuilder loadRounds(Compacter roundData) throws CompactedDataCorruptException; // must be invoked after loadPlayer and loadMetaData
 	
 	public GameBuilder loadOrigin(Compacter originData) {
-		mInst.originData = originData.compress();
+		mInst.originData = originData.compact();
 		return this;
 	}
 	

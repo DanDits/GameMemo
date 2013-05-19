@@ -21,7 +21,7 @@ import dan.dit.gameMemo.gameData.player.PlayerDuo;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.player.PlayerTeam;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.storage.database.TichuTable;
+import dan.dit.gameMemo.storage.database.CardGameTable;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
@@ -76,7 +76,7 @@ public class TichuGame extends Game {
 		cmp.appendData(firstTeam.getSecond().getName());
 		cmp.appendData(secondTeam.getFirst().getName());
 		cmp.appendData(secondTeam.getSecond().getName());
-		return cmp.compress();
+		return cmp.compact();
 	}
 	
 	public PlayerDuo getTeam1() {
@@ -107,9 +107,9 @@ public class TichuGame extends Game {
 	protected String getRoundsData() {
 		Compacter cmp = new Compacter(rounds.size());
 		for (GameRound round : rounds) {
-			cmp.appendData(round.compress());
+			cmp.appendData(round.compact());
 		}
-		return cmp.compress();
+		return cmp.compact();
 	}
 	
 	@Override
@@ -273,7 +273,7 @@ public class TichuGame extends Game {
 	
 	private static List<Game> loadGames(ContentResolver resolver, Uri uri,
 			String selection, String[] selectionArgs, boolean throwAtFailure) throws CompactedDataCorruptException {
-		String[] projection = TichuTable.AVAILABLE_COLUMNS;
+		String[] projection = CardGameTable.AVAILABLE_COLUMNS;
 		Cursor cursor = null;
 		try {
 			cursor = resolver.query(uri, projection, selection, selectionArgs,
@@ -358,7 +358,7 @@ public class TichuGame extends Game {
 		Compacter cmp = new Compacter();
 		cmp.appendData(mMercyRuleEnabled ? META_DATA_USES_MERCY_RULE : META_DATA_DOES_NOT_USE_MERCY_RULE);
 		cmp.appendData(mScoreLimit);
-		return cmp.compress();
+		return cmp.compact();
 	}
 
 	@Override
@@ -399,6 +399,11 @@ public class TichuGame extends Game {
 			PlayerDuo newTeam = new PlayerDuo(firstGotRenamed ? newPlayer : secondTeam.getFirst(), firstGotRenamed ? secondTeam.getSecond() : newPlayer);			
 			setupPlayers(firstTeam, newTeam);
 		}
+	}
+
+	@Override
+	public long[] getIdsOfInterest() {
+		return new long[] {mId};
 	}
 
 }

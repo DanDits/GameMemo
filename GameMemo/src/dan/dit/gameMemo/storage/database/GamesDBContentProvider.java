@@ -2,6 +2,7 @@ package dan.dit.gameMemo.storage.database;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -16,7 +17,10 @@ import dan.dit.gameMemo.storage.GameStorageHelper;
 /**
  * This content provider is used to communicate with {@link GameSQLiteHelper}'s database
  * and allows insertion, updating and querying games.
- *
+ * Uri format: 
+ * All games (parameter: gamekey): content://AUTHORITY/#
+ * Game by id (parameter: gamekey, gameid): content://AUTHORITY/#/_id/# 
+ * Game by starttime (parameter: gamekey, starttime): content://AUTHORITY/#/sTime/#
  * @author Daniel
  *
  */
@@ -26,18 +30,18 @@ public class GamesDBContentProvider extends ContentProvider {
 	private GameSQLiteHelper database;
 
 	// must equal the authority in the manifest file
-	public static final String AUTHORITY = "dan.dit.gameMemo.games_db.contentprovider";
+	public static final String AUTHORITY = "dan.dit.gameMemo.gamesData.contentprovider";
 
 	private static final int URI_TYPE_ALL = 0;
 	private static final int URI_TYPE_SINGLE_ID = 1;
-	private static final int URI_COUNT_PER_GAME = 2;
+	private static final int URI_TYPE_SINGLE_STARTTIME = 2;
 	private static final UriMatcher sURIMatcher = new UriMatcher(
 			UriMatcher.NO_MATCH);
 
-	public static void registerGame(int gameKey, String path) {
-		sURIMatcher.addURI(AUTHORITY, path, gameKey * URI_COUNT_PER_GAME + URI_TYPE_ALL);
-		sURIMatcher.addURI(AUTHORITY, path + "/#", gameKey
-				* URI_COUNT_PER_GAME + URI_TYPE_SINGLE_ID);
+	static {
+		sURIMatcher.addURI(AUTHORITY, "content://" + AUTHORITY + "/#/" + GameStorageHelper.COLUMN_ID + "/#", URI_TYPE_SINGLE_ID);
+		sURIMatcher.addURI(AUTHORITY, "content://" + AUTHORITY + "/#/" + GameStorageHelper.COLUMN_STARTTIME + "/#", URI_TYPE_SINGLE_STARTTIME);
+		sURIMatcher.addURI(AUTHORITY, "content://" + AUTHORITY + "/#", URI_TYPE_ALL);
 	}
 
 	@Override
@@ -46,30 +50,51 @@ public class GamesDBContentProvider extends ContentProvider {
 		return false;
 	}
 
+	private int matchUriType(Uri uri) {
+		List<String> pathSegments = uri.getPathSegments(); //TODO temp fix
+		if (pathSegments.size() == 1) {
+			return URI_TYPE_ALL;
+		} else {
+			for (String segm : pathSegments) {
+				if (segm.equals(GameStorageHelper.COLUMN_ID)) {
+					return URI_TYPE_SINGLE_ID;
+				}
+				if (segm.equals(GameStorageHelper.COLUMN_STARTTIME)) {
+					return URI_TYPE_SINGLE_STARTTIME;
+				}
+			}
+		}
+		return UriMatcher.NO_MATCH;
+	}
+	
 	@Override
 	synchronized public Cursor query(Uri uri, String[] projection,
 			String selection, String[] selectionArgs, String sortOrder) {
-		int uriKey = sURIMatcher.match(uri);
-		int uriType = uriKey % URI_COUNT_PER_GAME;
-		int gameKey = uriKey / URI_COUNT_PER_GAME;
+		int uriType = matchUriType(uri);
+		int gameKey = Integer.parseInt(uri.getPathSegments().get(0));
 		
 		// Using SQLiteQueryBuilder instead of query() method
 		SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-
+		
 		// Check if the caller has requested a column which does not exists
 		checkColumns(projection, gameKey);
 
 		queryBuilder.setTables(GameStorageHelper.getTableName(gameKey));
+		queryBuilder.appendWhere(GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey);
 		switch (uriType) {
 		case URI_TYPE_ALL:
 			break;
 		case URI_TYPE_SINGLE_ID:
 			// Adding the ID to the original query
-			queryBuilder.appendWhere(GameStorageHelper.COLUMN_ID + "="
+			queryBuilder.appendWhere(" and " + GameStorageHelper.COLUMN_ID + "="
 					+ uri.getLastPathSegment());
 			break;
+		case URI_TYPE_SINGLE_STARTTIME:
+			queryBuilder.appendWhere(" and " + GameStorageHelper.COLUMN_STARTTIME + "="
+					+ uri.getLastPathSegment());
+			break;			
 		default:
-			throw new IllegalArgumentException("Unknown URI: " + uri);
+			throw new IllegalArgumentException("Unknown URI: " + uri + " matched type = " + uriType);
 		}
 
 		SQLiteDatabase db = database.getWritableDatabase();
@@ -88,43 +113,65 @@ public class GamesDBContentProvider extends ContentProvider {
 
 	@Override
 	synchronized public Uri insert(Uri uri, ContentValues values) {
-		int uriKey = sURIMatcher.match(uri);
-		int uriType = uriKey % URI_COUNT_PER_GAME;
-		int gameKey = uriKey / URI_COUNT_PER_GAME;
+		int uriType = matchUriType(uri);
+		int gameKey = Integer.parseInt(uri.getPathSegments().get(0));
+		
 		SQLiteDatabase sqlDB = database.getWritableDatabase();
 		long id = 0;
+		values.put(GameStorageHelper.COLUMN_GAME_KEY, gameKey);
 		switch (uriType) {
 		case URI_TYPE_ALL:
 			id = sqlDB.insert(GameStorageHelper.getTableName(gameKey), null, values);
 			break;
 		default:
-			throw new IllegalArgumentException("Unknown URI: " + uri);
+			throw new IllegalArgumentException("Unknown or illegal URI: " + uri);
 		}
 		getContext().getContentResolver().notifyChange(uri, null);
-		return GameStorageHelper.getUri(gameKey, id);
+		return GameStorageHelper.getUriWithId(gameKey, id);
 	}
 
 	@Override
 	synchronized public int delete(Uri uri, String selection,
 			String[] selectionArgs) {
-		int uriKey = sURIMatcher.match(uri);
-		int uriType = uriKey % URI_COUNT_PER_GAME;
-		int gameKey = uriKey / URI_COUNT_PER_GAME;
+		int uriType = matchUriType(uri);
+		int gameKey = Integer.parseInt(uri.getPathSegments().get(0));
+		
 		SQLiteDatabase sqlDB = database.getWritableDatabase();
 		int rowsDeleted = 0;
 		switch (uriType) {
 		case URI_TYPE_ALL:
-			rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey), selection,
-					selectionArgs);
+			if (TextUtils.isEmpty(selection)) {
+				rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey),
+						GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey, null);
+			} else {
+				rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey),
+								GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey + " and " 
+								+ selection, selectionArgs);
+			}
 			break;
 		case URI_TYPE_SINGLE_ID:
 			String id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
 				rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey),
-						GameStorageHelper.COLUMN_ID + "=" + id, null);
+						GameStorageHelper.COLUMN_ID + "=" + id + " and " 
+						+ GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey, null);
 			} else {
 				rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey),
 						GameStorageHelper.COLUMN_ID + "=" + id + " and "
+								+ GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey + " and " 
+								+ selection, selectionArgs);
+			}
+			break;
+		case URI_TYPE_SINGLE_STARTTIME:
+			String startTime = uri.getLastPathSegment();
+			if (TextUtils.isEmpty(selection)) {
+				rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey),
+						GameStorageHelper.COLUMN_STARTTIME + "=" + startTime + " and " 
+						+ GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey, null);
+			} else {
+				rowsDeleted = sqlDB.delete(GameStorageHelper.getTableName(gameKey),
+						GameStorageHelper.COLUMN_STARTTIME + "=" + startTime + " and "
+								+ GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey + " and " 
 								+ selection, selectionArgs);
 			}
 			break;
@@ -138,25 +185,45 @@ public class GamesDBContentProvider extends ContentProvider {
 	@Override
 	synchronized public int update(Uri uri, ContentValues values,
 			String selection, String[] selectionArgs) {
-
-		int uriKey = sURIMatcher.match(uri);
-		int uriType = uriKey % URI_COUNT_PER_GAME;
-		int gameKey = uriKey / URI_COUNT_PER_GAME;
+		int uriType = matchUriType(uri);
+		int gameKey = Integer.parseInt(uri.getPathSegments().get(0));
+		
 		SQLiteDatabase sqlDB = database.getWritableDatabase();
 		int rowsUpdated = 0;
 		switch (uriType) {
 		case URI_TYPE_ALL:
-			rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey), values,
-					selection, selectionArgs);
+			if (TextUtils.isEmpty(selection)) {
+				rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey),
+						values, GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey, null);
+			} else {
+				rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey),
+						values, GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey + " and "
+								+ selection, selectionArgs);
+			}
 			break;
 		case URI_TYPE_SINGLE_ID:
 			String id = uri.getLastPathSegment();
 			if (TextUtils.isEmpty(selection)) {
 				rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey),
-						values, GameStorageHelper.COLUMN_ID + "=" + id, null);
+						values, GameStorageHelper.COLUMN_ID + "=" + id + " and "
+						+ GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey, null);
 			} else {
 				rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey),
 						values, GameStorageHelper.COLUMN_ID + "=" + id + " and "
+								+ GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey + " and "
+								+ selection, selectionArgs);
+			}
+			break;
+		case URI_TYPE_SINGLE_STARTTIME:
+			String startTime = uri.getLastPathSegment();
+			if (TextUtils.isEmpty(selection)) {
+				rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey),
+						values, GameStorageHelper.COLUMN_STARTTIME + "=" + startTime + " and "
+						+ GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey, null);
+			} else {
+				rowsUpdated = sqlDB.update(GameStorageHelper.getTableName(gameKey),
+						values, GameStorageHelper.COLUMN_STARTTIME + "=" + startTime + " and "
+								+ GameStorageHelper.COLUMN_GAME_KEY + "=" + gameKey + " and "
 								+ selection, selectionArgs);
 			}
 			break;

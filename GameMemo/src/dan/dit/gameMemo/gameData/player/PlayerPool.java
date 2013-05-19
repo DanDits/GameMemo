@@ -10,6 +10,7 @@ import java.util.List;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.os.Handler;
 import dan.dit.gameMemo.R;
 /**
  * A PlayerPool holds a set of players. 
@@ -23,6 +24,7 @@ public class PlayerPool {
 	private List<WeakReference<PlayerNameChangeListener>> mListeners = new LinkedList<WeakReference<PlayerNameChangeListener>>();
 	
 	public interface PlayerNameChangeListener {
+		long[] getIdsOfInterest();
 		void playerNameChanged(String oldName, Player newPlayer);
 	}
 	
@@ -53,17 +55,31 @@ public class PlayerPool {
 		}
 	}
 	
-	private void notifyListeners(String oldName, Player newPlayer) {
+	private void notifyListeners(String oldName, Player newPlayer, long[] renamedForIds) {
 		Iterator<WeakReference<PlayerNameChangeListener>> it = mListeners.iterator();
 		while (it.hasNext()) {
 			WeakReference<PlayerNameChangeListener> ref = it.next();
 			PlayerNameChangeListener l = ref.get();
 			if (l == null) {
 				it.remove();
-			} else {
+			} else if (hasEqualId(renamedForIds, l.getIdsOfInterest())) {
 				l.playerNameChanged(oldName, newPlayer);
 			}
 		}
+	}
+	
+	private boolean hasEqualId(long[] ids1, long[] ids2) {
+		if (ids1 == null || ids2 == null) {
+			return true;
+		}
+		for (long id1 : ids1) {
+			for (long id2 : ids2) {
+				if (id1 == id2) {
+					return true;					
+				}
+			}
+		}
+		return false;
 	}
 	
 	private boolean addPlayer(Player p) {
@@ -157,24 +173,32 @@ public class PlayerPool {
 	 * @return <code>false</code> if renaming fails: The given name is invalid or player not
 	 * contained in this pool.
 	 */
-	public boolean renamePlayer(int gameKey, ContentResolver resolver, Player player, String newName, long[] mRenameInGameIds) {
+	public boolean renamePlayer(int gameKey, ContentResolver resolver, Handler notificationHandler, 
+			final Player player, final String newName, final long[] mRenameInGameIds) {
 		if (!Player.isValidPlayerName(newName) || !contains(player)) {
 			return false;
 		}
-		// if renaming for specific games only it can happen that the player to rename still exists in some games but is not in the pool anymore
-		// but with this knowledge here we can not keep both players since renaming for specific games could also elimate the old player totally
-		boolean result = false;
-		if (player.rename(gameKey, resolver, newName, mRenameInGameIds) > 0) {
-			result = true;
+		double renamedFraction = player.rename(gameKey, resolver, newName, mRenameInGameIds);
+		if (renamedFraction > 0) {
 			if (contains(newName)) {
 				// already got a player with this name... merge them, so remove one that we do not keep duplicates
 				players.remove(player);
 			}
-			Player newPlayer = populatePlayer(newName);//itself or the other merged player
+			if (renamedFraction == 1.0) {
+				// old player does not exist anymore so completely remove it from pool
+				players.remove(player);
+			}
+			final Player newPlayer = populatePlayer(newName);//itself or the other merged player
 			newPlayer.adapterNameLetterCase(newName); // so if 'hans' gets renamed to 'bla' and there already is 'BLA', BLA will change its name to bla
-			notifyListeners(player.getName(), newPlayer);
+			notificationHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					notifyListeners(player.getName(), newPlayer, mRenameInGameIds);					
+				}
+			});
+			return true;
 		}
-		return result;
+		return false;
 	}
 	
 	public int size() {

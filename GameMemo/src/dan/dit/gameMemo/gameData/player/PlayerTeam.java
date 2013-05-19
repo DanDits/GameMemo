@@ -61,11 +61,11 @@ public abstract class PlayerTeam implements Compactable, Iterable<Player> {
 	}
 	
 	@Override
-	public String compress() {
+	public String compact() {
 		Compacter cmp = new Compacter(getPlayerCount());
 		for (Player p : getPlayers()) {
 			cmp.appendData(p.getName());
 		}
-		return cmp.compress();
+		return cmp.compact();
 	}
 }

@@ -73,9 +73,9 @@
         </activity>
           <provider
      		 android:name=".storage.database.GamesDBContentProvider"
-      		 android:authorities="dan.dit.gameMemo.games_db.contentprovider" 
+      		 android:authorities="dan.dit.gameMemo.gamesData.contentprovider" 
       		 android:permission="dan.dit.gameMemo.GamesDBAccess"
-      		 android:exported="true">
+      		 android:exported="false">
    		</provider>
    		
     </application>

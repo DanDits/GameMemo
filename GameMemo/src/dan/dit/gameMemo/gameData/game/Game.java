@@ -138,13 +138,13 @@ public abstract class Game implements Iterable<GameRound>, Compactable, PlayerNa
 		Compacter cmp = new Compacter(2);
 		cmp.appendData(bluetoothDeviceName == null ? "" : bluetoothDeviceName);
 		cmp.appendData(model == null ? "" : model);
-		originData = cmp.compress();
+		originData = cmp.compact();
 	}
 	
 	@Override
-	public String compress() {
+	public String compact() {
 		Compacter cmp = GameBuilder.getCompressor(this);
-		return cmp.compress();
+		return cmp.compact();
 	}
 
 	public boolean updateRound(int index, GameRound updatedRound) { // must not be supported (since it also uses reset)
@@ -208,12 +208,12 @@ public abstract class Game implements Iterable<GameRound>, Compactable, PlayerNa
 		values.put(GameStorageHelper.COLUMN_ORIGIN, originData);
 		if (!isValidId(mId)) {
 			// New game 
-			mId = GameStorageHelper.getIdFromUri(resolver.insert( 
+			mId = GameStorageHelper.getIdOrStarttimeFromUri(resolver.insert( 
 						GameStorageHelper.getUriAllItems(getKey()), values));
 			
 		} else {
 			// Update game
-			resolver.update(GameStorageHelper.getUri(getKey(), mId), values, null, null);
+			resolver.update(GameStorageHelper.getUriWithId(getKey(), mId), values, null, null);
 		}
 		return;
 	}
@@ -285,14 +285,10 @@ public abstract class Game implements Iterable<GameRound>, Compactable, PlayerNa
 		where.append(GameStorageHelper.COLUMN_WINNER);
 		where.append(" = ");
 		where.append(Game.WINNER_NONE);
-		where.append(" and ");
-		where.append(GameStorageHelper.COLUMN_STARTTIME);
-		where.append(" = ");
-		where.append(String.valueOf(startTime));
 		Cursor cursor = null;
 		long id = Game.NO_ID;
 		try {
-			cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, where.toString(), null,
+			cursor = resolver.query(GameStorageHelper.getUriWithStarttime(gameKey, startTime), projection, where.toString(), null,
 				null);
 			// since start times are like id's unique this is meant to only return a cursor of length 0 or 1
 			if (cursor != null) {
@@ -354,7 +350,7 @@ public abstract class Game implements Iterable<GameRound>, Compactable, PlayerNa
 		protected Collection<Long> doInBackground(Long... ids) {
 			Collection<Long> deleted = new HashSet<Long>();
 			for (long id : ids) {
-				Uri uri = GameStorageHelper.getUri(mGameKey, id);
+				Uri uri = GameStorageHelper.getUriWithId(mGameKey, id);
 				if (mResolver.delete(uri, null, null) > 0) {
 					deleted.add(id);
 				}

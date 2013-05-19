@@ -39,7 +39,10 @@ public final class GameKey {
 	 * The constant for the {@link TichuGame} class.
 	 */
 	public static final int TICHU = 1;
-	public static final int[] ALL_GAMES = new int[] {TICHU};
+	
+	public static final int DOPPELKOPF = 2;
+	
+	public static final int[] ALL_GAMES = new int[] {TICHU, DOPPELKOPF};
 	
 	private GameKey() {}
 	
@@ -124,6 +127,8 @@ public final class GameKey {
 		switch(gameKey) {
 		case GameKey.TICHU:
 			return TichuGame.GAME_NAME;
+		case GameKey.DOPPELKOPF:
+			return "Doppelkopf"; // TODO move this in a DoppelKopfGame class as a constant
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}

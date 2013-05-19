@@ -211,7 +211,7 @@ public class TichuGamesActivity extends FragmentActivity implements DetailViewCa
 		if (Game.isValidId(copyGameSetupId)) {
 			List<Game> games = null;
 			try {
-				games = GameKey.loadGames(GameKey.TICHU, getContentResolver(), GameStorageHelper.getUri(GameKey.TICHU, copyGameSetupId));
+				games = GameKey.loadGames(GameKey.TICHU, getContentResolver(), GameStorageHelper.getUriWithId(GameKey.TICHU, copyGameSetupId));
 			} catch (CompactedDataCorruptException e) {
 				// fail silently and do not change default information
 			}

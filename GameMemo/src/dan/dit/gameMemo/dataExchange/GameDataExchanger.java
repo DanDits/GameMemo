@@ -341,10 +341,10 @@ public class GameDataExchanger implements PostRecipient {
 	private void sendGames(List<Game> games) {
 		Compacter gamesCompressor = new Compacter(games.size());
 		for (Game g : games) {
-			gamesCompressor.appendData(g.compress());
+			gamesCompressor.appendData(g.compact());
 		}
 		mGamesSentCount += games.size();
-		String gamesCompressed = gamesCompressor.compress();
+		String gamesCompressed = gamesCompressor.compact();
 		String message = null;
 		if (gamesCompressed.length() > 0) {
 			message = gamesCompressed;
@@ -431,7 +431,7 @@ public class GameDataExchanger implements PostRecipient {
 		for (Long l : startTimes) {
 			starttimesCompressor.appendData(l.toString());
 		}
-		return starttimesCompressor.compress();
+		return starttimesCompressor.compact();
 	}
 
 }

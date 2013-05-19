@@ -299,8 +299,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			} else if (!Game.isValidId(gameId)) {
 				// no id given, but maybe an uri?
 				Uri uri = extras.getParcelable(GameStorageHelper.getCursorItemType(GameKey.TICHU));
-				Log.d("Tichu", "Uri given " + uri);
-				gameId = GameStorageHelper.getIdFromUri(uri);
+				gameId = GameStorageHelper.getIdOrStarttimeFromUri(uri);
 			}
 			player1 = extras.getString(EXTRAS_TEAM1_PLAYER_1);
 			player2 = extras.getString(EXTRAS_TEAM1_PLAYER_2);
@@ -559,7 +558,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		assert Game.isValidId(gameId);
 		List<Game> games = null;
 		try {
-			games = TichuGame.loadGames(getActivity().getContentResolver(), GameStorageHelper.getUri(GameKey.TICHU, gameId), true);
+			games = TichuGame.loadGames(getActivity().getContentResolver(), GameStorageHelper.getUriWithId(GameKey.TICHU, gameId), true);
 		} catch (CompactedDataCorruptException e) {
 			games = null;
 		}
@@ -968,13 +967,13 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 				for (int i : mFinisher) {
 					cmp.appendData(i);
 				}
-				outState.putString(STORAGE_FINISHERS_LIST, cmp.compress());
+				outState.putString(STORAGE_FINISHERS_LIST, cmp.compact());
 			}
 			Compacter cmp = new Compacter(mBids.length);
 			for (TichuBidType t : mBids) {
 				cmp.appendData(t.getKey());
 			}
-			outState.putString(STORAGE_BIDS_LIST, cmp.compress());
+			outState.putString(STORAGE_BIDS_LIST, cmp.compact());
 		}
 	}
 
@@ -1071,6 +1070,11 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	@Override
 	public void playerNameChanged(String oldName, Player newPlayer) {
 		synchPlayerNames();
+	}
+
+	@Override
+	public long[] getIdsOfInterest() {
+		return mGame != null ? mGame.getIdsOfInterest() : null;
 	}
 
 }

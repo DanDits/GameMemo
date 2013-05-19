@@ -81,9 +81,9 @@ public class RenamePlayerDialogFragment extends DialogFragment {
 				// renaming does not fail here since new name is a valid player name and there are no conflict checks done
 				boolean success = false;
 				if (mRenameForAll) {
-					success = CombinedPool.ALL_POOLS.renamePlayer(GameKey.ALL_GAMES, context.getContentResolver(), toRename, newName) > 0;
+					success = CombinedPool.ALL_POOLS.renamePlayer(GameKey.ALL_GAMES, context.getContentResolver(), toaster, toRename, newName) > 0;
 				} else {
-					success = (GameKey.getPool(mGameKey).renamePlayer(mGameKey, context.getContentResolver(), toRename, newName, mRenameInGameIds));
+					success = (GameKey.getPool(mGameKey).renamePlayer(mGameKey, context.getContentResolver(), toaster, toRename, newName, mRenameInGameIds));
 				}
 				if (success) {
 					toaster.post(action);

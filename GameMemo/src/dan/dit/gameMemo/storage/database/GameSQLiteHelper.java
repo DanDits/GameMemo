@@ -1,10 +1,9 @@
 package dan.dit.gameMemo.storage.database;
 
-import dan.dit.gameMemo.storage.GameStorageHelper;
-
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import dan.dit.gameMemo.storage.GameStorageHelper;
 
 /**
  * A class that helps to open a sqlite database and creating and upgrading
@@ -14,21 +13,19 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class GameSQLiteHelper extends SQLiteOpenHelper {
 	public static final String GENERAL_GAME_TABLE_PREFIX = "game_";
-	private static final String DATABASE_NAME = "games.db";
-	private static final int DATABASE_VERSION = 2;
+	private static final String DATABASE_NAME = "gamesData";
+	private static final int DATABASE_VERSION = 1;
 
-	public static final String DATABASE_UPGRADE_COLUMN_METADATA_CONSTRAINT = GameStorageHelper.COLUMN_METADATA + " text not null default ''";
-	public static final String DATABASE_UPGRADE_COLUMN_RUNTIME_CONSTRAINT = GameStorageHelper.COLUMN_RUNTIME + " integer default 0";
-	public static final String DATABASE_UPGRADE_COLUMN_ORIGIN_CONSTRAINT = GameStorageHelper.COLUMN_ORIGIN + " text not null default ''";
 	public static final String DATABASE_CREATE_DEFAULT_TABLE_COLUMNS = 
 			GameStorageHelper.COLUMN_ID + " integer primary key autoincrement, "
 			+ GameStorageHelper.COLUMN_STARTTIME + " integer, " 
 			+ GameStorageHelper.COLUMN_PLAYERS + " text not null, "
 			+ GameStorageHelper.COLUMN_ROUNDS + " text not null, "
 			+ GameStorageHelper.COLUMN_WINNER + " integer, "
-			+ DATABASE_UPGRADE_COLUMN_METADATA_CONSTRAINT + ", "
-			+ DATABASE_UPGRADE_COLUMN_RUNTIME_CONSTRAINT + ", "
-			+ DATABASE_UPGRADE_COLUMN_ORIGIN_CONSTRAINT;
+			+ GameStorageHelper.COLUMN_METADATA + " text not null, "
+			+ GameStorageHelper.COLUMN_RUNTIME + " integer, "
+			+ GameStorageHelper.COLUMN_ORIGIN + " text not null, "
+			+ GameStorageHelper.COLUMN_GAME_KEY + " integer";
 	
 	/**
 	 * Create a helper object to create, open, and/or manage a database for games.
@@ -40,12 +37,12 @@ public class GameSQLiteHelper extends SQLiteOpenHelper {
 	
 	@Override
 	public void onCreate(SQLiteDatabase database) {
-		TichuTable.onCreate(database);
+		CardGameTable.onCreate(database);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		TichuTable.onUpgrade(db, oldVersion, newVersion);
+		CardGameTable.onUpgrade(db, oldVersion, newVersion);
 	}
 
 }

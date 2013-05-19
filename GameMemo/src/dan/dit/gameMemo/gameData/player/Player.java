@@ -71,7 +71,7 @@ public class Player extends PlayerTeam {
 	}
 	
 	@Override
-	public String compress() {
+	public String compact() {
 		return name;
 	}
 
@@ -119,22 +119,27 @@ public class Player extends PlayerTeam {
 					Compacter playersData = new Compacter(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
 					Compacter newPlayersdata = new Compacter(playersData.getSize());
 					boolean foundChange = false;
+					boolean containedOldPlayerCounted = false;
 					for (String playerName : playersData) {
-						if (playerName.equalsIgnoreCase(oldName) || playerName.equalsIgnoreCase(newName)) {
+						if (playerName.equalsIgnoreCase(oldName)) {
+							if (!containedOldPlayerCounted) {
+								countAllGames++;
+							}
+							containedOldPlayerCounted = true;
 							foundChange = true;
 							newPlayersdata.appendData(newName);
+						} else if (playerName.equalsIgnoreCase(newName)) {
+							foundChange = true;
+							newPlayersdata.appendData(newName);							
 						} else {
 							newPlayersdata.appendData(playerName);
 						}
 					}
-					if (foundChange) {
-						countAllGames++;
-					}
 					if (contained && foundChange) {
 						ContentValues values = new ContentValues();
-						values.put(GameStorageHelper.COLUMN_PLAYERS, newPlayersdata.compress());
+						values.put(GameStorageHelper.COLUMN_PLAYERS, newPlayersdata.compact());
 						long id = cursor.getInt(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
-						Uri uri = GameStorageHelper.getUri(gameKey, id);
+						Uri uri = GameStorageHelper.getUriWithId(gameKey, id);
 						if (uri != null) {
 							count++;
 							resolver.update(uri, values, null, null);

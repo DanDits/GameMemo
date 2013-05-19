@@ -6,11 +6,11 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import dan.dit.gameMemo.gameData.game.GameKey;
-
 import android.content.ContentResolver;
 import android.content.Context;
+import android.os.Handler;
 import android.widget.ArrayAdapter;
+import dan.dit.gameMemo.gameData.game.GameKey;
 
 public class CombinedPool {
 	public static final CombinedPool ALL_POOLS = new CombinedPool(); 
@@ -80,7 +80,7 @@ public class CombinedPool {
 		return adapter;
 	}
 
-	public int renamePlayer(int[] gameKeys, ContentResolver resolver, Player player, String newName) {
+	public int renamePlayer(int[] gameKeys, ContentResolver resolver, Handler notificationHandler, Player player, String newName) {
 		if (!Player.isValidPlayerName(newName)) {
 			return 0;
 		}
@@ -89,7 +89,7 @@ public class CombinedPool {
 			if (pool.contains(player)) {
 				for (int key : gameKeys) {
 					if (GameKey.isGameSupported(key) && GameKey.getPool(key).equals(pool)) {
-						if (pool.renamePlayer(key, resolver, player, newName, null)) {
+						if (pool.renamePlayer(key, resolver, notificationHandler, player, newName, null)) {
 							count++;
 						}
 					}

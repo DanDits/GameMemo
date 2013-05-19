@@ -238,7 +238,7 @@ public class TichuGameOverviewAdapter extends SimpleCursorAdapter implements Gam
         } else {
         	List<Game> game = null;
 			try {
-				game = TichuGame.loadGames(context.getContentResolver(), GameStorageHelper.getUri(GameKey.TICHU, id), false);
+				game = TichuGame.loadGames(context.getContentResolver(), GameStorageHelper.getUriWithId(GameKey.TICHU, id), false);
 			} catch (CompactedDataCorruptException e) {
 				assert false; // will not throw
 			}
