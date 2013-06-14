@@ -1,4 +1,4 @@
-package dan.dit.gameMemo.appCore.tichu;
+package dan.dit.gameMemo.appCore;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import dan.dit.gameMemo.R;
-import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment.DetailViewCallback;
+import dan.dit.gameMemo.appCore.GameDetailFragment.DetailViewCallback;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
@@ -22,29 +22,28 @@ import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.ShowStacktraceUncaughtExceptionHandler;
 
-/**
- * This activity hosts a {@link TichuGameDetailFragment} and passes its intent extras
- * to its fragment.
- * @author Daniel
- *
- */
-public class TichuGameDetailActivity extends FragmentActivity implements DetailViewCallback, ChoosePlayerDialogListener {
+public class GameDetailActivity extends FragmentActivity implements
+		DetailViewCallback, ChoosePlayerDialogListener {
+
+	public static final String EXTRA_PARAMETER_BUNDLE = "dan.dit.gameMemo.detail_parameter_bundle";
+	private int mGameKey;
 	private ActionBar mBar;
-	private TichuGameDetailFragment mDetails;
+	private GameDetailFragment mDetails;
 	
 	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Thread.setDefaultUncaughtExceptionHandler(new ShowStacktraceUncaughtExceptionHandler(this));
-		setContentView(R.layout.tichu_detail_fragment);
+		mGameKey = getIntent().getExtras().getInt(GameKey.EXTRA_GAMEKEY);
+		setContentView(GameKey.getGameDetailLayout(mGameKey));
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			mBar = getActionBar();
 			if (mBar != null) {
 				mBar.setHomeButtonEnabled(true);
 				mBar.setDisplayHomeAsUpEnabled(true);
-				mBar.setIcon(GameKey.getGameIconId(GameKey.TICHU));
+				mBar.setIcon(GameKey.getGameIconId(mGameKey));
 				mBar.setDisplayShowTitleEnabled(true);
 			}
 		}
@@ -55,7 +54,12 @@ public class TichuGameDetailActivity extends FragmentActivity implements DetailV
 			}
 			// initial setup, cannot make fragment static since we need to pass arguments to it
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            mDetails = TichuGameDetailFragment.newInstance(getIntent().getExtras());
+            long gameId = getIntent().getExtras().getLong(GameStorageHelper.getCursorItemType(mGameKey), Game.NO_ID);
+            if (Game.isValidId(gameId)) {
+            	mDetails = GameKey.getNewGameDetailFragmentInstance(mGameKey, gameId);
+            } else {
+            	mDetails = GameKey.getNewGameDetailFragmentInstance(mGameKey, getIntent().getExtras().getBundle(EXTRA_PARAMETER_BUNDLE));
+            }
             ft.replace(R.id.game_detail_frame, mDetails);
             ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
             ft.commit();
@@ -67,7 +71,7 @@ public class TichuGameDetailActivity extends FragmentActivity implements DetailV
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    switch (item.getItemId()) {
 	        case android.R.id.home:
-	            // app icon in action bar clicked; simply finish since we always came from TichuGamesActivity
+	            // app icon in action bar clicked; simply finish since we always came from GamesActivity
 	        	closeDetailView(false, false);
 	            return true;
 	        default:
@@ -97,8 +101,8 @@ public class TichuGameDetailActivity extends FragmentActivity implements DetailV
 			if (mDetails.getDisplayedGameId() == Game.NO_ID) {
 				mDetails.saveState();
 			}
-			i.putExtra(GameStorageHelper.getCursorItemType(GameKey.TICHU), mDetails.getDisplayedGameId());
-			i.putExtra(TichuGamesActivity.EXTRA_RESULT_WANT_REMATCH, rematch);
+			i.putExtra(GameStorageHelper.getCursorItemType(mGameKey), mDetails.getDisplayedGameId());
+			i.putExtra(GamesActivity.EXTRA_RESULT_WANT_REMATCH, rematch);
 			setResult(RESULT_OK, i);
 		} else {
 			setResult(RESULT_OK);

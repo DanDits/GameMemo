@@ -105,29 +105,6 @@
 	<string name="help">Hilfe</string>
 	<string name="about">Über GameMemo</string>
 	<string name="about_summary">GameMemo Version %1$s Daniel Dittmar Da.dittmar@t-online.de</string>
-	<string name="hints">Hinweise</string>
-	<string name="hints_message"><Data><![CDATA[ 
-	    <ul>
-	    <li>Wenn du ein neues Spiel startest
-	    	<ul>
-	    	<li>Wähle existierende Spieler von der Liste oder gib einen neuen Namen ein um die Plätze zu belegen.
-	    	<li>Spielernamen sind unabhängig von der Groß-/Kleinschreibung und können alle Zeichen enthalten.
-	    	<li>Mische Spieler um zufällige Teams zu erzeugen.
-	    	<li>Falls es ein offenes Spiel mit den gewählten Spielern gibt kannst du dieses fortsetzen.
-	    	</ul>
-	    <li>Wenn du ein Spiel spielst
-	    	<ul>
-	    	<li>Gebe große und kleine Tichuansagen durch einen Klick auf das Tichusymbol unter dem Spieler an.
-	    	<li>Du musst bei jeder Spielrunde angeben, wer als erster fertig wurde, indem du auf den Spielernamen klickst. Dies ermöglicht die automatische Tichupunkte Berechnung.
-	    	<li>Gebe alle Platzierungen für eine Runde an, um noch genauere Statistiken zu erhalten.
-	    	<li>Es reicht aus Punkte für ein Team anzugeben, die anderen Punkte werden für dich berechnet. Gebe nur die normalen Punkte ohne eventuelle Tichupunkte an.
-	    	<li>Spielrunden können jederzeit angepasst werden, solange das Spiel noch nicht beendet und geschlossen wurde.
-			</ul>
-		<li>Tausche Spieldaten mit anderen um die Statistiken zu verbessern.
-	    <li>Falls ein Spieler unter verschiedenen Namen gespeichert ist kannst du einen einfach umbenennen: Sie werden zusammengefügt und ihre Spiele und Statistiken kombiniert.
-	    </ul>
-	    ]]></Data></string>
-	
 	<string name="statistics_sort_by_percentage">Nach Prozentzahl sortieren</string>
 	<string name="statistics_sort_by_value">Nach Wert sortieren</string>
 	<string name="statistics_only_show_significant">Nur aussagekräftige</string>	
@@ -164,4 +141,51 @@
 	<string name="choose_color">Farbe wählen</string>
 	<string name="color">Farbe</string>
 	<string name="game_setup_new_team">Neues Team</string>
+	<string name="doppelkopf_option_cycles">Runden</string>
+	<string name="doppelkopf_option_duty_soli">Pflichtsoli</string>
+	<string name="doppelkopf_team_name">Spieler</string>
+	<string name="doppelkopf_re_party">Re</string>
+	<string name="doppelkopf_contra_party">Contra</string>
+	<string name="doppelkopf_extra_descr">Extras</string>
+	<string name="doppelkopf_extra_fox">Fuchs %1$d/%2$d</string>
+	<string name="doppelkopf_extra_charly">Karl %1$d/%2$d</string>
+	<string name="doppelkopf_extra_doppelkopf">DK %1$d/%2$d</string>
+	<string name="doppelkopf_bid_no_bid">Still</string>
+	<string name="doppelkopf_bid_re">Re!</string>
+	<string name="doppelkopf_bid_contra">Contra!</string>
+	<string name="doppelkopf_bid_ohne_90">Keine 90!</string>
+	<string name="doppelkopf_bid_ohne_60">Keine 60!</string>
+	<string name="doppelkopf_bid_ohne_30">Keine 30!</string>
+	<string name="doppelkopf_bid_black">Schwarz!</string>
+	<string name="doppelkopf_result_descr">Ergebnis</string>
+	<string name="doppelkopf_result_black">Nichts</string>
+	<string name="doppelkopf_result_0_29">0&#8211;29</string>
+	<string name="doppelkopf_result_30_59">30&#8211;59</string>
+	<string name="doppelkopf_result_60_89">60&#8211;89</string>
+	<string name="doppelkopf_result_90_119">90&#8211;119</string>
+	<string name="doppelkopf_result_120">120</string>
+	<string name="doppelkopf_result_121_150">121&#8211;150</string>
+	<string name="doppelkopf_result_151_180">151&#8211;180</string>
+	<string name="doppelkopf_result_181_210">181&#8211;210</string>
+	<string name="doppelkopf_result_211_240">211&#8211;240</string>
+	<string name="doppelkopf_result_white">Alles</string>	
+	<string name="doppelkopf_game_style_normal">Normal</string>
+	<string name="doppelkopf_game_style_hochzeit">Hochzeit</string>
+	<string name="doppelkopf_game_style_armut">Armut</string>
+	<string name="doppelkopf_game_style_fleischloser">Fleischloser</string>
+	<string name="doppelkopf_game_style_buben_solo">Buben Solo</string>
+	<string name="doppelkopf_game_style_damen_solo">Damen Solo</string>
+	<string name="doppelkopf_game_style_pik_solo">Pik Solo</string>
+	<string name="doppelkopf_game_style_karo_solo">Karo Solo</string>
+	<string name="doppelkopf_game_style_herz_solo">Herz Solo</string>
+	<string name="doppelkopf_game_style_kreuz_solo">Kreuz Solo</string>
+	<string name="doppelkopf_game_style_stille_hochzeit">Stille Hochzeit</string>
+	<string name="doppelkopf_remaining_soli_info">Pflichtsoli %1$d/%2$d</string>	
+	<string name="doppelkopf_game_state_add_round">Runde hinzufügen</string>
+	<string name="doppelkopf_game_state_new_round">Übersicht anzeigen</string>
+	<string name="doppelkopf_game_state_old_round_edited">Änderungen übernehmen</string>
+	<string name="doppelkopf_game_state_expect_data">Neue Runde durch Klick auf Re Spieler</string>
+	<string name="doppelkopf_duty_soli_per_player">Pflichtsoli pro Spieler: %1$d</string>
+	<string name="doppelkopf_round_limit">Rundenanzahl: %1$d</string>
+	<string name="doppelkopf_overview_info_heading">Optionen: </string>
 </resources>

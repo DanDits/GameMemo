@@ -1,9 +1,10 @@
 package dan.dit.gameMemo.gameData.player;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -16,9 +17,10 @@ import android.widget.TextView;
 
 public class PlayerAdapter extends ArrayAdapter<Player> {
 	private static final int MIN_LENGTH_TO_FILTER_IN_WORD = 2;
-	private Collection<Player> allPlayers = CombinedPool.ALL_POOLS.getAll();
-	public PlayerAdapter(Context context, int resource, int textViewResourceId) {
+	private Collection<Player> allPlayers;
+	public PlayerAdapter(Context context, int resource, int textViewResourceId, Collection<Player> all) {
 		super(context, resource, textViewResourceId);
+		allPlayers = all;
 	}
 	
 	@Override
@@ -51,7 +53,7 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
 			if (constraint != null) {
 				String trimmedConstraint = constraint.toString().trim().toLowerCase(Locale.getDefault());
 				if (trimmedConstraint.length() > 0) {
-					ArrayList<Player> suggestions = new ArrayList<Player>(5); // there will never be many suggested players
+					Set<Player> suggestions = new HashSet<Player>(); // there will never be many suggested players
 					for (Player curr : allPlayers) {
 						if (curr != null) {
 							String currName = curr.getName().toLowerCase(Locale.getDefault());
@@ -78,7 +80,7 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
 				FilterResults results) {
 			if (results != null && results.count > 0) {
 				@SuppressWarnings("unchecked")
-				ArrayList<Player> suggestions = (ArrayList<Player>) results.values;
+				Set<Player> suggestions = (Set<Player>) results.values;
 				clear();
 				for (Player p : suggestions) {
 					add(p);

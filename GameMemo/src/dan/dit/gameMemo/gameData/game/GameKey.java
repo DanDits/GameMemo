@@ -12,8 +12,17 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Bundle;
 import android.view.WindowManager;
 import dan.dit.gameMemo.R;
+import dan.dit.gameMemo.appCore.GameDetailActivity;
+import dan.dit.gameMemo.appCore.GameDetailFragment;
+import dan.dit.gameMemo.appCore.doppelkopf.DoppelkopfGameDetailFragment;
+import dan.dit.gameMemo.appCore.doppelkopf.DoppelkopfGamesActivity;
+import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment;
+import dan.dit.gameMemo.appCore.tichu.TichuGamesActivity;
+import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfGame;
+import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfGameBuilder;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGameBuilder;
 import dan.dit.gameMemo.gameData.player.Player;
@@ -80,6 +89,14 @@ public final class GameKey {
 		return array;
 	}
 	
+	public static Collection<Player> getAllPlayers() {
+		Collection<Player> allPlayers = new LinkedList<Player>();
+		for (int key : ALL_GAMES) {
+			allPlayers.addAll(getPool(key).getAll());
+		}
+		return allPlayers;
+	}
+	
 	public static int[] calculateUsedGames(ContentResolver resolver) {
 		// all games were something is stored for
 		LinkedList<Integer> used = new LinkedList<Integer>();
@@ -109,6 +126,8 @@ public final class GameKey {
 		switch(gameKey) {
 		case GameKey.TICHU:
 			return dan.dit.gameMemo.R.drawable.tichu_phoenix;
+		case GameKey.DOPPELKOPF:
+			return dan.dit.gameMemo.R.drawable.doppelkopf_icon;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -118,6 +137,8 @@ public final class GameKey {
 		switch(gameKey) {
 		case GameKey.TICHU:
 			return TichuGame.GAME_NAME;
+		case GameKey.DOPPELKOPF:
+			return DoppelkopfGame.GAME_NAME;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -128,7 +149,7 @@ public final class GameKey {
 		case GameKey.TICHU:
 			return TichuGame.GAME_NAME;
 		case GameKey.DOPPELKOPF:
-			return "Doppelkopf"; // TODO move this in a DoppelKopfGame class as a constant
+			return DoppelkopfGame.GAME_NAME;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -138,6 +159,8 @@ public final class GameKey {
 		switch(gameKey) {
 		case GameKey.TICHU:
 			return TichuGame.PLAYERS;
+		case GameKey.DOPPELKOPF:
+			return DoppelkopfGame.PLAYERS;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -147,6 +170,8 @@ public final class GameKey {
 		switch(gameKey) {
 		case GameKey.TICHU:
 			return new TichuGameBuilder();
+		case DOPPELKOPF:
+			return new DoppelkopfGameBuilder();
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);			
 		}
@@ -162,6 +187,13 @@ public final class GameKey {
 				assert false; // load games will not throw as requested by the parameter
 			}
 			break;
+		case DOPPELKOPF:
+			try {
+				gamesToSend = DoppelkopfGame.loadGames(resolver, GameStorageHelper.getUriAllItems(gameKey), timestamps, false);
+			} catch (CompactedDataCorruptException e) {
+				assert false; // load games will not throw as requested by the parameter
+			}
+			break;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -172,6 +204,8 @@ public final class GameKey {
 		switch (gameKey) {
 		case GameKey.TICHU:
 			return TichuGame.loadGames(resolver, uri, true);
+		case DOPPELKOPF:
+			return DoppelkopfGame.loadGames(resolver, uri, true);
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -204,13 +238,15 @@ public final class GameKey {
 	}
 	
 	public static final boolean isGameSupported(int gameKey) {
-		return gameKey == GameKey.TICHU; // add all supported game keys for the static methods that take a gamekey argument and do not throw on usage
+		return gameKey == GameKey.TICHU || gameKey == DOPPELKOPF; // add all supported game keys for the static methods that take a gamekey argument and do not throw on usage
 	}
 
 	public static int getBackgroundResource(int gameKey) {
 		switch (gameKey) {
 		case GameKey.TICHU:
 			return R.drawable.tichu_color;
+		case GameKey.DOPPELKOPF:
+			return R.drawable.doppelkopf_color;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -220,6 +256,8 @@ public final class GameKey {
 		switch (gameKey) {
 		case GameKey.TICHU:
 			return R.drawable.tichu_button;
+		case GameKey.DOPPELKOPF:
+			return R.drawable.doppelkopf_button;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -229,6 +267,8 @@ public final class GameKey {
 		switch (gameKey) {
 		case GameKey.TICHU:
 			return R.drawable.tichu_list_selector;
+		case GameKey.DOPPELKOPF:
+			return R.drawable.doppelkopf_list_selector;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -243,5 +283,91 @@ public final class GameKey {
 			}
 			
 		});
+	}
+
+	public static int getGamesMainLayout(int gameKey) {
+		switch (gameKey) {
+		case GameKey.TICHU:
+			return R.layout.tichu_main;
+		case GameKey.DOPPELKOPF:
+			return R.layout.doppelkopf_main;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+		}
+	}
+
+	public static int getGameDetailLayout(int gameKey) {
+		switch (gameKey) {
+		case GameKey.TICHU:
+			return R.layout.tichu_detail_fragment;
+		case DOPPELKOPF:
+			return R.layout.doppelkopf_detail_fragment;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+		}
+	}
+
+	public static Class<?> getGameDetailActivity(int gameKey) {
+		switch (gameKey) {
+		default:
+			return GameDetailActivity.class;			
+		}
+	}
+	
+	public static Class<?> getGamesActivity(int gameKey) {
+		switch (gameKey) {
+		case TICHU:
+			return TichuGamesActivity.class;
+		case DOPPELKOPF:
+			return DoppelkopfGamesActivity.class;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);
+		}
+	}
+
+	public static int getGameOverviewListLayout(int gameKey) {
+		switch (gameKey) {
+		case GameKey.TICHU:
+			return R.layout.tichu_list;
+		case GameKey.DOPPELKOPF:
+			return R.layout.doppelkopf_list;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+		}
+	}
+
+	public static int getGamesMenuLayout(int gameKey) {
+		switch (gameKey) {
+		case GameKey.TICHU:
+			return R.menu.tichu_list;
+		case GameKey.DOPPELKOPF:
+			return R.menu.doppelkopf_list;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+		}
+	}
+
+	public static GameDetailFragment getNewGameDetailFragmentInstance(
+			int gameKey, long gameId) {
+		switch (gameKey) {
+		case GameKey.TICHU:
+			return TichuGameDetailFragment.newInstance(gameId);
+		case DOPPELKOPF:
+			return DoppelkopfGameDetailFragment.newInstance(gameId);
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+		}
+	}
+	
+	public static GameDetailFragment getNewGameDetailFragmentInstance(
+			int gameKey, Bundle extras) {
+		switch (gameKey) {
+		case GameKey.TICHU:
+			return TichuGameDetailFragment.newInstance(extras);
+		case DOPPELKOPF:
+			return DoppelkopfGameDetailFragment.newInstance(extras);
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+		}
 	}
 }

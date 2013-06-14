@@ -99,26 +99,6 @@
 	<string name="help">Help</string>
 	<string name="about">About GameMemo</string>
 	<string name="about_summary">GameMemo version %1$s Daniel Dittmar Da.dittmar@t-online.de</string>
-	<string name="hints">Hints</string>
-	<string name="hints_message"><Data><![CDATA[<ul>
-	    <li>When starting a game
-	    	<ul>
-	    	<li>Select existing players from the list or enter a new name to fill the slots.
-	    	<li>Player names are not case sensitive and can contain any characters.
-	    	<li>Shuffle players to create a random setup.
-	    	<li>You will be prompted to continue an unfinished game if there is one with the selected players.
-	    	</ul>
-	    <li>When playing a game
-	    	<ul>
-	    	<li>Enter grande and small tichu bids by clicking on the tichu icon below the player.
-	    	<li>For each game round you need to tell who finished first by clicking on a player name.
-	    	<li>Supply all finishing positions to get more accurate statistics.
-	    	<li>Only enter one score (without the score gained/lost from bids), the other one will be calculated if possible.
-	    	<li>Game rounds can be changed as long as the game is not finished and you haven\'t left the game screen.
-			</ul>
-		 <li>Share game data with other people to improve the accuracy of the statistics.
-	    <li>If a player is saved with two different names, simply rename one: They will be merged and their games and statistics combined.
-	</ul>]]></Data></string>
 	<string name="statistics_sort_by_percentage">Sort by percentage</string>
 	<string name="statistics_sort_by_value">Sort by value</string>
 	<string name="statistics_only_show_significant">Only show significant</string>
@@ -159,4 +139,48 @@
 	<string name="color">Color</string>
 	<string name="choose_color">Choose color</string>
 	<string name="game_setup_new_team">New team</string>
+	<string name="doppelkopf_option_cycles">Cycles</string>
+	<string name="doppelkopf_option_duty_soli">Duty soli</string>
+	<string name="doppelkopf_team_name">Players</string>
+	<string name="doppelkopf_re_party">Re</string>
+	<string name="doppelkopf_contra_party">Contra</string>
+	<string name="doppelkopf_extra_descr">Extras</string>
+	<string name="doppelkopf_extra_fox">Fox %1$d/%2$d</string>
+	<string name="doppelkopf_extra_charly">Charly %1$d/%2$d</string>
+	<string name="doppelkopf_extra_doppelkopf">DK %1$d/%2$d</string>
+	<string name="doppelkopf_bid_no_bid">No bid</string>
+	<string name="doppelkopf_bid_re">Re!</string>
+	<string name="doppelkopf_bid_contra">Contra!</string>
+	<string name="doppelkopf_bid_ohne_90">No 90!</string>
+	<string name="doppelkopf_bid_ohne_60">No 60!</string>
+	<string name="doppelkopf_bid_ohne_30">No 30!</string>
+	<string name="doppelkopf_bid_black">Black!</string>
+	<string name="doppelkopf_result_descr">Result</string>
+	<string name="doppelkopf_result_black">None</string>
+	<string name="doppelkopf_result_0_29">0&#8211;29</string>
+	<string name="doppelkopf_result_30_59">30&#8211;59</string>
+	<string name="doppelkopf_result_60_89">60&#8211;89</string>
+	<string name="doppelkopf_result_90_119">90&#8211;119</string>
+	<string name="doppelkopf_result_120">120</string>
+	<string name="doppelkopf_result_121_150">121&#8211;150</string>
+	<string name="doppelkopf_result_151_180">151&#8211;180</string>
+	<string name="doppelkopf_result_181_210">181&#8211;210</string>
+	<string name="doppelkopf_result_211_240">211&#8211;240</string>
+	<string name="doppelkopf_result_white">All</string>	
+	<string name="doppelkopf_game_style_normal">Normal</string>
+	<string name="doppelkopf_game_style_hochzeit">Wedding</string>
+	<string name="doppelkopf_game_style_armut">Poverty</string>
+	<string name="doppelkopf_game_style_fleischloser">Fleischloser</string>
+	<string name="doppelkopf_game_style_buben_solo">Buben Solo</string>
+	<string name="doppelkopf_game_style_damen_solo">Damen Solo</string>
+	<string name="doppelkopf_game_style_farb_solo">Farb Solo</string>
+	<string name="doppelkopf_game_style_stille_hochzeit">Stille Hochzeit</string>
+	<string name="doppelkopf_remaining_soli_info">Duty soli %1$d/%2$d</string>	
+	<string name="doppelkopf_game_state_add_round">Add round</string>
+	<string name="doppelkopf_game_state_new_round">New round</string>
+	<string name="doppelkopf_game_state_old_round_edited">Save round</string>
+	<string name="doppelkopf_game_state_expect_data">Enter new round</string>
+	<string name="doppelkopf_duty_soli_per_player">Duty soli per player: %1$d</string>
+	<string name="doppelkopf_round_limit">Round limit: %1$d</string>
+	<string name="doppelkopf_overview_info_heading">Options: </string>
 </resources>

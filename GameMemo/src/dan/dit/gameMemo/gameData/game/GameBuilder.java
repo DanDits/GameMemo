@@ -21,16 +21,8 @@ public abstract class GameBuilder {
 		if (allData.getSize() < 6) {
 			throw new CompactedDataCorruptException("Too little data provided to construct a game.");
 		}
-		try {
-			setStarttime(Long.parseLong(allData.getData(0)));
-		} catch (NumberFormatException nfe) {
-			throw new CompactedDataCorruptException("Could not parse start time.", nfe);
-		}
-		try {
-			setRunningTime(Long.parseLong(allData.getData(1)));
-		} catch (NumberFormatException nfe) {
-			throw new CompactedDataCorruptException("Could not parse run time.", nfe);
-		}
+		setStarttime(allData.getLong(0));
+		setRunningTime(allData.getLong(1));
 		Compacter playerData = new Compacter(allData.getData(2));
 		Compacter roundsData = new Compacter(allData.getData(3));
 		Compacter metaData = new Compacter(allData.getData(4));

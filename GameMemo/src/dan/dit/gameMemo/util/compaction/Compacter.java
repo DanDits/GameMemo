@@ -20,7 +20,7 @@ import java.util.List;
  * @author Daniel
  *
  */
-public class Compacter implements Iterable<String>, Compactable {
+public class Compacter implements Iterable<String> {
 	private static final String SEPARATION_SYMBOL = ";"; // any length one string which is no blank symbol that gets trimmed
 	private static final String BLANK = " "; // any string of length >= 1 unequal to and does not contain SEPARATION_SYMBOL
 	public static final String SEPARATOR = BLANK + SEPARATION_SYMBOL + BLANK;
@@ -129,6 +129,40 @@ public class Compacter implements Iterable<String>, Compactable {
 		return data.get(index);
 	}
 	
+	/**
+	 * Returns the data at the given index, converting it to an integer.
+	 * @param index The index of the desired data. Must be greater than or equal zero and lower than getSize().
+	 * @return The data stored ath the given index as an integer.
+	 * @throws CompactedDataCorruptException When a NumberFormatException occurs.
+	 */
+	public int getInt(int index) throws CompactedDataCorruptException {
+		String dataString = data.get(index);
+		int dataInt;
+		try {
+			dataInt = Integer.parseInt(dataString);
+		} catch (NumberFormatException nfe) {
+			throw new CompactedDataCorruptException("Could not parse int from: " + dataString).setCorruptData(this);
+		}
+		return dataInt;
+	}
+	
+	/**
+	 * Returns the data at the given index, converting it to a long.
+	 * @param index The index of the desired data. Must be greater than or equal zero and lower than getSize().
+	 * @return The data stored ath the given index as a long.
+	 * @throws CompactedDataCorruptException When a NumberFormatException occurs.
+	 */
+	public long getLong(int index) throws CompactedDataCorruptException {
+		String dataString = data.get(index);
+		long dataLong;
+		try {
+			dataLong = Long.parseLong(dataString);
+		} catch (NumberFormatException nfe) {
+			throw new CompactedDataCorruptException("Could not parse long from: " + dataString).setCorruptData(this);
+		}
+		return dataLong;
+	}
+	
 	@Override
 	public Iterator<String> iterator() {
 		return data.iterator();
@@ -143,7 +177,6 @@ public class Compacter implements Iterable<String>, Compactable {
 		return data.size();
 	}
 
-	@Override
 	public String compact() { // compacting is always possible
 		if (data.size() == 0) {
 			return "";
@@ -157,7 +190,24 @@ public class Compacter implements Iterable<String>, Compactable {
 			}
 		}
 		return builder.toString();
+	}	
+	
+	@Override
+	public String toString() {
+		return data.toString();
 	}
 	
+	@Override
+	public int hashCode() {
+		return data.hashCode();
+	}
 	
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Compacter) {
+			return data.equals(((Compacter) other).data);
+		} else {
+			return super.equals(other);
+		}
+	}
 }

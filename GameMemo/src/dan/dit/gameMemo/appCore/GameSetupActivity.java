@@ -265,11 +265,15 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 				ctr.reset();
 			}
 		}
-		for (int i = 0; i < mOptionBooleanCheckers.length; i++) {
-			mOptionBooleanCheckers[i].setChecked(mOptionsBooleanDefault[i]);
+		if (mOptionBooleanCheckers != null) {
+			for (int i = 0; i < mOptionBooleanCheckers.length; i++) {
+				mOptionBooleanCheckers[i].setChecked(mOptionsBooleanDefault[i]);
+			}
 		}
-		for (int i = 0; i < mOptionNumberFields.length; i++) {
-			mOptionNumberFields[i].setText(String.valueOf(mOptionsNumbersDefault[i]));
+		if (mOptionNumberFields != null) {
+			for (int i = 0; i < mOptionNumberFields.length; i++) {
+				mOptionNumberFields[i].setText(String.valueOf(mOptionsNumbersDefault[i]));
+			}
 		}
 		applyButtonsState();		
 		mScrollView.fullScroll(View.FOCUS_UP);

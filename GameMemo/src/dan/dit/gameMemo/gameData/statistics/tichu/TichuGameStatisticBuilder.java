@@ -10,7 +10,7 @@ import dan.dit.gameMemo.gameData.game.tichu.TichuBidType;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.game.tichu.TichuRound;
 import dan.dit.gameMemo.gameData.player.Player;
-import dan.dit.gameMemo.gameData.player.PlayerTeam;
+import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.statistics.GameStatistic;
 
 
@@ -54,7 +54,7 @@ public class TichuGameStatisticBuilder extends dan.dit.gameMemo.gameData.statist
 					if (g.isFinished()) {
 						gamesPlayedCount++;
 					}
-					PlayerTeam winner = g.getWinner();
+					AbstractPlayerTeam winner = g.getWinner();
 					if (winner != null && winner.contains(p)) {
 						gamesWonCount++;
 					}

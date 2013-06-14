@@ -24,7 +24,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 import dan.dit.gameMemo.R;
-import dan.dit.gameMemo.appCore.tichu.TichuGamesActivity;
+import dan.dit.gameMemo.appCore.GameChooserActivity;
 import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
 
@@ -110,7 +110,7 @@ public class FileReadDataExchangeActivity extends DataExchangeActivity {
 	    switch (item.getItemId()) {
 	        case android.R.id.home:
 	            // app icon in action bar clicked; go home
-	            Intent intent = new Intent(this, TichuGamesActivity.class); //TODO change home activity later to general one
+	            Intent intent = new Intent(this, GameChooserActivity.class);
 	            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intent);
 	            return true;

@@ -19,7 +19,7 @@ import dan.dit.gameMemo.gameData.game.GameRound;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerDuo;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
-import dan.dit.gameMemo.gameData.player.PlayerTeam;
+import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.storage.database.CardGameTable;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
@@ -104,15 +104,6 @@ public class TichuGame extends Game {
 	}
 	
 	@Override
-	protected String getRoundsData() {
-		Compacter cmp = new Compacter(rounds.size());
-		for (GameRound round : rounds) {
-			cmp.appendData(round.compact());
-		}
-		return cmp.compact();
-	}
-	
-	@Override
 	public void addRound(GameRound round) {
 		if (isFinished()) {
 			throw new IllegalStateException("Game is finished, no more rounds can be added.");
@@ -178,7 +169,7 @@ public class TichuGame extends Game {
 	}
 
 	@Override
-	public PlayerTeam getWinner() {
+	public AbstractPlayerTeam getWinner() {
 		if (isFinished()) {
 			return scoreTeam1 > scoreTeam2 ? firstTeam : secondTeam;
 		}
@@ -235,7 +226,7 @@ public class TichuGame extends Game {
 	 */
 	@Override
 	public void saveGame(ContentResolver resolver) {
-		// if TichuTable stores extra columns then add data to ContentValues
+		// if Tichu stores extra columns then add data to ContentValues
 		super.saveGame(null, resolver);
 	}
 	
@@ -246,26 +237,9 @@ public class TichuGame extends Game {
 	public static List<Game> loadGames(ContentResolver resolver, Uri uri, List<Long> timestamps,
 			boolean throwAtFailure) throws CompactedDataCorruptException {
 		if (timestamps.size() > 0) {
-			StringBuilder selection = new StringBuilder(GameStorageHelper.COLUMN_STARTTIME.length() + 10 + timestamps.size() * 15);
-			selection.append(GameStorageHelper.COLUMN_STARTTIME);
-			selection.append(" IN (");
-			String[] selectionArgs = new String[timestamps.size()];
-			int index = 0;
-			for (Long l : timestamps) {
-				if (index != 0) {
-					selection.append(",?");
-				} else {
-					selection.append("?");
-				}
-				if (l != null) {
-					selectionArgs[index] = l.toString();
-				} else {
-					selectionArgs[index] = "0";
-				}
-				index++;
-			}
-			selection.append(')');
-			return loadGames(resolver, uri, selection.toString(), selectionArgs, throwAtFailure);
+			String timestampSelection = Game.timestampsToSelection(timestamps);
+			String[] selectionArgs = Game.timestampsToSelectionArgs(timestamps);
+			return loadGames(resolver, uri, timestampSelection, selectionArgs, throwAtFailure);
 		} else {
 			return loadGames(resolver, uri, throwAtFailure);
 		}
@@ -385,25 +359,4 @@ public class TichuGame extends Game {
 		}
 		return builder.toString();
 	}
-
-	@Override
-	public void playerNameChanged(String oldName, Player newPlayer) {
-		// possible scenario: a player is being renamed for a game and now we have two equal players in a team or in a game
-		// reaction: use vogel-strauss algorithm and ignore this.. the user is prompted that this can corrupt games
-		if (firstTeam.contains(oldName)) {
-			boolean firstGotRenamed = firstTeam.getFirst().getName().equalsIgnoreCase(oldName);
-			PlayerDuo newTeam = new PlayerDuo(firstGotRenamed ? newPlayer : firstTeam.getFirst(), firstGotRenamed ? firstTeam.getSecond() : newPlayer);
-			setupPlayers(newTeam, secondTeam);
-		} else if (getTeam2().contains(oldName)) {
-			boolean firstGotRenamed = secondTeam.getFirst().getName().equalsIgnoreCase(oldName);
-			PlayerDuo newTeam = new PlayerDuo(firstGotRenamed ? newPlayer : secondTeam.getFirst(), firstGotRenamed ? secondTeam.getSecond() : newPlayer);			
-			setupPlayers(firstTeam, newTeam);
-		}
-	}
-
-	@Override
-	public long[] getIdsOfInterest() {
-		return new long[] {mId};
-	}
-
 }

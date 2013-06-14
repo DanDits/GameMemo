@@ -16,19 +16,19 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 import dan.dit.gameMemo.R;
+import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
-import dan.dit.gameMemo.gameData.player.PlayerPool.PlayerNameChangeListener;
-import dan.dit.gameMemo.gameData.player.PlayerTeam;
+import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.compaction.Compactable;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
-public abstract class Game implements Iterable<GameRound>, Compactable, PlayerNameChangeListener {
+public abstract class Game implements Iterable<GameRound>, Compactable {
 	public static final String PREFERENCES_FILE = "dan.dit.gameMemo.GAME_PREFERENCES";
 	public static final long NO_ID = -1; // isValidId(NO_ID) must be false
 	public static final int WINNER_NONE = 0;
-	public static final int GENERAL_GAME_ICON = android.R.drawable.ic_menu_mapmode;
 	protected long startTime;
 	protected long mRunningTime;
 	protected long mId;
@@ -39,17 +39,10 @@ public abstract class Game implements Iterable<GameRound>, Compactable, PlayerNa
 		this.mId = NO_ID;
 		startTime = new Date().getTime();
 		rounds = new ArrayList<GameRound>();
-		GameKey.getPool(getKey()).registerListener(this, true);	
 		assert !isFinished();
 	}
 	
-	@Override
-	protected void finalize() throws Throwable{
-		super.finalize();
-		GameKey.getPool(getKey()).unregisterListener(this); // not really necessary since PlayerPool uses weak references
-	}
-	
-	public abstract PlayerTeam getWinner();
+	public abstract AbstractPlayerTeam getWinner();
 	public abstract void addRound(GameRound round);
 	public final long getStartTime() {
 		return startTime;
@@ -112,7 +105,14 @@ public abstract class Game implements Iterable<GameRound>, Compactable, PlayerNa
 	 * This round specific data can be changed, but regard the general hint given at getMetaData().
 	 * @return A compressed form of all game rounds.
 	 */
-	protected abstract String getRoundsData();
+	protected  String getRoundsData() {
+		Compacter cmp = new Compacter(rounds.size());
+		for (GameRound round : rounds) {
+			cmp.appendData(round.compact());
+		}
+		return cmp.compact();
+	}
+	
 	protected abstract int getWinnerData();
 	/**
 	 * Returns the metadata of this game in a compressed way. In future releases metadata can be added
@@ -145,6 +145,11 @@ public abstract class Game implements Iterable<GameRound>, Compactable, PlayerNa
 	public String compact() {
 		Compacter cmp = GameBuilder.getCompressor(this);
 		return cmp.compact();
+	}
+	
+	@Override
+	public void unloadData(Compacter compactedData) {
+		Log.e("gameMemo", "Attempting to unload data for game, ignored.");
 	}
 
 	public boolean updateRound(int index, GameRound updatedRound) { // must not be supported (since it also uses reset)
@@ -389,9 +394,191 @@ public abstract class Game implements Iterable<GameRound>, Compactable, PlayerNa
 		return null;
 	}*/
 
+	public static void rename(int gameKey, ContentResolver resolver, Player player, String pNewName, long[] renameInGameIds, PlayerRenamedListener listener) {
+		if (player == null || !Player.isValidPlayerName(pNewName)) {
+			if (listener != null) {
+				listener.playerRenamed(player == null ? null : player.getName(), pNewName, false);
+			}
+			return;
+		}
+		PlayerRenameTask renameTask = new PlayerRenameTask(gameKey, resolver, listener, player, pNewName.trim());
+		if (renameInGameIds != null && renameInGameIds.length != 0) {
+			Long[] idsArray = new Long[renameInGameIds.length];
+			int index = 0;
+			for (long id : renameInGameIds) {
+				idsArray[index++] = Long.valueOf(id);
+			}
+			renameTask.execute(idsArray);
+		} else {
+			renameTask.execute();
+		}
+	}
+
+	public interface PlayerRenamedListener {
+		void playerRenamed(String oldName, String newName, boolean success);
+	}
+	
+	private static class PlayerRenameTask extends AsyncTask<Long, Integer, Boolean> {
+		private final int mGameKey;
+		private final Player mPlayer;
+		private final String mOldName;
+		private final String mNewName;
+		private final ContentResolver mResolver;
+		private final PlayerRenamedListener mListener;
+		
+		private PlayerRenameTask(int gameKey, ContentResolver resolver, PlayerRenamedListener listener, Player player, String newName) {
+			mGameKey = gameKey;
+			mResolver = resolver;
+			mListener = listener;
+			mPlayer = player;
+			mOldName = player.getName();
+			mNewName = newName;
+		}
+		
+		@Override
+		protected Boolean doInBackground(Long... ids) {
+			Cursor cursor = null;
+			String[] projection = { GameStorageHelper.COLUMN_ID, GameStorageHelper.COLUMN_PLAYERS};
+			try {
+				if (ids != null && ids.length > 0) {
+					for (long id : ids) {
+						cursor = mResolver.query(GameStorageHelper.getUriWithId(mGameKey, id), projection, null, null,
+							null);
+						if (cursor != null) {
+							cursor.moveToFirst();
+							if (!cursor.isAfterLast()) {
+								performRenaming(cursor, id);
+							}
+						}
+					}
+				} else {
+					cursor = mResolver.query(GameStorageHelper.getUriAllItems(mGameKey), projection, null, null,
+							null);
+					if (cursor != null) {
+						cursor.moveToFirst();
+						while (!cursor.isAfterLast()) {
+							performRenaming(cursor, cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID)));
+							cursor.moveToNext();
+						}
+						GameKey.getPool(mGameKey).removePlayer(mOldName);
+					}
+				}
+			} finally {
+				if (cursor != null) {
+					cursor.close();
+				}
+			}
+			GameKey.getPool(mGameKey).populatePlayer(mNewName).setColor(mPlayer.getColor());
+			return Boolean.TRUE;
+		}
+		
+		private void performRenaming(Cursor cursor, long id) {
+			Compacter playersData = new Compacter(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
+			Compacter newPlayersdata = new Compacter(playersData.getSize());
+			boolean foundChange = false;
+			for (String playerName : playersData) {
+				if (playerName.equalsIgnoreCase(mOldName)) {
+					foundChange = true;
+					newPlayersdata.appendData(mNewName);
+				} else if (playerName.equalsIgnoreCase(mNewName)) {
+					foundChange = true;
+					newPlayersdata.appendData(mNewName);							
+				} else {
+					newPlayersdata.appendData(playerName);
+				}
+			}
+			if (foundChange) {
+				ContentValues values = new ContentValues();
+				values.put(GameStorageHelper.COLUMN_PLAYERS, newPlayersdata.compact());
+				Uri uri = GameStorageHelper.getUriWithId(mGameKey, id);
+				mResolver.update(uri, values, null, null);
+			}
+		}
+		
+		@Override
+	    protected void onPostExecute(Boolean result) {
+			if (mListener != null) {
+				mListener.playerRenamed(mOldName, mNewName, result);
+			}
+	    }
+	}
+	
+	public static void loadPlayers(int gameKey, ContentResolver resolver) {
+		String[] projection = {GameStorageHelper.COLUMN_PLAYERS};
+		Cursor cursor = null;
+		try {
+			cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, null, null,
+				null);
+			if (cursor != null) {
+				cursor.moveToFirst();
+				PlayerPool pool = GameKey.getPool(gameKey);
+				while (!cursor.isAfterLast()) {
+					Compacter playersData = new Compacter(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
+					for (String playerName : playersData) {
+						if (Player.isValidPlayerName(playerName)) {
+							pool.populatePlayer(playerName);
+						}
+					}
+					cursor.moveToNext();
+				}
+			}
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+			}
+		}
+	}
 	
 	public static final boolean isValidId(long id) {
 		return id >= 0;
+	}
+
+	public static String timestampsToSelection(List<Long> timestamps) {
+		StringBuilder selection = new StringBuilder(GameStorageHelper.COLUMN_STARTTIME.length() + 10 + timestamps.size() * 15);
+		selection.append(GameStorageHelper.COLUMN_STARTTIME);
+		selection.append(" IN (");
+		int index = 0;
+		for (@SuppressWarnings("unused") Long l : timestamps) {
+			if (index != 0) {
+				selection.append(",?");
+			} else {
+				selection.append("?");
+			}
+			index++;
+		}
+		selection.append(')');
+		return selection.toString();
+	}
+
+	public static String[] timestampsToSelectionArgs(List<Long> timestamps) {
+		String[] selectionArgs = new String[timestamps.size()];
+		int index = 0;
+		for (Long l : timestamps) {
+			if (l != null) {
+				selectionArgs[index] = l.toString();
+			} else {
+				selectionArgs[index] = "0";
+			}
+			index++;
+		}
+		return selectionArgs;
+	}
+
+	public static void loadAllPlayers(final int preferredGameKey,
+			final ContentResolver contentResolver) {
+		Runnable loadPlayerRunnable = new Runnable() {
+			@Override
+			public void run() {
+				Game.loadPlayers(preferredGameKey, contentResolver);
+				for (Integer key : GameKey.ALL_GAMES) {
+					if (!key.equals(Integer.valueOf(preferredGameKey))) {
+						Game.loadPlayers(key, contentResolver);
+					}
+				}
+			}
+		};
+		Thread executer = new Thread (loadPlayerRunnable);
+		executer.start();
 	}
 
 }

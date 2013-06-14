@@ -3,7 +3,7 @@ package dan.dit.gameMemo.gameData.player;
 import java.util.LinkedList;
 import java.util.List;
 
-public class PlayerDuo extends PlayerTeam {
+public class PlayerDuo extends AbstractPlayerTeam {
 	private Player first;
 	private Player second;
 	

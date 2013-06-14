@@ -8,16 +8,13 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.ListFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -35,17 +32,16 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import dan.dit.gameMemo.R;
+import dan.dit.gameMemo.appCore.GameDetailFragment;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.tichu.TichuBidType;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.game.tichu.TichuRound;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment;
-import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerDuo;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
@@ -63,7 +59,7 @@ import dan.dit.gameMemo.util.compaction.Compacter;
  * @author Daniel
  *
  */
-public class TichuGameDetailFragment extends ListFragment implements ChoosePlayerDialogListener, PlayerPool.PlayerNameChangeListener {
+public class TichuGameDetailFragment extends GameDetailFragment {
 	public static final String EXTRA_NEW_GAME_USE_MERCY_RULE = "dan.dit.gameMemo.USE_MERCY_RULE";
 	public static final String EXTRA_NEW_GAME_SCORE_LIMIT = "dan.dit.gameMemo.SCORE_LIMIT";
 	
@@ -71,11 +67,6 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	 * Indicates the minimum amount of required finishers, so that a new game round is saveable. Value between 1 and TichuGame.TOTAL_PLAYERS.
 	 */
 	public static final int MIN_GIVEN_FINISHER_COUNT_TO_SAVE_ROUND = 1; // must between 1 and TichuGame.TOTAL_PLAYERS (=4)
-	
-	/**
-	 * Indicates if games that are loaded and are already finished are immutable and game rounds cannot be added or changed.
-	 */
-	public static final boolean LOADED_FINISHED_GAMES_ARE_IMMUTABLE = true;
 	
 	/**
 	 * String extra for the name of the first player of the first team.
@@ -149,19 +140,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	private TichuGameRoundAdapter mAdapter;
 	private DetailViewCallback mCallback;
 	
-	/**
-	 * A callback interface that is required for the hosting activity.
-	 * @author Daniel
-	 *
-	 */
-	public interface DetailViewCallback {
-		void closeDetailView(boolean error, boolean rematch);
-		void setInfo(CharSequence main, CharSequence extra);
-	}
-	
 	// member vars concerning building up a new game round, visualizing and editing rounds
-	private Date mLastRunningTimeUpdate;
-	private boolean mIsLoadedFinishedGame;
 	private TichuGame mGame;
 	private TichuRound mCurrRound;
 	private int mCurrRoundIndex;
@@ -190,8 +169,8 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
 		mCallback = (DetailViewCallback) activity; // throws if given activity does not listen to close requests
-		if (!(activity instanceof ChoosePlayerDialogListener)) {
-			throw new ClassCastException("Hosting activity must implement ChoosePlayerDialogListener interface.");
+		if (!(activity instanceof DetailViewCallback)) {
+			throw new ClassCastException("Hosting activity must implement DetailViewCallback interface.");
 		}
 	}
 	
@@ -240,33 +219,13 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		GameKey.applySleepBehavior(GameKey.TICHU, getActivity());
 	}
 	
-	private void synchPlayerNames() {
-		// invoked at start from fillData and on rename and if a player changes
+	private void updatePlayerNames() {
+		// invoked at start from fillData and when a new player is chosen to replace an old one
 		mPlayer[0].setText(mGame.getTeam1().getFirst().getName());
 		mPlayer[1].setText(mGame.getTeam1().getSecond().getName());
 		mPlayer[2].setText(mGame.getTeam2().getFirst().getName());
 		mPlayer[3].setText(mGame.getTeam2().getSecond().getName());
 	}
-
-	public static void copyExtrasToIntent(Intent i, Bundle extras) {
-		String currKey;
-		currKey = GameStorageHelper.getCursorItemType(GameKey.TICHU);
-		if (extras.containsKey(currKey)) i.putExtra(currKey, extras.getLong(currKey));
-		currKey = GameStorageHelper.getCursorItemType(GameKey.TICHU);
-		if (extras.containsKey(currKey)) i.putExtra(currKey, extras.getParcelable(currKey));
-		currKey = EXTRAS_TEAM1_PLAYER_1;
-		if (extras.containsKey(currKey)) i.putExtra(currKey, extras.getString(currKey));
-		currKey = EXTRAS_TEAM1_PLAYER_2;
-		if (extras.containsKey(currKey)) i.putExtra(currKey, extras.getString(currKey));
-		currKey = EXTRAS_TEAM2_PLAYER_1;
-		if (extras.containsKey(currKey)) i.putExtra(currKey, extras.getString(currKey));
-		currKey = EXTRAS_TEAM2_PLAYER_2;
-		if (extras.containsKey(currKey)) i.putExtra(currKey, extras.getString(currKey));
-		currKey = EXTRA_NEW_GAME_SCORE_LIMIT;
-		if (extras.containsKey(currKey)) i.putExtra(currKey, extras.getInt(currKey));
-		currKey = EXTRA_NEW_GAME_USE_MERCY_RULE;
-		if (extras.containsKey(currKey)) i.putExtra(currKey, extras.getBoolean(currKey));
-	}	
 	
  	public void showGameInfo() {//TODO make this accessible by options menu or action bar 
  		Resources res = getActivity().getResources();
@@ -328,7 +287,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		}
 		// if activity gets restored, then reselect the last selected round or restore user input
 		int selectedRound = savedInstanceState.getInt(STORAGE_SELECTED_ROUND, -1);
-		selectRound(selectedRound);
+		selectRoundSmart(selectedRound);
 		if (mCurrRoundIndex == -1) {
 			// no round selected, lets restore fields from bundle
 			setScoreSilent(true, savedInstanceState.getString(STORAGE_TEXT_SCORE_TEAM1));
@@ -470,17 +429,10 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 
 			@Override
 			public void onClick(View v) {
-				selectRound(-1);
+				deselectRound();
 			}
 			
 		});
-		GameKey.getPool(GameKey.TICHU).registerListener(this, false);
-	}
-	
-	@Override
-	public void onListItemClick(ListView l, View v, int position, long id) {
-		super.onListItemClick(l, v, position, id);
-		selectRound(position);
 	}
 	
 	// Create the menu based on the XML definition
@@ -533,13 +485,6 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		return sharedPref.getBoolean(PREFERENCES_SHOW_TICHUS, TichuGameRoundAdapter.PREFERENCE_SHOW_TICHUS_DEFAULT);
 	}
 	
-	private String getBluetoothDeviceName() {
-		if (BluetoothAdapter.getDefaultAdapter() != null) {
-			return BluetoothAdapter.getDefaultAdapter().getName();
-		} else {
-			return "";
-		}
-	}
 	private void createNewGame(PlayerDuo first, PlayerDuo second, boolean useMercyRule, int scoreLimit) {
 		if (scoreLimit < TichuGame.MIN_SCORE_LIMIT || scoreLimit > TichuGame.MAX_SCORE_LIMIT) {
 			mGame = new TichuGame(TichuGame.DEFAULT_SCORE_LIMIT, useMercyRule);
@@ -583,9 +528,9 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 	// visualize, this selects a new round
 	private void fillData() {
 		assert mGame != null;
-		synchPlayerNames();
+		updatePlayerNames();
 		fillRoundData();
-		selectRound(-1);
+		deselectRound();
 	}
 	
 	private void fillRoundData() {
@@ -598,54 +543,54 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		mAdapter.notifyDataSetChanged();
 	}
 
-	private void selectRound(int index) {
-		if (index == -1) {
-			// deselect round and make user able to input new one
-			// this must also work when round is already deselected as it could get called more than once
-			mCurrRound = null;
-			mCurrRoundIndex = -1;
-			getListView().clearChoices();
-			getListView().requestLayout();
-			makeUserInputAvailable(!mGame.isFinished());
-			setScoreSilent(true, "");
-			setScoreSilent(false, "");
-			clearFinishers();
-			for (int i = TichuGame.PLAYER_ONE_ID; i < TichuGame.PLAYER_ONE_ID
-					+ TichuGame.TOTAL_PLAYERS; i++) {
-				setTichuBid(i, TichuBidType.NONE, false);
-			}
-			mStateMachine.updateUI();
-		} else {
-			// existing round (that can be edited)
-			makeUserInputAvailable(true);
-			mCurrRoundIndex = index;
-			getListView().setItemChecked(mCurrRoundIndex, true);
-			mCurrRound = (TichuRound) mGame.getRound(index);
-			// scores
-			setScoreSilent(true, String.valueOf(mCurrRound.getRawScoreTeam1()));
-			setScoreSilent(false, String.valueOf(mCurrRound.getRawScoreTeam2()));
-			// finishers
-			int[] tempFin = new int[TichuGame.TOTAL_PLAYERS];
-			Arrays.fill(tempFin, TichuRound.FINISHER_POS_UNKNOWN);
-			clearFinishers();
-			for (int i = TichuGame.PLAYER_ONE_ID; i < TichuGame.PLAYER_ONE_ID
-					+ TichuGame.TOTAL_PLAYERS; i++) {
-				int pos = mCurrRound.getFinisherPos(i);
-				visualizeFinisherPos(i, pos); // call before setTichuBid so bid visualization is not overwritten (mFinisher is not yet set here)
-				setTichuBid(i, mCurrRound.getTichuBid(i).getType(), pos == 1);
-				if (pos != TichuRound.FINISHER_POS_UNKNOWN) {
-					tempFin[pos - 1] = i;
-				}
-			}
-			// have to add positions afterwards since we have a list and not an array..
-			for (int i = 0; i < tempFin.length; i++) {
-				if (tempFin[i] != TichuRound.FINISHER_POS_UNKNOWN 
-						&& (i < 2 || !mCurrRound.areFirstTwoFinisherInSameTeam())) {
-					mFinisher.add(Integer.valueOf(tempFin[i]));
-				}
-			}
-			mStateMachine.updateUI();
+	protected void deselectRound() {
+		// deselect round and make user able to input new one
+		// this must also work when round is already deselected as it could get called more than once
+		mCurrRound = null;
+		mCurrRoundIndex = -1;
+		getListView().clearChoices();
+		getListView().requestLayout();
+		makeUserInputAvailable(!mGame.isFinished());
+		setScoreSilent(true, "");
+		setScoreSilent(false, "");
+		clearFinishers();
+		for (int i = TichuGame.PLAYER_ONE_ID; i < TichuGame.PLAYER_ONE_ID
+				+ TichuGame.TOTAL_PLAYERS; i++) {
+			setTichuBid(i, TichuBidType.NONE, false);
 		}
+		mStateMachine.updateUI();
+	}
+	
+	protected void selectRound(int index) {
+		// existing round (that can be edited)
+		makeUserInputAvailable(true);
+		mCurrRoundIndex = index;
+		getListView().setItemChecked(mCurrRoundIndex, true);
+		mCurrRound = (TichuRound) mGame.getRound(index);
+		// scores
+		setScoreSilent(true, String.valueOf(mCurrRound.getRawScoreTeam1()));
+		setScoreSilent(false, String.valueOf(mCurrRound.getRawScoreTeam2()));
+		// finishers
+		int[] tempFin = new int[TichuGame.TOTAL_PLAYERS];
+		Arrays.fill(tempFin, TichuRound.FINISHER_POS_UNKNOWN);
+		clearFinishers();
+		for (int i = TichuGame.PLAYER_ONE_ID; i < TichuGame.PLAYER_ONE_ID
+				+ TichuGame.TOTAL_PLAYERS; i++) {
+			int pos = mCurrRound.getFinisherPos(i);
+			visualizeFinisherPos(i, pos); // call before setTichuBid so bid visualization is not overwritten (mFinisher is not yet set here)
+			setTichuBid(i, mCurrRound.getTichuBid(i).getType(), pos == 1);
+			if (pos != TichuRound.FINISHER_POS_UNKNOWN) {
+				tempFin[pos - 1] = i;
+			}
+		}
+		// have to add positions afterwards since we have a list and not an array..
+		for (int i = 0; i < tempFin.length; i++) {
+			if (tempFin[i] != TichuRound.FINISHER_POS_UNKNOWN 
+					&& (i < 2 || !mCurrRound.areFirstTwoFinisherInSameTeam())) {
+				mFinisher.add(Integer.valueOf(tempFin[i]));
+			}
+		}
+		mStateMachine.updateUI();
 	}
 
 	private void setScoreSilent(boolean setTeam1Text, CharSequence text) {
@@ -733,7 +678,7 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		setTichuBid(playerId, mBids[playerId - TichuGame.PLAYER_ONE_ID], false);
 	}
 
-	private boolean isImmutable() {
+	protected boolean isImmutable() {
 		return LOADED_FINISHED_GAMES_ARE_IMMUTABLE && mIsLoadedFinishedGame;
 	}
 	
@@ -888,17 +833,17 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			case STATE_ADD_ROUND:
 				mGame.addRound(mCurrRound);
 				fillRoundData();
-				selectRound(-1);
+				deselectRound();
 				hideSoftKeyboard();
 				break;
 			case STATE_OLD_ROUND_EDITED:
 				mGame.updateRound(mCurrRoundIndex, mCurrRound);
 				fillRoundData();
-				selectRound(-1);
+				deselectRound();
 				hideSoftKeyboard();
 				break;
 			case STATE_OLD_ROUND_SELECTED:
-				selectRound(-1);
+				deselectRound();
 				break;
 			default:
 				throw new IllegalStateException();
@@ -990,26 +935,11 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 		super.onPause();
 		saveState();
 	}
-	
-	void saveState() {
-		if (mGame != null) {
-			if (mLastRunningTimeUpdate != null) {
-				Date currTime = new Date();
-				mGame.addRunningTime(currTime.getTime() - mLastRunningTimeUpdate.getTime());
-				mLastRunningTimeUpdate = currTime;
-			}
-			if (mGame.isFinished()) {
-				mLastRunningTimeUpdate = null;
-			}
-			mGame.saveGame(getActivity().getContentResolver());
-		}
-	}
-	
+
 	@Override
 	public void onDestroyView() {
         getListView().setAdapter(null);
 		super.onDestroyView();
-		GameKey.getPool(GameKey.TICHU).unregisterListener(this);
 	}
 
 	@Override
@@ -1059,22 +989,16 @@ public class TichuGameDetailFragment extends ListFragment implements ChoosePlaye
 			mGame.setupPlayers(mGame.getTeam1().getFirst(), mGame.getTeam1().getSecond(), mGame.getTeam2().getFirst(), chosen);
 			break;
 		}
-		synchPlayerNames();
+		updatePlayerNames();
 	}
 
 	@Override
 	public void onPlayerColorChanged(int arg, Player concernedPlayer) {
 		// ignored, tichu does not support player colors
 	}
-
+	
 	@Override
-	public void playerNameChanged(String oldName, Player newPlayer) {
-		synchPlayerNames();
+	protected Game getGame() {
+		return mGame;
 	}
-
-	@Override
-	public long[] getIdsOfInterest() {
-		return mGame != null ? mGame.getIdsOfInterest() : null;
-	}
-
 }

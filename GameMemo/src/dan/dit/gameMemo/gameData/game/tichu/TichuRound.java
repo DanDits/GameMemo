@@ -14,24 +14,7 @@ public class TichuRound extends GameRound {
 	private int[] finishers; // player 1 and 2 are in team 1, player 3 and 4 are in team 2
 	
 	protected TichuRound(Compacter data) throws CompactedDataCorruptException, InadequateRoundInfo {
-		if (data.getSize() < 4) {
-			throw new CompactedDataCorruptException("Too little data in compressor.").setCorruptData(data);
-		}
-		rawScoreTeam1 = Integer.parseInt(data.getData(0));
-		rawScoreTeam2 = Integer.parseInt(data.getData(1));
-		String finisherData = data.getData(2);
-		finishers = new int[finisherData.length()];
-		for (int i = 0; i < finishers.length; i++) {
-			finishers[i] = Integer.parseInt(String.valueOf(finisherData.charAt(i)), 10);
-		}
-		String tichuData = data.getData(3);
-		TichuBidType[] bids = new TichuBidType[TichuGame.TOTAL_PLAYERS];
-		for (int i = 0; i < bids.length; i++) {
-			bids[i] = TichuBidType.getFromKey(String.valueOf(tichuData.charAt(i)));
-		}
-		finishers = completeFinishers(finishers, rawScoreTeam1, rawScoreTeam2);
-		tichus = makeTichus(bids, finishers[0]);
-		checkAndThrowTichuRoundState();
+		unloadData(data);
 	}
 	
 	private TichuRound(int score1, int score2, int[] minOneFinishers, TichuBid[] tichus) throws InadequateRoundInfo {
@@ -192,6 +175,33 @@ public class TichuRound extends GameRound {
 		}
 		cmp.appendData(tichuData.toString());
 		return cmp.compact();
+	}
+	
+	@Override
+	public void unloadData(Compacter data)
+			throws CompactedDataCorruptException {
+		if (data.getSize() < 4) {
+			throw new CompactedDataCorruptException("Too little data in compressor.").setCorruptData(data);
+		}
+		rawScoreTeam1 = data.getInt(0);
+		rawScoreTeam2 = data.getInt(1);
+		String finisherData = data.getData(2);
+		finishers = new int[finisherData.length()];
+		for (int i = 0; i < finishers.length; i++) {
+			finishers[i] = Integer.parseInt(String.valueOf(finisherData.charAt(i)), 10);
+		}
+		String tichuData = data.getData(3);
+		TichuBidType[] bids = new TichuBidType[TichuGame.TOTAL_PLAYERS];
+		for (int i = 0; i < bids.length; i++) {
+			bids[i] = TichuBidType.getFromKey(String.valueOf(tichuData.charAt(i)));
+		}
+		finishers = completeFinishers(finishers, rawScoreTeam1, rawScoreTeam2);
+		tichus = makeTichus(bids, finishers[0]);
+		try {
+			checkAndThrowTichuRoundState();
+		} catch (InadequateRoundInfo e) {
+			throw new CompactedDataCorruptException(e).setCorruptData(data);
+		}
 	}
 	
 	/**

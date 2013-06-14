@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="dan.dit.gameMemo"
-    android:versionCode="5"
-    android:versionName="1.08" 
+    android:versionCode="6"
+    android:versionName="1.100" 
     android:installLocation="auto">
 	
     <uses-sdk
@@ -24,7 +24,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".appCore.tichu.TichuGamesActivity"
+            android:name=".appCore.GameChooserActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,7 +33,18 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".appCore.tichu.TichuGamesActivity" >
+        </activity>
+        <activity
+            android:name=".appCore.doppelkopf.DoppelkopfGamesActivity" >
+        </activity>
+        <activity
             android:name=".appCore.tichu.TichuGameDetailActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustPan" >
+        </activity>
+        <activity
+            android:name=".appCore.GameDetailActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:windowSoftInputMode="stateAlwaysHidden|adjustPan" >
         </activity>
