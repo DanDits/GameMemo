@@ -1,5 +1,8 @@
 package dan.dit.gameMemo.gameData.game.doppelkopf;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
@@ -14,9 +17,31 @@ import dan.dit.gameMemo.util.compaction.Compacter;
 public class DoppelkopfRuleSystem {
 	
 	public static final String NAME_TOURNAMENT1 = "tournament1";
+	protected static final Map<String, DoppelkopfRuleSystem> ALL = new HashMap<String, DoppelkopfRuleSystem>();
 	private static DoppelkopfRuleSystem INSTANCE;
-
-	private DoppelkopfRuleSystem() {}
+	
+	static {
+		// init all (sub)classes
+		DoppelkopfRuleSystem.getInstance();
+		DoppelkopfRuleSystemKA.getInstance();
+	}
+	
+	public static DoppelkopfRuleSystem[] getAllSystems() {
+		DoppelkopfRuleSystem[] all = new DoppelkopfRuleSystem[ALL.size()];
+		int index = 0;
+		for (DoppelkopfRuleSystem sys : ALL.values()) {
+			all[index++] = sys;
+		}
+		return all;
+	}
+	
+	private String mName;
+	private int mDescriptionResource;
+	protected DoppelkopfRuleSystem(String name, int descrResource) {
+		mName = name;
+		mDescriptionResource = descrResource;
+		ALL.put(name, this);
+	}
 	
 	public int getScoreMultplier() { // applies to getTotalScore and getBidAndResultScore
 		return 1;
@@ -112,7 +137,11 @@ public class DoppelkopfRuleSystem {
 	}
 	
 	public String getName() {
-		return NAME_TOURNAMENT1;
+		return mName;
+	}
+	
+	public int getDescriptionResource() {
+		return mDescriptionResource;
 	}
 	
 	@Override
@@ -123,24 +152,50 @@ public class DoppelkopfRuleSystem {
 			return super.equals(other);
 		}
 	}
-
+	public static DoppelkopfRuleSystem getInstance() {
+		if (INSTANCE == null) {
+			INSTANCE = new DoppelkopfRuleSystem(NAME_TOURNAMENT1, dan.dit.gameMemo.R.string.doppelkopf_rule_system_descr_tournament1);
+		}
+		return INSTANCE;
+	}
+	
 	public static DoppelkopfRuleSystem getInstanceByName(String data) {
-		DoppelkopfRuleSystem sys = null;
-		if (NAME_TOURNAMENT1.equals(data)) {
-			if (INSTANCE == null) {
-				INSTANCE = new DoppelkopfRuleSystem();
-			}
-			sys = INSTANCE;
-		} 
+		DoppelkopfRuleSystem sys = ALL.get(data);
 		return sys;
 	}
 
+	public boolean keepsGiver(DoppelkopfGame doppelkopfGame, int roundIndex) {
+		DoppelkopfRound round = (DoppelkopfRound) doppelkopfGame.getRound(roundIndex);
+		return round.isSolo() && round.getRoundStyle().getType() != DoppelkopfSolo.STILLE_HOCHZEIT 
+				&& (enforcesDutySolo(doppelkopfGame, roundIndex) || 
+						doppelkopfGame.getSoloCount(round.getRoundStyle().getFirstIndex(), roundIndex) <= doppelkopfGame.getDutySoliCountPerPlayer());
+	}
+	
+	public boolean isFinished(DoppelkopfGame doppelkopfGame, int round) {
+		// finished when all rounds are played and all soli done
+		boolean limitCond = (doppelkopfGame.getLimit() == DoppelkopfGame.NO_LIMIT) ? 
+					DoppelkopfGame.IS_FINISHED_WITHOUT_LIMIT : 
+					(doppelkopfGame.getRoundCount() >= doppelkopfGame.getLimit() * doppelkopfGame.getPlayerCount());
+		boolean soliCond = doppelkopfGame.getRemainingSoli(round) == 0;
+		return limitCond && soliCond;
+	}
+	
 	public boolean enforcesDutySolo(DoppelkopfGame doppelkopfGame, int round) {
-		if (doppelkopfGame.hasLimit()) {
-			if (doppelkopfGame.getDurchlauf(round) >= doppelkopfGame.getLimit() && !doppelkopfGame.isFinished()) {
-				return true;
+		if (doppelkopfGame.hasLimit() && doppelkopfGame.getDutySoliCountPerPlayer() > 0) {
+			if (!isFinished(doppelkopfGame, round)) {
+				int remainingGames = doppelkopfGame.getLimit() * doppelkopfGame.getPlayerCount() - round;
+				return remainingGames <= doppelkopfGame.getRemainingSoli(round);
 			}
 		}
 		return false;
 	}
+
+	public int getDefaultDurchlaeufe() {
+		return 4;
+	}
+
+	public int getDefaultDutySoli() {
+		return 1;
+	}
+
 }

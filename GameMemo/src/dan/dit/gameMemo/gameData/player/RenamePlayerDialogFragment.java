@@ -1,5 +1,7 @@
 package dan.dit.gameMemo.gameData.player;
 
+import java.util.Collection;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -31,21 +33,44 @@ import dan.dit.gameMemo.gameData.game.GameKey;
  *
  */
 public class RenamePlayerDialogFragment extends DialogFragment  {
-	public static final String EXTRA_RENAME_IN_GAME_IDS = "dan.dit.gameMemo.EXTRA_RENAME_IN_GAME_IDS";
+	private static final String EXTRA_RENAME_IN_GAME_IDS = "dan.dit.gameMemo.EXTRA_RENAME_IN_GAME_IDS";
 	private PlayerRenamedListener mListener;
 	private EditText mNewName;
 	private ArrayAdapter<Player> mPlayersAdapter;
 	private Spinner mPlayers;
-	private int mGameKey;
+	private int[] mGameKey;
 	private long[] mRenameInGameIds;
+
+	public static DialogFragment newInstance(int[] gameKeys, long[] gameIdsToRename) {
+		RenamePlayerDialogFragment dialog = new RenamePlayerDialogFragment();
+        Bundle args = new Bundle();
+        args.putIntArray(GameKey.EXTRA_GAMEKEY, gameKeys);
+        args.putLongArray(RenamePlayerDialogFragment.EXTRA_RENAME_IN_GAME_IDS, gameIdsToRename);
+        dialog.setArguments(args);
+        return dialog;
+	}
+	
+	private int containedInPoolCount(String name) {
+		int count = 0;
+		for (int key : mGameKey) {
+			if (GameKey.getPool(key).contains(name)) {
+				count++;
+			}
+		}
+		return count;
+	}
 	
 	public void wantsToRename(Player selected, String pNewName) {
 		String newName = pNewName.trim();
 		if (selected != null && Player.isValidPlayerName(newName)) {
-			if (!selected.getName().equalsIgnoreCase(newName) 
-					&& GameKey.getPool(mGameKey).contains(newName)) {
-				// there already is a player with the new name (and its not the current one with other case letters)
-				warnAndConsultAboutNameConflict(getActivity(), selected, newName);
+			if (!selected.getName().equalsIgnoreCase(newName)) {
+				int containedCount = containedInPoolCount(newName);
+				if (containedCount > 0) {
+					// there already is a player with the new name (and its not the current one with other case letters)
+					warnAndConsultAboutNameConflict(getActivity(), selected, newName, containedCount);
+				} else {
+					performRenaming(getActivity(), selected, newName);
+				}
 			} else {
 				performRenaming(getActivity(), selected, newName);
 			}
@@ -54,9 +79,9 @@ public class RenamePlayerDialogFragment extends DialogFragment  {
 		}
 	}
 
-	private void warnAndConsultAboutNameConflict(final Context context, final Player selected, final String newName) {
+	private void warnAndConsultAboutNameConflict(final Context context, final Player selected, final String newName, int containedInGamesCount) {
 		new AlertDialog.Builder(getActivity())
-			.setTitle(getResources().getString(R.string.rename_conflict_title))
+			.setTitle(getResources().getQuantityString(R.plurals.rename_conflict_title, containedInGamesCount, containedInGamesCount))
 			.setMessage(getResources().getString(R.string.rename_conflict, newName, selected.getName(), newName))
 			.setIcon(android.R.drawable.ic_dialog_alert)
 			.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -68,13 +93,15 @@ public class RenamePlayerDialogFragment extends DialogFragment  {
 	}
 	
 	private void performRenaming(Context context, Player toRename, String newName) {
-		Game.rename(mGameKey, context.getContentResolver(), toRename, newName, mRenameInGameIds, mListener);
+		for (int key : mGameKey) {
+			Game.rename(key, context.getContentResolver(), toRename, newName, mRenameInGameIds, mListener);
+		}
 	}
 	
 	   @Override
 	    public Dialog onCreateDialog(Bundle savedInstanceState) {
 		   Bundle args = getArguments();
-		   mGameKey = args.getInt(GameKey.EXTRA_GAMEKEY);
+		   mGameKey = args.getIntArray(GameKey.EXTRA_GAMEKEY);
 		   //use the given gamekey to only rename the given ids, if empty then rename for all ids of this game
 		   mRenameInGameIds = args.getLongArray(EXTRA_RENAME_IN_GAME_IDS);
 		   if (mRenameInGameIds == null) {
@@ -83,48 +110,64 @@ public class RenamePlayerDialogFragment extends DialogFragment  {
 		   View baseView = getActivity().getLayoutInflater().inflate(R.layout.rename_player, null);
 	        mNewName = (EditText) baseView.findViewById(R.id.rename_new_name);
 	        mPlayers = (Spinner) baseView.findViewById(R.id.rename_select_players);
-			mPlayersAdapter = GameKey.getPool(mGameKey).makeAdapter(getActivity(), false);
-	        mPlayers.setAdapter(mPlayersAdapter);
-	        // Use the Builder class for convenient dialog construction
-	        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-	        builder.setIcon(getDialogIcon())
-	        .setTitle(getDialogTitle())
-	        		.setView(baseView)
-	               .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-	                   public void onClick(DialogInterface dialog, int id) {
-	                	   Object selected = mPlayers.getSelectedItem();
-	                	   if (selected != null) {
-	                		   wantsToRename((Player) selected, mNewName.getText().toString());
-	                	   }
-	                   }
-	               })
-	               .setNegativeButton(android.R.string.no, null);
-	        // Create the AlertDialog object and return it
-	        return builder.create();
+	        Collection<Player> allPlayers = GameKey.getAllPlayers();
+	        if (allPlayers.size() == 0) {
+				Toast.makeText(getActivity(), getResources().getString(R.string.rename_no_players), Toast.LENGTH_SHORT).show();
+				return new AlertDialog.Builder(getActivity()).create();
+	        } else {
+				mPlayersAdapter = new PlayerAdapter(false, getActivity(), allPlayers);
+				for (Player p : allPlayers) {
+					mPlayersAdapter.add(p);
+				}
+		        mPlayers.setAdapter(mPlayersAdapter);
+		        // Use the Builder class for convenient dialog construction
+		        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		        builder.setIcon(getDialogIcon())
+		        .setTitle(getDialogTitle())
+		        		.setView(baseView)
+		               .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+		                   public void onClick(DialogInterface dialog, int id) {
+		                	   Object selected = mPlayers.getSelectedItem();
+		                	   if (selected != null) {
+		                		   wantsToRename((Player) selected, mNewName.getText().toString());
+		                	   }
+		                   }
+		               })
+		               .setNegativeButton(android.R.string.no, null);
+		        // Create the AlertDialog object and return it
+		        return builder.create();
+	        }
 	    }
 	
 	   @Override
 	   public void onStart() {
 		   super.onStart();
-		   if (GameKey.getPool(mGameKey).size() == 0) {
-			   Toast.makeText(getActivity(), getResources().getString(R.string.rename_no_players), Toast.LENGTH_SHORT).show();
+		   if (mPlayersAdapter != null) {
+			   mPlayersAdapter.sort(Player.NAME_COMPARATOR);
+		   } else {
 			   dismiss();
-			   return;
 		   }
-		   mPlayersAdapter.sort(Player.NAME_COMPARATOR);
 	   }
 	   
 	   private int getDialogIcon() {
-		   return GameKey.getGameIconId(mGameKey);
+		   if (mGameKey.length == 1) {
+			   return GameKey.getGameIconId(mGameKey[0]);
+		   } else {
+			   return 0;
+		   }
 	   }
 	   private String getDialogTitle() {
 		   StringBuilder builder = new StringBuilder();
 		   builder.append(getResources().getString(R.string.rename_player));
-		   builder.append(" (");
-		   if (mRenameInGameIds.length == 0) {
-			   builder.append(getResources().getString(R.string.rename_in_games_all, GameKey.getGameName(mGameKey)));
+		   builder.append("\n(");
+		   if (mGameKey.length == 1) {
+			   if (mRenameInGameIds.length == 0) {
+				   builder.append(getResources().getString(R.string.single_rename_in_games_all, GameKey.getGameName(mGameKey[0])));
+			   } else {
+				   builder.append(getResources().getQuantityString(R.plurals.single_rename_in_games_count, mRenameInGameIds.length, mRenameInGameIds.length, GameKey.getGameName(mGameKey[0])));
+			   }
 		   } else {
-			   builder.append(getResources().getQuantityString(R.plurals.rename_in_games_count, mRenameInGameIds.length, mRenameInGameIds.length, GameKey.getGameName(mGameKey)));
+			   builder.append(getResources().getString(R.string.rename_in_games, mGameKey.length));
 		   }
 		   builder.append(")");
 		   return builder.toString();
@@ -135,4 +178,5 @@ public class RenamePlayerDialogFragment extends DialogFragment  {
 		   super.onAttach(activity);
 		   mListener = (PlayerRenamedListener) activity;
 	   }
+
 }

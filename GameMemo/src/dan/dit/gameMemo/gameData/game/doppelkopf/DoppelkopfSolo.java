@@ -29,11 +29,6 @@ public class DoppelkopfSolo extends DoppelkopfRoundStyle {
 	public boolean isValidType(int type) {
 		return type >= FLEISCHLOSER && type <= STILLE_HOCHZEIT;
 	}
-
-	@Override
-	public boolean keepsGiver() {
-		return mType != STILLE_HOCHZEIT;
-	}
 	
 	public boolean isValidDutySolo() {
 		return mType != STILLE_HOCHZEIT;

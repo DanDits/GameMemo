@@ -5,9 +5,7 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
-import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,7 +19,6 @@ import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameDetailFragment.DetailViewCallback;
 import dan.dit.gameMemo.appCore.GamesOverviewListFragment.GameOverviewCallback;
-import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothDataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.file.FileWriteDataExchangeActivity;
 import dan.dit.gameMemo.gameData.game.Game;
@@ -74,7 +71,6 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 		if (savedInstanceState == null) {
 			// initial setup
 			mIsActivityInitialLaunch = true;
-			Game.loadAllPlayers(mGameKey, getContentResolver());
 			//loadGameDetails(getIntent().getExtras()); // is this of any use?
 		}
 	}
@@ -137,9 +133,6 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 		case R.id.rename_player:
 			renamePlayerDialog();
 			return true;
-		case R.id.about:
-			showAboutDialog();
-			return true;
 		case R.id.delete:
 			askAndPerformDelete();
 			return true;
@@ -150,7 +143,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 		return super.onOptionsItemSelected(item);
 	}
 
- 	private void startGameChooserActivity() {
+	private void startGameChooserActivity() {
 		Intent i = new Intent(this, GameChooserActivity.class);
 		i.putExtra(GameChooserActivity.EXTRA_LAST_GAME, mGameKey);
 		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -220,47 +213,20 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 			break;
 		}
 	}
-
- 	private void showAboutDialog() {
-		String versionName = "";
-		try {
-			versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-		} catch (NameNotFoundException e) {
-			// will not happen since we ask for own own package which exists
-		}
-		new AlertDialog.Builder(this)
-		.setTitle(getResources().getString(R.string.about))
-		.setMessage(getResources().getString(R.string.about_summary, versionName))
-		.setIcon(android.R.drawable.ic_dialog_info)
-		.setNeutralButton(android.R.string.ok, null)
-		.show();
-	}
  	
  	private void openDataExchangerBluetooth() {
-		Intent i = new Intent(this, BluetoothDataExchangeActivity.class);
-		i.putExtra(GameKey.EXTRA_GAMEKEY, new int[] {mGameKey});
-		startActivity(i);
+		startActivity(BluetoothDataExchangeActivity.newInstance(this, new int[] {mGameKey}));
 	}
 	
 	private void openFileWriterExchanger() {
-		Intent i = new Intent(this, FileWriteDataExchangeActivity.class);
-		i.putExtra(GameKey.EXTRA_GAMEKEY, new int[] {mGameKey});
-		i.putExtra(FileWriteDataExchangeActivity.EXTRA_FLAG_START_SHARE_IMMEDIATELY, true);
 		Collection<Long> checkedStarttimes = mOverviewFragment.getCheckedGamesStarttimes();
-		if (checkedStarttimes.size() > 0) {
-			i.putExtra(DataExchangeActivity.EXTRA_SINGLE_GAME_OFFERS, GameKey.toArray(checkedStarttimes));
-		}
+		Intent i = FileWriteDataExchangeActivity.newInstance(this, mGameKey, true, checkedStarttimes);
 		startActivity(i);
 	}
 	
 	private void renamePlayerDialog() {
 		closeDetailView(false, false);
-        DialogFragment dialog = new RenamePlayerDialogFragment();
-        
-        Bundle args = new Bundle();
-        args.putInt(GameKey.EXTRA_GAMEKEY, mGameKey);
-        args.putLongArray(RenamePlayerDialogFragment.EXTRA_RENAME_IN_GAME_IDS, GameKey.toArray(mOverviewFragment.getCheckedIds()));
-        dialog.setArguments(args);
+        DialogFragment dialog = RenamePlayerDialogFragment.newInstance(new int[] {mGameKey}, GameKey.toArray(mOverviewFragment.getCheckedIds()));
         dialog.show(getSupportFragmentManager(), "RenamePlayerDialogFragment");
 	}
 

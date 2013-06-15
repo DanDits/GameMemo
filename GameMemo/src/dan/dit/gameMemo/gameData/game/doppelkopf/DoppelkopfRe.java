@@ -46,11 +46,6 @@ public class DoppelkopfRe extends DoppelkopfRoundStyle {
 	}
 
 	@Override
-	public boolean keepsGiver() {
-		return false;
-	}
-
-	@Override
 	public String compact() {
 		Compacter cmp = new Compacter();
 		cmp.appendData(DoppelkopfRoundStyle.RE_STYLE_MARK);

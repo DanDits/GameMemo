@@ -3,8 +3,10 @@ package dan.dit.gameMemo.dataExchange.file;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,13 +21,31 @@ import dan.dit.gameMemo.dataExchange.ExchangeService;
 import dan.dit.gameMemo.gameData.game.GameKey;
 
 public class FileWriteDataExchangeActivity extends DataExchangeActivity {
-	public static final String EXTRA_FLAG_START_SHARE_IMMEDIATELY = "dan.dit.gameMemo.START_SHARE_IMMEDIATELY";
+	private static final String EXTRA_FLAG_START_SHARE_IMMEDIATELY = "dan.dit.gameMemo.START_SHARE_IMMEDIATELY";
 	private static final String GAMES_DATA_FILE_NAME = "games.gamememo";
 	private FileWriteService mService;
 	private File mTempGamesData;
 	private List<Integer> mTempGamesDataForGames;
 	private Button mStartShare;
 	private boolean mStartImmediately;
+	
+	public static Intent newInstance(Context packageContext, int gameKey,
+			boolean startImmediately, Collection<Long> checkedStarttimes) {
+		Intent i = new Intent(packageContext, FileWriteDataExchangeActivity.class);
+		i.putExtra(GameKey.EXTRA_GAMEKEY, new int[] {gameKey});
+		i.putExtra(FileWriteDataExchangeActivity.EXTRA_FLAG_START_SHARE_IMMEDIATELY, startImmediately);
+		if (checkedStarttimes.size() > 0) {
+			i.putExtra(DataExchangeActivity.EXTRA_SINGLE_GAME_OFFERS, GameKey.toArray(checkedStarttimes));
+		}
+		return i;
+	}
+	
+	public static Intent newInstance(Context packageContext, int[] gameKeys, boolean startImmediately) {
+		Intent i = new Intent(packageContext, FileWriteDataExchangeActivity.class);
+		i.putExtra(GameKey.EXTRA_GAMEKEY, gameKeys);
+		i.putExtra(FileWriteDataExchangeActivity.EXTRA_FLAG_START_SHARE_IMMEDIATELY, startImmediately);
+		return i;
+	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

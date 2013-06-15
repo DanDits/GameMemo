@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import android.content.Context;
-import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.GameKey;
 /**
  * A PlayerPool holds a set of players. 
@@ -86,8 +85,7 @@ public class PlayerPool {
 	}
 	
 	public PlayerAdapter makeAdapter(Context context, boolean big) {
-		int layoutId = big ? R.layout.dropdown_item_big : android.R.layout.simple_dropdown_item_1line;
-		PlayerAdapter adapter = new PlayerAdapter(context, layoutId, android.R.id.text1, GameKey.getAllPlayers());
+		PlayerAdapter adapter = new PlayerAdapter(big, context, GameKey.getAllPlayers());
 		for (Player p : getAllSortByName(true)) {
 			adapter.add(p);
 		}

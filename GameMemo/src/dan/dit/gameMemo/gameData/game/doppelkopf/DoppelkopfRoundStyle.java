@@ -61,8 +61,6 @@ public abstract class DoppelkopfRoundStyle implements Compactable {
 		return mType;
 	}
 	
-	public abstract boolean keepsGiver();
-	
 	public int getFirstIndex() {
 		return mFirstReIndex;
 	}

@@ -569,7 +569,9 @@ public abstract class Game implements Iterable<GameRound>, Compactable {
 		Runnable loadPlayerRunnable = new Runnable() {
 			@Override
 			public void run() {
-				Game.loadPlayers(preferredGameKey, contentResolver);
+				if (GameKey.isGameSupported(preferredGameKey)) {
+					Game.loadPlayers(preferredGameKey, contentResolver);
+				}
 				for (Integer key : GameKey.ALL_GAMES) {
 					if (!key.equals(Integer.valueOf(preferredGameKey))) {
 						Game.loadPlayers(key, contentResolver);

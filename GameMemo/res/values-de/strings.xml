@@ -90,14 +90,19 @@
 	<string name="unfinished_game_found_title">Offenes Spiel weiter spielen?</string>
 	<string name="unfinished_game_found_but_start_new">Starte neues</string>
 	<string name="rename_player">Spieler umbenennen</string>
-    <string name="rename_in_games_all">in allen %1$s Spielen</string>
+    <string name="single_rename_in_games_all">in allen %1$s Spielen</string>
+    <string name="rename_in_games">in %1$d Spielen</string>
 	<plurals
-        name="rename_in_games_count">
+        name="single_rename_in_games_count">
         <item quantity="one">in einem %2$s Spiel</item>
         <item quantity="other">in %1$d %2$s Spielen</item>
     </plurals>
 	<string name="hint_new_player_name">Neuer Spielername</string>
-	<string name="rename_conflict_title">Doppelter Name</string>
+	<plurals
+	     name="rename_conflict_title">
+        <item quantity="one">Name benutzt</item>
+        <item quantity="other">Name benutzt in %1$d Spielen</item>
+    </plurals>
 	<string name="rename_conflict">%1$s und %2$s zusammenfügen zu %3$s? Kann Spielstände ungültig machen!</string>
 	<string name="rename_success">Umbenennen erfolgreich</string>
 	<string name="rename_failure">Umbenennen fehlgeschlagen</string>
@@ -188,4 +193,10 @@
 	<string name="doppelkopf_duty_soli_per_player">Pflichtsoli pro Spieler: %1$d</string>
 	<string name="doppelkopf_round_limit">Rundenanzahl: %1$d</string>
 	<string name="doppelkopf_overview_info_heading">Optionen: </string>
+	<string name="game_chooser_game_descr">%1$s Spiele: %2$d</string>
+	<string name="menu_game_info">Info</string>
+	<string name="select_rule_system">Regelwerk wählen</string>
+	<string name="doppelkopf_rule_system_info">Regelwerk: %1$s</string>
+	<string name="doppelkopf_rule_system_descr_tournament1">Orientiert sich an den offiziellen Tunierregeln.</string>
+	<string name="doppelkopf_rule_system_descr_ka1">Modifiziert tournament1: Re/Contra +1, Pflichtsoli am Ende, endet nach x Runden statt Spielen.</string>
 </resources>

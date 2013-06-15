@@ -3,5 +3,9 @@
     <item android:id="@+id/game_detail_option_show_delta" android:title="@string/game_detail_option_show_delta" android:checkable="true"></item>
     <item android:id="@+id/game_detail_option_show_tichus" android:title="@string/game_detail_option_show_tichus" android:checkable="true"></item>
     
-
+    <item 
+        android:id="@+id/info"
+        android:showAsAction="never"
+        android:title="@string/menu_game_info">
+       </item>  
 </menu>

@@ -84,14 +84,19 @@
 	<string name="unfinished_game_found_title">Continue unfinished game?</string>
 	<string name="unfinished_game_found_but_start_new">Start new</string>
 	<string name="rename_player">Rename player</string>
-	<string name="rename_in_games_all">in all %1$s games</string>
+	<string name="single_rename_in_games_all">in all %1$s games</string>
+    <string name="rename_in_games">in %1$d games</string>
 	<plurals
-        name="rename_in_games_count">
+        name="single_rename_in_games_count">
         <item quantity="one">in one %2$s game</item>
         <item quantity="other">in %1$d %2$s games</item>
     </plurals>
 	<string name="hint_new_player_name">New player name</string>
-	<string name="rename_conflict_title">Name in use</string>
+	<plurals
+	     name="rename_conflict_title">
+        <item quantity="one">Name in use</item>
+        <item quantity="other">Name used by %1$d games</item>
+    </plurals>
 	<string name="rename_conflict">Merge %1$s and %2$s to %3$s? Can invalidate save games!</string>
 	<string name="rename_success">Renaming successful</string>
 	<string name="rename_failure">Renaming failed</string>
@@ -183,4 +188,10 @@
 	<string name="doppelkopf_duty_soli_per_player">Duty soli per player: %1$d</string>
 	<string name="doppelkopf_round_limit">Round limit: %1$d</string>
 	<string name="doppelkopf_overview_info_heading">Options: </string>
+	<string name="game_chooser_game_descr">%1$s games: %2$d</string>
+	<string name="menu_game_info">Info</string>
+	<string name="select_rule_system">Select rule system</string>
+	<string name="doppelkopf_rule_system_info">Rule system: %1$s</string>
+	<string name="doppelkopf_rule_system_descr_tournament1">Orientated at the official tournament rules.</string>
+	<string name="doppelkopf_rule_system_descr_ka1">Modified tournament1: Re/Contra +1, different duty soli enforcement.</string>
 </resources>

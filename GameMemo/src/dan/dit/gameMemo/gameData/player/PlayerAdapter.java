@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import dan.dit.gameMemo.R;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
@@ -18,8 +20,10 @@ import android.widget.TextView;
 public class PlayerAdapter extends ArrayAdapter<Player> {
 	private static final int MIN_LENGTH_TO_FILTER_IN_WORD = 2;
 	private Collection<Player> allPlayers;
-	public PlayerAdapter(Context context, int resource, int textViewResourceId, Collection<Player> all) {
-		super(context, resource, textViewResourceId);
+	
+	public PlayerAdapter(boolean big, Context context, Collection<Player> all) {
+		super(context, big ? R.layout.dropdown_item_big : android.R.layout.simple_dropdown_item_1line, 
+				android.R.id.text1);
 		allPlayers = all;
 	}
 	

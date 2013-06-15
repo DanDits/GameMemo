@@ -29,6 +29,7 @@ import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
+import dan.dit.gameMemo.gameData.game.GameKey;
 
 /**
  * A special implementation of a {@link DataExchangeActivity}.
@@ -67,6 +68,12 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 	private String mLastConnectedDeviceName;
 	private boolean mIsStopped;
 	private boolean mActivityEnabledBluetooth;
+	
+	public static Intent newInstance(Context packageContext, int[] gameKeys) {
+		Intent i = new Intent(packageContext, BluetoothDataExchangeActivity.class);
+		i.putExtra(GameKey.EXTRA_GAMEKEY, gameKeys);
+		return i;
+	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceData) {

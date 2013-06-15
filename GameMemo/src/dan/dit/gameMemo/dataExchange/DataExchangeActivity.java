@@ -24,8 +24,8 @@ import dan.dit.gameMemo.gameData.game.GameKey;
 public abstract class DataExchangeActivity extends FragmentActivity implements
 		GamesOverviewDialogCallback {
 	private static final String TAG = DataExchangeActivity.class.getName();
-	public static final String EXTRA_ALL_GAMES = "dan.dit.gameMemo.ALL_GAMES"; //int[] with at least one gamekey
-	public static final String EXTRA_SINGLE_GAME_OFFERS = "dan.dit.gameMemo.SINGLE_GAME_OFFERS"; // long[] if only one game suggested these starttimes are used to limit the offer of this game, others will send all
+	protected static final String EXTRA_ALL_GAMES = "dan.dit.gameMemo.ALL_GAMES"; //int[] with at least one gamekey
+	protected static final String EXTRA_SINGLE_GAME_OFFERS = "dan.dit.gameMemo.SINGLE_GAME_OFFERS"; // long[] if only one game suggested these starttimes are used to limit the offer of this game, others will send all
 	private static final String STORAGE_SINGLE_GAME_ID = "dan.dit.gameMemo.SINGLE_GAME_KEY"; // key of the single game
 	// handler message constants
 	public static final int MESSAGE_CONNECTION_STATE_CHANGE = 1; // used to update the text that displays the state, new state id in arg1

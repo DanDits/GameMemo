@@ -175,12 +175,6 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 	}
 	
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
-	}
-	
-	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View baseView = inflater.inflate(R.layout.tichu_detail, null);
 		return baseView;
@@ -227,7 +221,8 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 		mPlayer[3].setText(mGame.getTeam2().getSecond().getName());
 	}
 	
- 	public void showGameInfo() {//TODO make this accessible by options menu or action bar 
+	@Override
+ 	public void showGameInfo() {
  		Resources res = getActivity().getResources();
  		if (mGame != null) {
 			String formattedInfo = mGame.getFormattedInfo(res);

@@ -5,8 +5,10 @@ import java.util.Date;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -66,6 +68,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 	private static final int[] CARL_IDS = new int[] {R.drawable.karl_0, R.drawable.karl_1};
 	private static final int[] DK_IDS = new int[] {R.drawable.dk_0, R.drawable.dk_1, R.drawable.dk_2, R.drawable.dk_3, R.drawable.dk_4};
 	private static final String PREFERENCES_SHOW_DELTA = "dan.dit.gameMemo.PREF_SHOW_DELTA";
+	public static final String EXTRA_RULE_SYSTEM = "dan.dit.gameMemo.EXTRA_RULE_SYSTEM"; // String
 	
 	private Drawable mReIcon;
 	private Drawable mGiverIcon;
@@ -331,12 +334,6 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		}
 	}
 	
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
-	}
-	
 	// Create the menu based on the XML definition
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -359,6 +356,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	
 	private boolean getPreferencesShowDelta() {
 		SharedPreferences sharedPref = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE);
 		return sharedPref.getBoolean(PREFERENCES_SHOW_DELTA, DoppelkopfGameRoundAdapter.PREFERENCE_SHOW_DELTA_DEFAULT);
@@ -405,7 +403,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		} else if (players != null && players.size() >= DoppelkopfGame.MIN_PLAYERS) {
 			int dutySoliPerPlayer = extras != null ? extras.getInt(EXTRA_NEW_GAME_DUTY_SOLI_PER_PLAYER, DoppelkopfGame.DEFAULT_DUTY_SOLI) : DoppelkopfGame.DEFAULT_DUTY_SOLI;
 			int roundsLimit = extras != null ? extras.getInt(EXTRA_NEW_GAME_ROUNDS_LIMIT, DoppelkopfGame.DEFAULT_DURCHLAEUFE) : DoppelkopfGame.DEFAULT_DURCHLAEUFE;
-			createNewGame(players, roundsLimit, dutySoliPerPlayer);
+			createNewGame(players, roundsLimit, dutySoliPerPlayer, extras.getString(EXTRA_RULE_SYSTEM));
 		} else {
 			Log.d("Doppelkopf", "Failed loading or creating game for id " + gameId);
 			mCallback.closeDetailView(true, false);
@@ -489,8 +487,8 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		}
 	}
 	
-	private void createNewGame(List<Player> players, int durchlauefe, int dutySoliPerPlayer) {
-		mGame = new DoppelkopfGame(durchlauefe, dutySoliPerPlayer);
+	private void createNewGame(List<Player> players, int durchlauefe, int dutySoliPerPlayer, String ruleSysName) {
+		mGame = new DoppelkopfGame(ruleSysName, durchlauefe, dutySoliPerPlayer);
 		mGame.setOriginData(getBluetoothDeviceName(), Build.MODEL);
 		mGame.setupPlayers(players);
 		fillData();
@@ -984,7 +982,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		
 		private CharSequence getExtraInfoText() {
 			StringBuilder builder = new StringBuilder();
-			int remainingSoli = mGame.getRemainingSoli();
+			int remainingSoli = mGame.getRemainingSoli(mGame.getRoundCount());
 			int totalSoli = mGame.getDutySoliCountPerPlayer() * mGame.getPlayerCount();
 			if (remainingSoli > 0) {
 				builder.append(getResources().getString(R.string.doppelkopf_remaining_soli_info, totalSoli - remainingSoli, totalSoli));
@@ -1013,6 +1011,19 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 	@Override
 	protected Game getGame() {
 		return mGame;
+	}
+
+	@Override
+	protected void showGameInfo() {
+ 		Resources res = getActivity().getResources();
+ 		if (mGame != null) {
+			String formattedInfo = mGame.getFormattedInfo(res);
+			new AlertDialog.Builder(getActivity())
+			.setTitle(getResources().getString(R.string.menu_info_game))
+			.setMessage(formattedInfo)
+			.setIcon(android.R.drawable.ic_dialog_info)
+			.setNeutralButton(android.R.string.ok, null).show();
+		}
 	}
 
 }

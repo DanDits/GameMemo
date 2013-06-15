@@ -34,8 +34,8 @@ public class DoppelkopfGame extends Game {
 	public static final int MIN_PLAYERS = 4;
 	public static final String GAME_NAME = "Doppelkopf";
 	public static final PlayerPool PLAYERS = new PlayerPool();
-	public static final int DEFAULT_DURCHLAEUFE = 3;
-	public static final int DEFAULT_DUTY_SOLI = 1;
+	public static final int DEFAULT_DURCHLAEUFE = 2;
+	public static final int DEFAULT_DUTY_SOLI = 0;
 	
 	private List<Player> mPlayers = new ArrayList<Player>(MAX_PLAYERS);
 	private int[] mScores;
@@ -43,8 +43,11 @@ public class DoppelkopfGame extends Game {
 	protected DoppelkopfRuleSystem mRuleSystem;
 	protected int mDutySoliCountPerPlayer;
 	
-	public DoppelkopfGame(int roundLimit, int dutySoliCountPerPlayer) {
-		mRuleSystem = DoppelkopfRuleSystem.getInstanceByName(DoppelkopfRuleSystem.NAME_TOURNAMENT1);
+	public DoppelkopfGame(String ruleSysName, int roundLimit, int dutySoliCountPerPlayer) {
+		mRuleSystem = DoppelkopfRuleSystem.getInstanceByName(ruleSysName);
+		if (mRuleSystem == null) {
+			mRuleSystem = DoppelkopfRuleSystem.getInstance();
+		}
 		mRoundLimit = roundLimit;
 		if (mRoundLimit < 0) {
 			mRoundLimit = NO_LIMIT;
@@ -56,7 +59,7 @@ public class DoppelkopfGame extends Game {
 	}
 
 	public DoppelkopfGame() {
-		this(NO_LIMIT, 0);
+		this(null, NO_LIMIT, 0);
 	}
 	
 	private List<Integer> getMaxScoreIndices() {
@@ -118,9 +121,7 @@ public class DoppelkopfGame extends Game {
 
 	@Override
 	public boolean isFinished() {
-		boolean limitCond = mRoundLimit == NO_LIMIT ? IS_FINISHED_WITHOUT_LIMIT : getDurchlauf() >= mRoundLimit;
-		boolean soliCond = getDutySoliCountPerPlayer() > 0 && getRemainingSoli() == 0;
-		return limitCond && soliCond;
+		return mRuleSystem.isFinished(this, rounds.size());
 	}
 
 	@Override
@@ -211,6 +212,9 @@ public class DoppelkopfGame extends Game {
 		for (int i = 0; i < mPlayers.size(); i++) {
 			builder.append(mPlayers.get(i).getName()).append(" (").append(mScores[i]).append(" )\n");
 		}
+		builder.append("\n");
+		builder.append(res.getString(R.string.doppelkopf_rule_system_info, mRuleSystem.getName()));
+		builder.append("\n");
 		if (mDutySoliCountPerPlayer > 0) {
 			builder.append(res.getString(R.string.doppelkopf_duty_soli_per_player, mDutySoliCountPerPlayer)).append('\n');
 		}
@@ -316,14 +320,8 @@ public class DoppelkopfGame extends Game {
 		int giver = 0; // first giver is first player, so start at 0
 		int totalPlayers = mPlayers.size();
 		int durchlauf = 0;
-		int roundCount = 0;
-		for (GameRound r : rounds) {
-			if (roundCount >= round) {
-				break;
-			}
-			roundCount++;
-			DoppelkopfRound dkr = (DoppelkopfRound) r;
-			if (!dkr.getRoundStyle().keepsGiver()) {
+		for (int currRoundIndex = 0; currRoundIndex < round && currRoundIndex < rounds.size(); currRoundIndex++) {
+			if (!mRuleSystem.keepsGiver(this, currRoundIndex)) {
 				giver++;
 			}
 			if (giver == totalPlayers) {
@@ -338,13 +336,18 @@ public class DoppelkopfGame extends Game {
 		return mDutySoliCountPerPlayer;
 	}
 
-	public int getRemainingSoli() {
+	public int getRemainingSoli(int upToRound) {
 		if (mDutySoliCountPerPlayer == 0) {
 			return 0;
 		}
 		int[] remainingSoli = new int[mPlayers.size()];
 		Arrays.fill(remainingSoli, mDutySoliCountPerPlayer);
+		int roundCount = 0;
 		for (GameRound round : rounds) {
+			if (roundCount >= upToRound) {
+				break;
+			}
+			roundCount++;
 			DoppelkopfRound r = (DoppelkopfRound) round;
 			if (r.isSolo()) {
 				DoppelkopfSolo solo = (DoppelkopfSolo) r.getRoundStyle();
@@ -383,23 +386,28 @@ public class DoppelkopfGame extends Game {
 	public int getGiver(int round) {
 		int giver = 0; // first giver is first player, so start at 0
 		int totalPlayers = mPlayers.size();
-		int currRoundIndex = 0;
-		for (GameRound r : rounds) {
-			if (currRoundIndex >= round) {
-				break;
-			}
-			DoppelkopfRound dkr = (DoppelkopfRound) r;
-			if (!dkr.getRoundStyle().keepsGiver()) {
+		for (int currRoundIndex = 0; currRoundIndex < round && currRoundIndex < rounds.size(); currRoundIndex++) {
+			if (!mRuleSystem.keepsGiver(this, currRoundIndex)) {
 				giver++;
 			}
 			giver %= totalPlayers;
-			currRoundIndex++;
 		}
 		return giver;
 	}
 
 	public boolean enforcesDutySolo(int round) {
 		return mRuleSystem.enforcesDutySolo(this, round);
+	}
+
+	public int getSoloCount(int playerIndex, int upToRound) {
+		int count = 0;
+		for (int i = 0; i < upToRound && i < rounds.size(); i++) {
+			DoppelkopfRound r = (DoppelkopfRound) rounds.get(i);
+			if (r.isSolo() && ((DoppelkopfSolo) r.getRoundStyle()).isValidDutySolo()) {
+				count++;
+			}
+		}
+		return count;
 	}
 	
 }

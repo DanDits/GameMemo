@@ -131,6 +131,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	private MenuItem mAddTeam;
 	private MenuItem mShuffle;
 
+	//TODO make a builder class for all the extras and then hide them, make an option to hide options container by default and show options
 	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -151,6 +152,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		mOptionsContainer = (LinearLayout) findViewById(R.id.options_container);
 		mStartGame = (Button) findViewById(R.id.startGame);
 		mShowOptions = (Button) findViewById(R.id.options_show);
+		showOptions();
 		mShowOptions.setOnClickListener(new OnClickListener() {
 
 			@Override

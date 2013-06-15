@@ -14,8 +14,10 @@
         android:id="@+id/rename_player"
         android:showAsAction="never"
         android:title="@string/rename_player">
-    </item>
-         <item android:id="@+id/about" android:title="@string/about" 
-     		android:showAsAction="never"></item>
-         
+    </item>    
+    <item
+        android:id="@+id/select_rule_system"
+        android:showAsAction="never"
+        android:title="@string/select_rule_system"
+        android:icon="@drawable/ic_menu_manage"></item>  
 </menu>

@@ -3,9 +3,12 @@ package dan.dit.gameMemo.appCore;
 import java.util.Date;
 
 import android.bluetooth.BluetoothAdapter;
+import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
 
@@ -38,6 +41,22 @@ public abstract class GameDetailFragment extends ListFragment implements
 	}	
 	
 	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setHasOptionsMenu(true);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.info:
+			showGameInfo();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+	
+	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		selectRoundSmart(position);
@@ -54,7 +73,7 @@ public abstract class GameDetailFragment extends ListFragment implements
 	protected abstract boolean isImmutable();
 	protected abstract void deselectRound();
 	protected abstract void selectRound(int position);
-
+	protected abstract void showGameInfo();
 	public abstract long getDisplayedGameId();
 
 	protected void saveState() {

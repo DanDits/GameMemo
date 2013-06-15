@@ -92,7 +92,7 @@ public final class GameKey {
 	public static Collection<Player> getAllPlayers() {
 		Collection<Player> allPlayers = new LinkedList<Player>();
 		for (int key : ALL_GAMES) {
-			allPlayers.addAll(getPool(key).getAll());
+			allPlayers.addAll(getPool(key).getAllSortByName(true));
 		}
 		return allPlayers;
 	}

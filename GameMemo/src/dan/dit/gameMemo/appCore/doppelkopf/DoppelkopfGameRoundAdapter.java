@@ -70,9 +70,10 @@ public class DoppelkopfGameRoundAdapter extends ArrayAdapter<GameRound> {
 		int reScore = game.getRuleSystem().getTotalScore(true, round);
 		int contraScore = game.getRuleSystem().getTotalScore(false, round);
 		boolean reScoredMore =  reScore > contraScore;
+		int maxScore = Math.max(reScore, contraScore);
 		for (int i = 0; i < game.getPlayerCount(); i++) {
 			playerInfos[i].setText(Integer.toString(game.getPlayerScoreUpToRound(i, position)));
-			if ((reScoredMore && round.isPlayerRe(i)) || (!reScoredMore && !round.isPlayerRe(i))) {
+			if (maxScore > 0 && ((reScoredMore && round.isPlayerRe(i)) || (!reScoredMore && !round.isPlayerRe(i)))) {
 				playerInfos[i].setTextColor(COLOR_ROUND_WON);
 			} else {
 				playerInfos[i].setTextColor(COLOR_ROUND_LOST);				
@@ -94,8 +95,7 @@ public class DoppelkopfGameRoundAdapter extends ArrayAdapter<GameRound> {
 		TextView deltaView = (TextView) row.findViewById(R.id.round_delta);
 		deltaView.setVisibility(mShowDelta ? View.VISIBLE : View.GONE );
 		if (mShowDelta) {
-			int score = Math.max(reScore, contraScore);
-			deltaView.setText((score >= 0 ? "+" : "-") + Integer.toString(score));
+			deltaView.setText((maxScore >= 0 ? "+" : "-") + Integer.toString(maxScore));
 		}
 	}
 }
