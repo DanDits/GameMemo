@@ -263,6 +263,9 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 						int after) {}
 				@Override
 				public void afterTextChanged(Editable s) {
+					if (mCurrRound == null) {
+						return; //ignore
+					}
 					boolean isReText = this == mExtraScoreWatcher[RE_PARTY];
 					int party = isReText ? RE_PARTY : CONTRA_PARTY;
 					DoppelkopfExtraScore extra = mCurrRound.getExtraScore();
@@ -282,6 +285,9 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 				
 				@Override
 				public void onClick(View v) {
+					if (mCurrRound == null) {
+						return; // ignore
+					}
 					boolean isRe = v == mExtraCharly[RE_PARTY];
 					setCharlyCount(isRe ? RE_PARTY : CONTRA_PARTY, mCurrRound.getExtraScore().getCharlyCount(isRe) + 1);
 				}
@@ -290,6 +296,9 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 				
 				@Override
 				public void onClick(View v) {
+					if (mCurrRound == null) {
+						return; //ignore
+					}
 					boolean isRe = v == mExtraDK[RE_PARTY];
 					setDoppelkopfCount(isRe ? RE_PARTY : CONTRA_PARTY, mCurrRound.getExtraScore().getDoppelkopfCount(isRe) + 1);
 				}
@@ -298,6 +307,9 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 				
 				@Override
 				public void onClick(View v) {
+					if (mCurrRound == null) {
+						return; //ignore 
+					}
 					boolean isRe = v == mExtraFox[RE_PARTY];
 					setFoxCount(isRe ? RE_PARTY : CONTRA_PARTY, mCurrRound.getExtraScore().getFoxCount(isRe) + 1);
 				}
@@ -564,6 +576,12 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 				count = mGame.getRuleSystem().getTotalScore(party == RE_PARTY, mCurrRound);
 				mTotalResultScore[party].setText(Integer.toString(count));
 			}
+		} else {
+			for (int party : PARTIES) {
+				mExtraScore[party].setText(Integer.toString(0));		
+				mResultScore[party].setText(Integer.toString(0));	
+				mTotalResultScore[party].setText(Integer.toString(0));	
+			}
 		}
 		if (mExtraScore != null && mExtraScoreWatcher != null) {
 			mExtraScore[RE_PARTY].addTextChangedListener(mExtraScoreWatcher[RE_PARTY]);
@@ -691,6 +709,12 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 				count = mCurrRound.getExtraScore().getCharlyCount(party == RE_PARTY);
 				mExtraCharly[party].setImageResource(CARL_IDS[count]);
 			}
+		} else {
+			for (int party : PARTIES) {
+				mExtraDK[party].setImageResource(DK_IDS[0]);
+				mExtraFox[party].setImageResource(FOX_IDS[0]);
+				mExtraCharly[party].setImageResource(CARL_IDS[0]);
+			}			
 		}
 	}
 	

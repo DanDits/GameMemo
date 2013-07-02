@@ -5,14 +5,6 @@
     android:orientation="vertical" >
 
     <Button
-        android:id="@+id/share_and_close"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/button_green_1"
-        android:drawableLeft="@drawable/ic_menu_share"
-        android:text="@string/share_accept_and_close" />
-
-    <Button
         android:id="@+id/share"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

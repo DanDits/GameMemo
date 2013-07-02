@@ -28,6 +28,11 @@ import dan.dit.gameMemo.gameData.game.tichu.TichuRound;
 public class TichuGameRoundAdapter extends ArrayAdapter<GameRound> {
 	public static final boolean PREFERENCE_SHOW_DELTA_DEFAULT = false;
 	public static final boolean PREFERENCE_SHOW_TICHUS_DEFAULT = true;
+	private static final int TICHU_BID_SMALL_DRAWABLE_ID = R.drawable.tichu_small_bid_plain;
+	private static final int TICHU_BID_SMALL_LOST_DRAWABLE_ID = R.drawable.tichu_small_bid_lost_plain;
+	private static final int TICHU_BID_BIG_DRAWABLE_ID = R.drawable.tichu_big_bid_plain;
+	private static final int TICHU_BID_BIG_LOST_DRAWABLE_ID = R.drawable.tichu_big_bid_lost_plain;
+	
 	private int layoutResourceId;
 	private TichuGame game;
 	private LayoutInflater inflater;
@@ -94,10 +99,10 @@ public class TichuGameRoundAdapter extends ArrayAdapter<GameRound> {
 				int id = 0;
 				switch (bid.getType()) {
 				case SMALL:
-					id = bid.isWon() ? TichuGameDetailFragment.TICHU_BID_SMALL_DRAWABLE_ID : TichuGameDetailFragment.TICHU_BID_SMALL_LOST_DRAWABLE_ID; 
+					id = bid.isWon() ? TICHU_BID_SMALL_DRAWABLE_ID : TICHU_BID_SMALL_LOST_DRAWABLE_ID; 
 					break;
 				case BIG:
-					id = bid.isWon() ? TichuGameDetailFragment.TICHU_BID_BIG_DRAWABLE_ID : TichuGameDetailFragment.TICHU_BID_BIG_LOST_DRAWABLE_ID;
+					id = bid.isWon() ? TICHU_BID_BIG_DRAWABLE_ID : TICHU_BID_BIG_LOST_DRAWABLE_ID;
 					break;
 				}
 				if (id != 0) {

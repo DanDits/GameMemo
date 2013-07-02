@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothDataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.file.FileWriteDataExchangeActivity;
@@ -128,6 +129,8 @@ public class GameChooserActivity extends FragmentActivity implements PlayerRenam
 
 	@Override
 	public void playerRenamed(String oldName, String newName, boolean success) {
-		// ignore
+		if (success) {
+			Toast.makeText(this, getResources().getString(R.string.rename_success), Toast.LENGTH_SHORT).show();			
+		}
 	}
 }

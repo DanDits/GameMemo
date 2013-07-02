@@ -91,27 +91,27 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 	/**
 	 * The drawable id of the drawable used to symbol a small tichu bid.
 	 */
-	public static final int TICHU_BID_SMALL_DRAWABLE_ID = R.drawable.tichu_small_bid;
+	private static final int TICHU_BID_SMALL_DRAWABLE_ID = R.drawable.tichu_small_bid;
 	
 	/**
 	 * The drawable id of the drawable used to symbol a big tichu bid.
 	 */
-	public static final int TICHU_BID_BIG_DRAWABLE_ID = R.drawable.tichu_big_bid;
+	private static final int TICHU_BID_BIG_DRAWABLE_ID = R.drawable.tichu_big_bid;
 	
 	/**
 	 * The drawable id of the drawable used to symbol no tichu bid.
 	 */
-	public static final int TICHU_BID_NONE_DRAWABLE_ID = R.drawable.tichu_man;
+	private static final int TICHU_BID_NONE_DRAWABLE_ID = R.drawable.tichu_no_bid;
 	
 	/**
 	 * The drawable id of the drawable used to symbol a small lost tichu bid.
 	 */
-	public static final int TICHU_BID_SMALL_LOST_DRAWABLE_ID = R.drawable.tichu_small_bid_lost;
+	private static final int TICHU_BID_SMALL_LOST_DRAWABLE_ID = R.drawable.tichu_small_bid_lost;
 	
 	/**
 	 * The drawable id of the drawable used to symbol a big lost tichu bid.
 	 */
-	public static final int TICHU_BID_BIG_LOST_DRAWABLE_ID = R.drawable.tichu_big_bid_lost;
+	private static final int TICHU_BID_BIG_LOST_DRAWABLE_ID = R.drawable.tichu_big_bid_lost;
 	
 	private static final String PREFERENCES_SHOW_DELTA = "dan.dit.gameMemo.PREFERENCE_SHOW_DELTA";
 	private static final String PREFERENCES_SHOW_TICHUS = "dan.dit.gameMemo.PREFERENCE_SHOW_TICHUS";

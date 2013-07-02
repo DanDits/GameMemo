@@ -1,6 +1,6 @@
 package dan.dit.gameMemo.gameData.player;
 
-import java.util.Collection;
+import java.util.Set;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -110,7 +110,7 @@ public class RenamePlayerDialogFragment extends DialogFragment  {
 		   View baseView = getActivity().getLayoutInflater().inflate(R.layout.rename_player, null);
 	        mNewName = (EditText) baseView.findViewById(R.id.rename_new_name);
 	        mPlayers = (Spinner) baseView.findViewById(R.id.rename_select_players);
-	        Collection<Player> allPlayers = GameKey.getAllPlayers();
+	        Set<Player> allPlayers = GameKey.getAllPlayers();
 	        if (allPlayers.size() == 0) {
 				Toast.makeText(getActivity(), getResources().getString(R.string.rename_no_players), Toast.LENGTH_SHORT).show();
 				return new AlertDialog.Builder(getActivity()).create();

@@ -13,7 +13,8 @@
     <string name="game_starttime">Startzeit</string>
     <string name="game_runtime">Dauer</string>
     <string name="game_team_X">Team %1$d</string>
-    <string name="no_tichu_rounds">Noch keine Runden</string>
+    <string name="tichu_no_rounds">Klicke auf den ersten und gib Punkte ein!</string>
+    <string name="doppelkopf_no_rounds">Klick auf die Re Spieler!</string>
     <string name="default_tichu_round_score"> </string><string name="default_player_name">Spieler</string>
     <string name="tichu_team_select_team1">Team 1</string>
     <string name="tichu_team_select_team2">Team 2</string>
@@ -136,6 +137,9 @@
 	<string name="games_selected_all">Alle Spiele gewählt</string>
 	<string name="games_selection_title">Spiele zum Tauschen</string>
 	<string name="share">Teilen</string>
+	<string name="save_to_sd_path">Speichern in %1$s</string>
+	<string name="save_to_sd_path_done">Gespeichert als %1$s</string>
+	<string name="save_to_sd_path_failed">Speichern fehlgeschlagen</string>
 	<string name="share_subject">GameMemo Spielstände</string>
 	<string name="share_text">Spielstände für die App GameMemo. Speicher die Datei und importiere gewünschte Spiele durch einen Klick.</string>
 	<string name="share_accept">Akzeptieren</string>

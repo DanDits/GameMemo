@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -89,8 +91,8 @@ public final class GameKey {
 		return array;
 	}
 	
-	public static Collection<Player> getAllPlayers() {
-		Collection<Player> allPlayers = new LinkedList<Player>();
+	public static Set<Player> getAllPlayers() {
+		Set<Player> allPlayers = new HashSet<Player>();
 		for (int key : ALL_GAMES) {
 			allPlayers.addAll(getPool(key).getAllSortByName(true));
 		}

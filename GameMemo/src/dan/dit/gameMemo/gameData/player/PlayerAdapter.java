@@ -1,12 +1,9 @@
 package dan.dit.gameMemo.gameData.player;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import dan.dit.gameMemo.R;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -15,13 +12,14 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
+import dan.dit.gameMemo.R;
 
 
 public class PlayerAdapter extends ArrayAdapter<Player> {
 	private static final int MIN_LENGTH_TO_FILTER_IN_WORD = 2;
-	private Collection<Player> allPlayers;
+	private Set<Player> allPlayers;
 	
-	public PlayerAdapter(boolean big, Context context, Collection<Player> all) {
+	public PlayerAdapter(boolean big, Context context, Set<Player> all) {
 		super(context, big ? R.layout.dropdown_item_big : android.R.layout.simple_dropdown_item_1line, 
 				android.R.id.text1);
 		allPlayers = all;

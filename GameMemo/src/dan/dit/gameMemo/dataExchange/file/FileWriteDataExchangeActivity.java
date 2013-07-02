@@ -1,10 +1,14 @@
 package dan.dit.gameMemo.dataExchange.file;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
 
 import android.content.Context;
 import android.content.Intent;
@@ -22,11 +26,14 @@ import dan.dit.gameMemo.gameData.game.GameKey;
 
 public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 	private static final String EXTRA_FLAG_START_SHARE_IMMEDIATELY = "dan.dit.gameMemo.START_SHARE_IMMEDIATELY";
-	private static final String GAMES_DATA_FILE_NAME = "games.gamememo";
+	private static final String EXTENSION = ".gamememo";
+	private static final String GAMES_DATA_FILE_NAME = "games" + EXTENSION;
+	private static final String SAVE_GAME_PREFIX = "save_";
 	private FileWriteService mService;
 	private File mTempGamesData;
 	private List<Integer> mTempGamesDataForGames;
 	private Button mStartShare;
+	private Button mSaveToSD;
 	private boolean mStartImmediately;
 	
 	public static Intent newInstance(Context packageContext, int gameKey,
@@ -83,9 +90,19 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 
 			@Override
 			public void onClick(View v) {
-				startShare();
+				startShareOrSave(true);
 			}
 			
+		});
+		mSaveToSD = (Button) findViewById(R.id.save_to_sd);
+		mSaveToSD.setText(getResources().getString(R.string.save_to_sd_path, getStorageDir(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)).toString()));
+		mSaveToSD.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				startShareOrSave(false);
+				
+			}
 		});
 	}
 	
@@ -94,7 +111,7 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 		super.onStart();
 		if (mStartImmediately) {
 			mStartImmediately = false;
-			startShare();
+			startShareOrSave(true);
 		}
 	}
 	
@@ -128,12 +145,14 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 		} catch (IOException e) {
 			// failed closing file stream but service still closed, ignore
 		}
-    	mStartShare.setEnabled(true);
+    	mStartShare.setEnabled(true);  	
+    	mSaveToSD.setEnabled(true);  
     }
     
     private void onFailure() {
 		Toast.makeText(this, getResources().getString(R.string.data_exchange_filewriter_failed), Toast.LENGTH_SHORT).show();
     	mStartShare.setEnabled(true);    	
+    	mSaveToSD.setEnabled(true);  
     }
     
     private void shareGamesData() {  
@@ -146,32 +165,111 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
     	startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.share)));
     }
     
+    private File getStorageDir(File baseDir) {
+    	return new File(baseDir.toString() +  "/gamememo");
+    }
+    
+    private void saveGamesData() throws IOException {
+    	File extStorageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    	if (extStorageDirectory != null) {
+    		if (extStorageDirectory.mkdirs() || extStorageDirectory.isDirectory()) {
+    			// dir exists
+    			File myDir = getStorageDir(extStorageDirectory);
+    			if (myDir.mkdir() || myDir.isDirectory()) {
+    				// myDir exists
+    				int freeNumber = findNextFreeFileNumber(myDir);
+    				File saveFile = new File(myDir, SAVE_GAME_PREFIX + Integer.toString(freeNumber) + EXTENSION);
+    				mSaveToSD.setText(getResources().getString(R.string.save_to_sd_path_done, saveFile.toString()));
+    				assert !saveFile.exists();
+    				FileChannel source = null;
+    				FileChannel destination = null;
+    			    try {
+    			        source = new FileInputStream(mTempGamesData).getChannel();
+    			        destination = new FileOutputStream(saveFile).getChannel();
+    			        destination.transferFrom(source, 0, source.size());
+    			    }
+    			    finally {
+    			        if(source != null) {
+    			            source.close();
+    			        }
+    			        if(destination != null) {
+    			            destination.close();
+    			        }
+    			    }
+    			}
+    		}
+    		
+    	}
+    }
+    
+	private int findNextFreeFileNumber(File inDir) {
+    	TreeSet<Integer> taken = new TreeSet<Integer>();
+    	for (File f : inDir.listFiles()) {
+    		String name = f.getName();
+    		if (name.startsWith(SAVE_GAME_PREFIX) && name.length() > SAVE_GAME_PREFIX.length() + EXTENSION.length()) {
+    			String rest = name.substring(SAVE_GAME_PREFIX.length(), name.length() - EXTENSION.length());
+    			int number = -1;
+    			try {
+    				number = Integer.parseInt(rest);
+    			} catch (NumberFormatException nfe) {
+    				// ignore, no valid gamememo savegame
+    			}
+    			if (number >= 0) {
+    				taken.add(Integer.valueOf(number));
+    			}
+    		}
+    	}
+    	Integer currNumber = Integer.valueOf(0);
+    	while (taken.contains(currNumber)) {
+    		currNumber = currNumber + 1; // cannot use TreeSet methods like higher since I support version 8
+    	}
+    	return currNumber.intValue();
+    }
+    
 	@Override
 	protected void setConnectionStatusText(int newState) {
 		// not sent by FileWriteService
 	}
 	
-	private void startShare() {
-		mStartShare.setEnabled(false);
+	private boolean requiresData(int[] shareFor) {
+		return mTempGamesDataForGames == null || mTempGamesDataForGames.size() != shareFor.length || !containsAllGames(shareFor);
+	}
+	
+	private void initData(int[] shareFor) {
+		if (mTempGamesData.exists() && !mTempGamesData.delete()) {
+			onFailure();
+    		return;
+		}
+		mTempGamesDataForGames = new ArrayList<Integer>(shareFor.length);
+		for (int gameKey : shareFor) {
+			mTempGamesDataForGames.add(Integer.valueOf(gameKey));
+		}
+		try {
+			mService = new FileWriteService(mHandler, getContentResolver(), mTempGamesData);
+		} catch (IOException e) {
+			onFailure();
+			return;
+		}
+	}
+	
+	private void startShareOrSave(boolean share) {
+		mStartShare.setEnabled(false);  	
+    	mSaveToSD.setEnabled(false);  
 		int[] shareFor = mManager.getSelectedGames();
-		if (mTempGamesDataForGames == null || mTempGamesDataForGames.size() != shareFor.length || !containsAllGames(shareFor)) {
-			if (mTempGamesData.exists() && !mTempGamesData.delete()) {
-				onFailure();
-	    		return;
-			}
-			mTempGamesDataForGames = new ArrayList<Integer>(shareFor.length);
-			for (int gameKey : shareFor) {
-				mTempGamesDataForGames.add(Integer.valueOf(gameKey));
-			}
-			try {
-				mService = new FileWriteService(mHandler, getContentResolver(), mTempGamesData);
-			} catch (IOException e) {
-				onFailure();
-				return;
-			}
+		if (requiresData(shareFor)) {
+			initData(shareFor);
 		} else {
-			shareGamesData();
-			mStartShare.setEnabled(true);
+			if (share) {
+				shareGamesData();
+			} else {
+				try {
+					saveGamesData();
+				} catch (IOException e) {
+					mSaveToSD.setText(getResources().getString(R.string.save_to_sd_path_failed));
+				}
+			}
+			mStartShare.setEnabled(true);  	
+	    	mSaveToSD.setEnabled(true);  
 		}
 	}
 

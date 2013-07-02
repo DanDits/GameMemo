@@ -422,7 +422,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/no_tichu_rounds" />
+                android:text="@string/doppelkopf_no_rounds" />
         </LinearLayout>
 
     </ViewSwitcher>

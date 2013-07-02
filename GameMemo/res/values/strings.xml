@@ -9,7 +9,8 @@
     <string name="game_starttime">Starttime</string>
     <string name="game_runtime">Duration</string>
     <string name="game_team_X">Team %1$d</string>
-    <string name="no_tichu_rounds">No rounds yet</string>
+    <string name="tichu_no_rounds">Click on the first player and enter a score!</string>
+    <string name="doppelkopf_no_rounds">Click on the re player(s)!</string>
     <string name="default_tichu_round_score"> </string><string name="default_player_name">Player</string>
     <string name="game_setup_select_player">Select player</string>
     <string name="game_setup_shuffle">Shuffle</string>
@@ -130,6 +131,9 @@
 	<string name="games_selected_all">All games selected</string>
 	<string name="games_selection_title">Games to exchange</string>
 	<string name="share">Share</string>
+	<string name="save_to_sd_path">Save to %1$s</string>
+	<string name="save_to_sd_path_done">Saved as %1$s</string>
+	<string name="save_to_sd_path_failed">Failed saving</string>
 	<string name="share_subject">GameMemo savegames</string>
 	<string name="share_text">Savegames for the app GameMemo. Save the file and import desired games by a click.</string>
 	<string name="share_accept">Accept</string>

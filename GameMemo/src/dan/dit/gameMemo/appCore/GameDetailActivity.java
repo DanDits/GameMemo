@@ -135,7 +135,7 @@ public class GameDetailActivity extends FragmentActivity implements
 			} else {
 				mBar.setSubtitle(extra);
 			}
-		} else {
+		} else if (mDetails != null) {
 			mDetails.setInfoText(main, extra);
 		}
 	}

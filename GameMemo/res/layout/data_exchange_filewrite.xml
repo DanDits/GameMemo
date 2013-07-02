@@ -12,6 +12,13 @@
         android:drawableLeft="@drawable/ic_menu_share"
         android:text="@string/share" />
 
+    <Button
+        android:id="@+id/save_to_sd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_green_1"
+        android:drawableLeft="@drawable/ic_menu_save" />
+
     <dan.dit.gameMemo.dataExchange.GamesExchangeView
         android:id="@id/gamesExchangeView"
         android:layout_width="match_parent"

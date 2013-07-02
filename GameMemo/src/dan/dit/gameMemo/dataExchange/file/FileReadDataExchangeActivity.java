@@ -36,7 +36,6 @@ public class FileReadDataExchangeActivity extends DataExchangeActivity {
 	private int[] mContainedGames;
 	private MessageImportService mService;
 	private Button mStartImport;
-	private Button mStartImportAndClose;
 	private boolean mCloseOnFinish;
 	
 	@SuppressLint("NewApi")
@@ -78,15 +77,6 @@ public class FileReadDataExchangeActivity extends DataExchangeActivity {
 				
 				@Override
 				public void onClick(View v) {
-					startImport();
-				}
-			});
-			mStartImportAndClose = (Button) findViewById(R.id.share_and_close);
-			mStartImportAndClose.setOnClickListener(new OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-					mCloseOnFinish = true;
 					startImport();
 				}
 			});
@@ -196,10 +186,6 @@ public class FileReadDataExchangeActivity extends DataExchangeActivity {
 
 	private void startImport() {
 		mStartImport.setEnabled(false);
-		mStartImportAndClose.setEnabled(false);
-		if (!mCloseOnFinish) {
-			mStartImportAndClose.setVisibility(View.GONE);
-		}
 		mService = new MessageImportService(mHandler, mMessages);
 	}
 	
