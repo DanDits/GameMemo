@@ -104,13 +104,18 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 		return sharedPref.getString(PREFERENCES_DEFAULT_RULE_SYSTEM, DoppelkopfRuleSystem.NAME_TOURNAMENT1);
 	}
 	
+	private boolean hasDefaultRuleSystem() {
+		SharedPreferences sharedPref = getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE);
+		return sharedPref.getString(PREFERENCES_DEFAULT_RULE_SYSTEM, null) != null;
+	}
+	
 	private void setDefaultRuleSystem(String ruleSysName) {
 		SharedPreferences.Editor editor = getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE).edit();
 		editor.putString(PREFERENCES_DEFAULT_RULE_SYSTEM, ruleSysName);
 		editor.commit();
 	}
 	
-	private void selectRuleSystem() {
+	private void selectRuleSystem(final int forwardToOnGamesLoaded) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle(getResources().getString(R.string.doppelkopf_rule_system_info, getDefaultRuleSystem()));
 		final DoppelkopfRuleSystem[] ALL = DoppelkopfRuleSystem.getAllSystems();
@@ -124,6 +129,9 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
 				setDefaultRuleSystem(ALL[which].getName());
+				if (forwardToOnGamesLoaded >= 0) {
+					DoppelkopfGamesActivity.super.onGamesLoaded(forwardToOnGamesLoaded);
+				}
 			}
 			
 		});
@@ -135,7 +143,7 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.select_rule_system:
-			selectRuleSystem();
+			selectRuleSystem(-1);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -144,5 +152,14 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 	@Override
 	protected void showStatistics() {
 		//TODO start statistics for doppelkopf...
+	}
+	
+	@Override
+	public void onGamesLoaded(int count) {
+		if (!hasDefaultRuleSystem()) {
+			selectRuleSystem(count);
+		} else {
+			super.onGamesLoaded(count);
+		}
 	}
 }

@@ -5,12 +5,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-public class Player extends AbstractPlayerTeam {	
-	public static final Comparator<Player> NAME_COMPARATOR = new Comparator<Player>() {
+public class Player extends AbstractPlayerTeam implements Comparable<Player> {	
+
+	public static final Comparator<? super Player> NAME_COMPARATOR = new Comparator<Player>() {
+
 		@Override
 		public int compare(Player p1, Player p2) {
-			return p1.getName().toLowerCase(Locale.US).compareTo(p2.getName().toLowerCase(Locale.US));
+			return p1.name.toLowerCase(Locale.US).compareTo(p2.name.toLowerCase(Locale.US));
 		}
+		
 	};
 	private final String name;
 	private List<Player> singletonSelfList;
@@ -71,5 +74,10 @@ public class Player extends AbstractPlayerTeam {
 	@Override
 	public boolean contains(Player p) {
 		return equals(p);
+	}
+	
+	@Override
+	public int compareTo(Player other) {
+		return NAME_COMPARATOR.compare(this, other);
 	}
 }

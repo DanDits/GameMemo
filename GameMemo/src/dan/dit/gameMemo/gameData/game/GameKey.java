@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -32,6 +32,8 @@ import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.statistics.GameStatisticBuilder;
 import dan.dit.gameMemo.gameData.statistics.tichu.TichuGameStatisticBuilder;
 import dan.dit.gameMemo.storage.GameStorageHelper;
+import dan.dit.gameMemo.storage.database.CardGameTable;
+import dan.dit.gameMemo.storage.database.GamesDBContentProvider;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 /**
@@ -92,9 +94,9 @@ public final class GameKey {
 	}
 	
 	public static Set<Player> getAllPlayers() {
-		Set<Player> allPlayers = new HashSet<Player>();
+		Set<Player> allPlayers = new TreeSet<Player>();
 		for (int key : ALL_GAMES) {
-			allPlayers.addAll(getPool(key).getAllSortByName(true));
+			allPlayers.addAll(getPool(key).getAll());
 		}
 		return allPlayers;
 	}
@@ -370,6 +372,36 @@ public final class GameKey {
 			return DoppelkopfGameDetailFragment.newInstance(extras);
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+		}
+	}
+
+	public static String getStorageTableName(int gameKey) {
+		switch(gameKey) {
+		case GameKey.TICHU:
+		case GameKey.DOPPELKOPF:
+			return CardGameTable.TABLE_CARD_GAMES;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);
+		}
+	}
+
+	public static Collection<String> getStorageAvailableColumns(int gameKey) {
+		switch(gameKey) {
+		case GameKey.TICHU:
+		case GameKey.DOPPELKOPF:
+			return CardGameTable.AVAILABLE_COLUMNS_COLL;
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);
+		}
+	}
+
+	public static Uri getStorageUri(int gameKey, int uriType) {
+		switch(gameKey) {
+		case GameKey.TICHU:
+		case GameKey.DOPPELKOPF:
+			return GamesDBContentProvider.makeUri(gameKey, uriType);
+		default:
+			throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 }

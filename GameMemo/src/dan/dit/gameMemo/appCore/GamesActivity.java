@@ -355,8 +355,8 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 	}
 
 	@Override
-	public void setupGame() {
-		if (mIsActivityInitialLaunch) {
+	public void onGamesLoaded(int count) {
+		if (mIsActivityInitialLaunch && count == 0) {
 			startGameSetup(Game.NO_ID);
 		}
 	}

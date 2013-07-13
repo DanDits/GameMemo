@@ -1,11 +1,10 @@
 package dan.dit.gameMemo.gameData.player;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import android.content.Context;
 import dan.dit.gameMemo.gameData.game.GameKey;
@@ -16,7 +15,7 @@ import dan.dit.gameMemo.gameData.game.GameKey;
  *
  */
 public class PlayerPool {		
-	private List<Player> players = new LinkedList<Player>();
+	private Set<Player> players = new TreeSet<Player>();
 	
 	private boolean addPlayer(Player p) {
 		if (!contains(p)) {
@@ -65,28 +64,12 @@ public class PlayerPool {
 	}
 
 	public Collection<Player> getAll() {
-		return new LinkedList<Player>(players);
-	}
-	
-	public List<Player> getAll(Comparator<? super Player> comp) {
-		List<Player> res = new LinkedList<Player>(players);
-		Collections.sort(res, comp);
-		return res;
-	}	
-	
-	public List<Player> getAllSortByName(boolean ascending) {
-		List<Player> res = new LinkedList<Player>(players);
-		Collections.sort(res, Player.NAME_COMPARATOR);
-		
-		if (!ascending) {
-			Collections.reverse(res);
-		}
-		return res;
+		return new TreeSet<Player>(players);
 	}
 	
 	public PlayerAdapter makeAdapter(Context context, boolean big) {
 		PlayerAdapter adapter = new PlayerAdapter(big, context, GameKey.getAllPlayers());
-		for (Player p : getAllSortByName(true)) {
+		for (Player p : getAll()) {
 			adapter.add(p);
 		}
 		return adapter;

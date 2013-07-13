@@ -33,7 +33,7 @@ public abstract class GamesOverviewListFragment extends ListFragment implements
 		/**
 		 * Convenience method that suggests activity to start game setup, can be ignored to avoid loops or other situations.
 		 */
-		void setupGame();
+		void onGamesLoaded(int count);
 		int getGameKey();
 	}
 	
@@ -163,9 +163,7 @@ public abstract class GamesOverviewListFragment extends ListFragment implements
 			Cursor oldCursor = null;
 			try {
 				adapter.swapCursor(data);
-				if (data.getCount() == 0) {
-					mGameOverviewCallback.setupGame();
-				}
+				mGameOverviewCallback.onGamesLoaded(data.getCount());
 			} finally {
 				if (oldCursor != null) {
 					oldCursor.close();

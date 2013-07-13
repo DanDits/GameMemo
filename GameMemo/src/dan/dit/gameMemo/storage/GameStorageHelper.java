@@ -9,10 +9,11 @@ import android.net.Uri;
 import android.util.SparseArray;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
-import dan.dit.gameMemo.storage.database.CardGameTable;
-import dan.dit.gameMemo.storage.database.GamesDBContentProvider;
 
 public final class GameStorageHelper {
+	public static final int URI_TYPE_ALL = 0;
+	public static final int URI_TYPE_SINGLE_ID = 1;
+	public static final int URI_TYPE_SINGLE_STARTTIME = 2;
 	
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_STARTTIME = "sTime";
@@ -53,6 +54,15 @@ public final class GameStorageHelper {
 	private static final SparseArray<Uri> CONTENT_URIS_ID = new SparseArray<Uri>();
 	private static final SparseArray<Uri> CONTENT_URIS_STARTTIME = new SparseArray<Uri>();
 	
+	public static String getTableName(int gameKey) {
+		return GameKey.getStorageTableName(gameKey);
+	}
+	
+
+	public static Collection<String> getAvailableColumns(int gameKey) {
+		return GameKey.getStorageAvailableColumns(gameKey);
+	}
+
 	public static int getStoredGamesCount(ContentResolver resolver, int gameKey) {
 		Cursor data = null;
 		int count = 0;
@@ -69,20 +79,10 @@ public final class GameStorageHelper {
 		return count;
 	}
 	
-	public static String getTableName(int gameKey) {
-		switch(gameKey) {
-		case GameKey.TICHU:
-		case GameKey.DOPPELKOPF:
-			return CardGameTable.TABLE_CARD_GAMES;
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);
-		}
-	}
-	
 	public static Uri getUriAllItems(int gameKey) {
 		Uri uri = CONTENT_URIS.get(gameKey);
 		if (uri == null) {
-			uri = Uri.parse("content://" + GamesDBContentProvider.AUTHORITY + "/" + gameKey);
+			uri = GameKey.getStorageUri(gameKey, URI_TYPE_ALL);
 			CONTENT_URIS.append(gameKey, uri);
 		}
 		return uri;
@@ -91,7 +91,7 @@ public final class GameStorageHelper {
 	public static Uri getUriWithId(int gameKey, long id) {
 		Uri uri = CONTENT_URIS_ID.get(gameKey);
 		if (uri == null) {
-			uri = Uri.parse("content://" + GamesDBContentProvider.AUTHORITY + "/" + gameKey + "/" + COLUMN_ID);
+			uri = GameKey.getStorageUri(gameKey, URI_TYPE_SINGLE_ID);
 			CONTENT_URIS_ID.append(gameKey, uri);
 		}
 		return ContentUris.withAppendedId(uri, id);
@@ -100,7 +100,7 @@ public final class GameStorageHelper {
 	public static Uri getUriWithStarttime(int gameKey, long starttime) {
 		Uri uri = CONTENT_URIS_STARTTIME.get(gameKey);
 		if (uri == null) {
-			uri = Uri.parse("content://" + GamesDBContentProvider.AUTHORITY + "/" + gameKey + "/" + COLUMN_STARTTIME);
+			uri = GameKey.getStorageUri(gameKey, URI_TYPE_SINGLE_STARTTIME);
 			CONTENT_URIS_STARTTIME.append(gameKey, uri);
 		}
 		return ContentUris.withAppendedId(uri, starttime);	
@@ -126,15 +126,5 @@ public final class GameStorageHelper {
 	
 	public static String getCursorItemType(int gameKey) {
 		return ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + gameKey;
-	}
-
-	public static Collection<String> getAvailableColumns(int gameKey) {
-		switch(gameKey) {
-		case GameKey.TICHU:
-		case GameKey.DOPPELKOPF:
-			return CardGameTable.AVAILABLE_COLUMNS_COLL;
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);
-		}
 	}
 }

@@ -1,6 +1,7 @@
 package dan.dit.gameMemo.appCore.tichu;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.annotation.SuppressLint;
@@ -104,7 +105,7 @@ public class TichuGamesStatisticsActivity extends Activity {
 
 	private void refreshStatistics() {
 		cancelBuilding();
-		this.players = TichuGame.PLAYERS.getAllSortByName(true);
+		this.players = new ArrayList<Player>(TichuGame.PLAYERS.getAll());
 		if (this.players.size() == 0) {
 			clearGenresStatistics();
 			clearPlayerStatistics();
