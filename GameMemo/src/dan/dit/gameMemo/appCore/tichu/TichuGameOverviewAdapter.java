@@ -1,7 +1,6 @@
 package dan.dit.gameMemo.appCore.tichu;
 
 import java.util.Date;
-import java.util.List;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -16,10 +15,8 @@ import android.widget.TextView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameOverviewAdapter;
 import dan.dit.gameMemo.gameData.game.Game;
-import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
 /**
@@ -125,25 +122,8 @@ public class TichuGameOverviewAdapter extends GameOverviewAdapter {
         	team1Image = team1Wins ? R.drawable.tichu_mahjong : R.drawable.tichu_dog;
         	team2Image = team1Wins ? R.drawable.tichu_dog : R.drawable.tichu_mahjong;
         } else {
-        	List<Game> game = null;
-			try {
-				game = TichuGame.loadGames(context.getContentResolver(), GameStorageHelper.getUriWithId(GameKey.TICHU, id), false);
-			} catch (CompactedDataCorruptException e) {
-				assert false; // will not throw
-			}
-        	if (game != null && game.size() > 0) {
-        		TichuGame tichuGame = (TichuGame) game.get(0);
-        		if (tichuGame.getScoreTeam1() > tichuGame.getScoreTeam2()) {
-                	team1Image =  R.drawable.tichu_dragon;
-                	team2Image = R.drawable.tichu_phoenix;
-        		} else if (tichuGame.getScoreTeam1() < tichuGame.getScoreTeam2()) {
-                	team1Image =  R.drawable.tichu_phoenix;
-                	team2Image = R.drawable.tichu_dragon;
-        		} else {
-                	team1Image = R.drawable.tichu_dragon;        		
-                	team2Image = R.drawable.tichu_dragon;	
-        		}
-        	}
+            team1Image = R.drawable.tichu_phoenix;        		
+            team2Image = R.drawable.tichu_phoenix;	
         }
         holder.team1.setImageResource(team1Image);
         holder.team2.setImageResource(team2Image);     

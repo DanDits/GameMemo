@@ -14,7 +14,7 @@ public class ShowStacktraceUncaughtExceptionHandler implements UncaughtException
 	public ShowStacktraceUncaughtExceptionHandler(Context context) {
 		this.context = context;
 		if (context == null) {
-			throw new NullPointerException();
+			throw new IllegalArgumentException("Context is null.");
 		}
 	}
 	

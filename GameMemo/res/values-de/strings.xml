@@ -198,6 +198,7 @@
 	<string name="doppelkopf_round_limit">Rundenanzahl: %1$d</string>
 	<string name="doppelkopf_overview_info_heading">Optionen: </string>
 	<string name="game_chooser_game_descr">%1$s Spiele: %2$d</string>
+	<string name="game_chooser_game_descr_no_count">%1$s</string>
 	<string name="menu_game_info">Info</string>
 	<string name="select_rule_system">Regelwerk wählen</string>
 	<string name="doppelkopf_rule_system_info">Regelwerk: %1$s</string>

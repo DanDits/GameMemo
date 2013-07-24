@@ -20,6 +20,12 @@ import dan.dit.gameMemo.gameData.game.Game.GamesDeletionListener;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 
+/**
+ * A ListFragment hat holds all saved games of a specific game and displays them by a {@link GameOverviewAdapter}.
+ * Requires the hosting activity to implement GameOverviewCallback.
+ * @author Daniel
+ *
+ */
 public abstract class GamesOverviewListFragment extends ListFragment implements
 		LoaderCallbacks<Cursor>, GamesDeletionListener {
 	private static final String STORAGE_HIGHLIGHTED_GAME_ID = "STORAGE_HIGHLIGHTED_GAME";
@@ -27,13 +33,33 @@ public abstract class GamesOverviewListFragment extends ListFragment implements
 	private GameOverviewAdapter adapter;
 	private GameOverviewCallback mGameOverviewCallback;
 	
+	/**
+	 * A callback required by the hosting activity. 
+	 * @author Daniel
+	 *
+	 */
 	public interface GameOverviewCallback extends GameCheckedChangeListener {
+	    /**
+	     * The id of the selected game. Can be a highlighted game or a checked. Will be used
+	     * to create default parameters when creating a new game.
+	     * @return
+	     */
 		long getSelectedGameId();
+		
+		/**
+		 * Select the game with the given id.
+		 * @param gameId The game id.
+		 */
 		void selectGame(long gameId);
 		/**
 		 * Convenience method that suggests activity to start game setup, can be ignored to avoid loops or other situations.
 		 */
 		void onGamesLoaded(int count);
+		
+		/**
+		 * Returns the game key of the hosting activity.
+		 * @return The gamekey.
+		 */
 		int getGameKey();
 	}
 	
@@ -74,6 +100,10 @@ public abstract class GamesOverviewListFragment extends ListFragment implements
  		openGame(id);
  	}
  	
+ 	/**
+ 	 * Sets or clears the highlighted game id.
+ 	 * @param gameId If Game.NO_ID no game will be highlighted, else the game with the given id.
+ 	 */
  	public void setHighlightedGameId(long gameId) {
  		if (adapter != null) {
  			if (gameId == Game.NO_ID) {
@@ -98,6 +128,11 @@ public abstract class GamesOverviewListFragment extends ListFragment implements
  		return -1;
  	}
  	
+ 	/**
+ 	 * Returns a id of a highlighted game. If there is a checked game it will
+ 	 * be the first checked, else the id of the highlighted game.
+ 	 * @return Game.NO_ID if nothing highlighted or a checked or highlighted game's id.
+ 	 */
  	public long getHighlightedGameId() {
  		if (adapter != null) {
  	 		long[] ids = getListView().getCheckedItemIds();
@@ -118,6 +153,11 @@ public abstract class GamesOverviewListFragment extends ListFragment implements
  		mGameOverviewCallback.selectGame(id);
  	}
  	
+ 	/**
+ 	 * Creates a GameOverviewAdapater for this ListFragment responsible
+ 	 * for displaying the games.
+ 	 * @return A GameOverviewAdapter.
+ 	 */
  	protected abstract GameOverviewAdapter makeAdapter();
  	
  	private void fillData() {
@@ -139,15 +179,34 @@ public abstract class GamesOverviewListFragment extends ListFragment implements
  		outState.putLong(STORAGE_HIGHLIGHTED_GAME_ID, getHighlightedGameId());
  	}
  	
+ 	/**
+ 	 * See GameOverviewAdapter: getChecked()
+ 	 * @return Ids of checked games of the adapter.
+ 	 */
  	public Collection<Long> getCheckedIds() {
  		return adapter.getChecked();
  	}
 	
+ 	/**
+ 	 * See GameOverviewAdapter getCheckedStarttimes()
+ 	 * @return Starttimes of checked games of the adapter.
+ 	 */
 	public Collection<Long> getCheckedGamesStarttimes() {
 		return adapter.getCheckedStarttimes();
 	}
 	
+	/**
+	 * Returns a SQL statement for the sort order of the displayed saved games.
+	 * Can be as complex as needed, usually sort after the creation time.
+	 * @return A sort order string for the games to display.
+	 */
 	protected abstract String getSortOrder();
+	
+	/**
+	 * Returns the projection of the columns for the cursor loading the games' data.
+	 * Usually contains at least the id, the players and the starttime.
+	 * @return A String[] containing at least the ID column.
+	 */
 	protected abstract String[] getProjection();
 	
 	@Override

@@ -49,7 +49,7 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 		if (minPlayer < 1 || maxPlayer < minPlayer) {
 			throw new IllegalArgumentException("Min/Max player illegal: " + minPlayer + "/" + maxPlayer);
 		} else if (callback == null) {
-			throw new NullPointerException();
+			throw new IllegalArgumentException("Callback is null.");
 		}
 		mTeamNumber = teamNumber;
 		mCallback = callback;

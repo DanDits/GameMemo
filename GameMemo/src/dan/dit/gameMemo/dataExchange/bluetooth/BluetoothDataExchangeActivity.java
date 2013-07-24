@@ -30,6 +30,7 @@ import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
 import dan.dit.gameMemo.gameData.game.GameKey;
+import dan.dit.gameMemo.util.ActivityUtil;
 
 /**
  * A special implementation of a {@link DataExchangeActivity}.
@@ -477,7 +478,7 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 				mOptionToggleDiscoverableOnStart.setCheckable(true);
 				mOptionToggleDiscoverableOnStart.setChecked(makeDiscoverable);
 			}
-			editor.commit();
+	        ActivityUtil.commitOrApplySharedPreferencesEditor(editor);
 		}
 	}
 	

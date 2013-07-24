@@ -9,35 +9,36 @@ import android.os.AsyncTask;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.player.Player;
+import dan.dit.gameMemo.gameData.statistics.GameStatisticBuilder.StatisticBuildCompleteListener;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 public class AsyncLoadAndBuildStatistics extends
 		AsyncTask<Uri, Integer, GameStatistic> {
 	private ContentResolver resolver;
 	private List<Player> players;
-	private List<onStatisticBuildCompleteListener> listeners;
+	private List<StatisticBuildCompleteListener> listeners;
 	private GameStatistic finishedStat;
 	private final int gameKey;
 	
 	public AsyncLoadAndBuildStatistics(ContentResolver resolver, List<Player> players, int gameKey) {
 		this.resolver = resolver;
 		this.players = players;
-		this.listeners = new LinkedList<onStatisticBuildCompleteListener>();
+		this.listeners = new LinkedList<StatisticBuildCompleteListener>();
 		this.gameKey = gameKey;
 		if (resolver == null || players == null) {
-			throw new NullPointerException("No parameter must be null.");
+			throw new IllegalArgumentException("No parameter must be null.");
 		} else if (!GameKey.isGameSupported(gameKey)) {
 			throw new IllegalArgumentException("Gamekey " + gameKey + " not supported.");
 		}
 	}
 
-	public void addListener(onStatisticBuildCompleteListener listener) {
+	public void addListener(StatisticBuildCompleteListener listener) {
 		if (listener != null) {
 			listeners.add(listener);
 		}
 	}
 	
-	public boolean removeListener(onStatisticBuildCompleteListener listener) {
+	public boolean removeListener(StatisticBuildCompleteListener listener) {
 		return listeners.remove(listener);
 	}
 	
@@ -64,7 +65,7 @@ public class AsyncLoadAndBuildStatistics extends
 	
 	@Override
     protected void onPostExecute(GameStatistic result) {
-		for (onStatisticBuildCompleteListener listener : listeners) {
+		for (StatisticBuildCompleteListener listener : listeners) {
 			listener.statisticComplete(result);
 		}
     }

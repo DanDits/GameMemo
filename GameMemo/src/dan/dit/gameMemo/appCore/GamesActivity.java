@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameDetailFragment.DetailViewCallback;
@@ -30,11 +31,19 @@ import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.player.RenamePlayerDialogFragment;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.ShowStacktraceUncaughtExceptionHandler;
-
+/**
+ * Activity that holds a {@link GamesOverviewListFragment} and optionally a 
+ * {@link GameDetailFragment}, depending on the layout. It is linked to a certain game.<br>
+ * Offers a menu to share and synch
+ * games, rename players for the game and allows a way to setup a new game or open/display saved
+ * games.
+ * @author Daniel
+ *
+ */
 public abstract class GamesActivity extends android.support.v4.app.FragmentActivity implements
 		DetailViewCallback, GameOverviewCallback, ChoosePlayerDialogListener,
 		PlayerRenamedListener {
-	public static final String EXTRA_RESULT_WANT_REMATCH = "dan.dit.gameMemo.WANT_REMATCH";
+	private static final String EXTRA_RESULT_WANT_REMATCH = "dan.dit.gameMemo.WANT_REMATCH";
 	protected static final int GAME_SETUP_ACTIVITY = 1; // when user wants to start a new game and wants to continue an existing one or selected players
 	private static final int GAME_DETAIL_ACTIVITY = 2; // when user selected a game, used to return the id of the game to highlight game (and game had no id previously for example)
 
@@ -46,7 +55,25 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 	protected GameDetailFragment mDetailsFragment; 
 	protected GamesOverviewListFragment mOverviewFragment;
 	private MenuItem mDeleteOption;
+	private View mGameSetup;
 	private int mGameKey;
+	
+	/**
+	 * Creates a new result intent for the given game, holding the information given as parameters.
+	 * This intent can be used for an activity
+	 * result.
+	 * @param gameKey The key of the game.
+	 * @param highlightId The id of the game to highlight in the list.
+	 * @param rematch If the user wants a rematch of the current game. This will lead to the
+	 * SetupActivity being opened with the parameters extracted from the current game.
+	 * @return An result intent.
+	 */
+	public static Intent newResultIntent(int gameKey, long highlightId, boolean rematch) {
+	    Intent i = new Intent();
+        i.putExtra(GameStorageHelper.getCursorItemType(gameKey), highlightId);
+        i.putExtra(GamesActivity.EXTRA_RESULT_WANT_REMATCH, rematch);
+        return i;
+	}
 	
 	@SuppressLint("NewApi")
 	@Override
@@ -67,11 +94,21 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 		mHandler = new Handler();
 		setContentView(GameKey.getGamesMainLayout(mGameKey));
 		mOverviewFragment = (GamesOverviewListFragment) getSupportFragmentManager().findFragmentById(R.id.game_list);
+		mGameSetup = findViewById(R.id.setup_game);
+		if (mGameSetup != null) {
+		    mGameSetup.setOnClickListener(new OnClickListener() {
+                
+                @Override
+                public void onClick(View v) {
+                    startGameSetup(Game.NO_ID);
+                }
+            });
+		}
 		checkIfHandlesDetailsFragment();
 		if (savedInstanceState == null) {
 			// initial setup
 			mIsActivityInitialLaunch = true;
-			//loadGameDetails(getIntent().getExtras()); // is this of any use?
+			loadGameDetails(getIntent().getExtras());
 		}
 	}
 	
@@ -144,9 +181,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 	}
 
 	private void startGameChooserActivity() {
-		Intent i = new Intent(this, GameChooserActivity.class);
-		i.putExtra(GameChooserActivity.EXTRA_LAST_GAME, mGameKey);
-		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		Intent i = GameChooserActivity.getInstance(this, mGameKey);
 		startActivity(i);
 	}
 
@@ -184,6 +219,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
  		showDeleteButton(hasChecked);
  	}
 	
+ 	@Override
  	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		final Bundle extras = data == null ? null : data.getExtras();
 		switch (requestCode) {
@@ -281,9 +317,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
             }
     		setHighlightedGame(gameId);
 		} else if (Game.isValidId(gameId)) {
-			Intent i = new Intent(this, GameKey.getGameDetailActivity(mGameKey));
-			i.putExtra(GameKey.EXTRA_GAMEKEY, mGameKey);
-			i.putExtra(GameStorageHelper.getCursorItemType(mGameKey), gameId);
+			Intent i = GameDetailActivity.newInstance(this, mGameKey, gameId);
 			startActivityForResult(i, GAME_DETAIL_ACTIVITY);			
 		}
 	}
@@ -293,6 +327,12 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 		return getHighlightedGame();
 	}
 	
+	/**
+	 * Loads the game details if there are some extras given.
+	 * If this GamesActivity handles the DetailFragment, the old one is replaced
+	 * and a new one instanciated. Else, a new instance of the GameDetailActivity is started.
+	 * @param extras The parameters for the GameDetailFragment.
+	 */
 	protected void loadGameDetails(Bundle extras) {
 		if (extras == null) {
 			return;
@@ -309,9 +349,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
             ft.commit();
     		setHighlightedGame(extras.getLong(GameStorageHelper.getCursorItemType(mGameKey), Game.NO_ID));
 		} else {
-			Intent i = new Intent(this, GameKey.getGameDetailActivity(mGameKey));
-			i.putExtra(GameKey.EXTRA_GAMEKEY, mGameKey);
-			i.putExtra(GameDetailActivity.EXTRA_PARAMETER_BUNDLE, extras);
+			Intent i = GameDetailActivity.newInstance(this, mGameKey, extras);
 			startActivityForResult(i, GAME_DETAIL_ACTIVITY);
 		}
 	}
@@ -323,6 +361,10 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 		mOverviewFragment.setHighlightedGameId(selectedId);
 	}
 	
+	/**
+	 * Returns the id of the highlighted game of the GamesOverviewListFragment if any.
+	 * @return The id of the highlighted game.
+	 */
 	protected long getHighlightedGame() {
 		GamesOverviewListFragment frag = (GamesOverviewListFragment) getSupportFragmentManager().findFragmentById(R.id.game_list);
 		return frag.getHighlightedGameId();

@@ -90,7 +90,7 @@ public class DoppelkopfRound extends GameRound {
 
 	public void setResult(DoppelkopfRoundResult res) {
 		if (res == null) {
-			throw new NullPointerException();
+			throw new IllegalArgumentException("Given DoppelkopfRoundResult is null.");
 		}
 		mRoundResult = res;
 	}
@@ -129,7 +129,7 @@ public class DoppelkopfRound extends GameRound {
 	
 	public void setRoundStyle(DoppelkopfRoundStyle style) {
 		if (style == null) {
-			throw new NullPointerException();
+			throw new IllegalArgumentException("Given DoppelkopfRoundStyle is null.");
 		}
 		mRoundStyle = style;
 	}

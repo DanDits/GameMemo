@@ -2,7 +2,6 @@ package dan.dit.gameMemo.appCore;
 
 import java.util.Date;
 
-import android.bluetooth.BluetoothAdapter;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.MenuItem;
@@ -12,6 +11,14 @@ import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
 
+/**
+ * This fragments holds all information necessary to show and edit a new or
+ * already existing game instance. Usually requires a gamekey and id to display
+ * an existing game or a gamekey and parameters to create a new game. The game is saved
+ * automatically.
+ * @author Daniel
+ *
+ */
 public abstract class GameDetailFragment extends ListFragment implements
 		ChoosePlayerDialogListener {	
 	/**
@@ -20,25 +27,39 @@ public abstract class GameDetailFragment extends ListFragment implements
 	public static final boolean LOADED_FINISHED_GAMES_ARE_IMMUTABLE = true;
 	
 	/**
-	 * A callback interface that is required for the hosting activity.
+	 * A callback interface that is required for the hosting activity to hide the fragment or display
+	 * information about the game.
 	 * @author Daniel
 	 *
 	 */
 	public interface DetailViewCallback {
+	    /**
+	     * Called by the fragment to indicate that it wants to hide.
+	     * @param error If <code>true</code>, the closing was not triggered by the user.
+	     * @param rematch If <code>true</code>, the user wants a rematch, open GameSetupActivity and
+	     * extract as many parameters from the current game as possible to simplify matters.
+	     */
 		void closeDetailView(boolean error, boolean rematch);
+		
+		/**
+		 * Called by the fragment to display information about the game, that is important specific
+		 * to the game. The callback is responsible to display the info, but is also allowed to hand it back 
+		 * to the fragment if there is no better way of displaying.
+		 * @param main Important information that needs to be stressed and easier visible.
+		 * @param extra Additional information like game options.
+		 */
 		void setInfo(CharSequence main, CharSequence extra);
 	}
 
+	/**
+	 * If the game is loaded from the database and is already finished at this time, this flag is set to true.
+	 */
 	protected boolean mIsLoadedFinishedGame;
-	protected Date mLastRunningTimeUpdate;
 	
-	protected String getBluetoothDeviceName() {
-		if (BluetoothAdapter.getDefaultAdapter() != null) {
-			return BluetoothAdapter.getDefaultAdapter().getName();
-		} else {
-			return "";
-		}
-	}	
+	/**
+	 * Stores the date the last time game.addRunningTime() was invoked on the game instance.
+	 */
+	protected Date mLastRunningTimeUpdate;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -62,6 +83,12 @@ public abstract class GameDetailFragment extends ListFragment implements
 		selectRoundSmart(position);
 	}
 	
+	/**
+	 * Invokes selectRound(position) if position is not negative
+	 * or deselectRound() if position is negative.
+	 * @param position The round to select or negative if round should
+	 * be deselected.
+	 */
 	protected final void selectRoundSmart(int position) {
 		if (position < 0) {
 			deselectRound();
@@ -70,12 +97,43 @@ public abstract class GameDetailFragment extends ListFragment implements
 		}
 	}
 
+	/**
+	 * Returns true if the game instance is immutable. This requires the fragment to not allow
+	 * changes to the game instance.
+	 * @return If the game instance is immutable.
+	 */
 	protected abstract boolean isImmutable();
+	
+	/**
+	 * Deselects the current round, can be invoked if there is no round selected too.
+	 */
 	protected abstract void deselectRound();
+	
+	/**
+	 * Selects the given round. Fragment needs to check if there is a round at the given position first.
+	 * @param position The position of the round to select.
+	 */
 	protected abstract void selectRound(int position);
+	
+	/**
+	 * Shows additional game information like the runtime or starttime for guys that just can't have enough
+	 * information.
+	 */
 	protected abstract void showGameInfo();
+	
+	/**
+	 * Returns the game id of the game instance or Game.NO_ID if there is no game
+	 * displayed or if this game does not yet have a game id. 
+	 * @return The id of the displayed game or Game.NO_ID.
+	 */
 	public abstract long getDisplayedGameId();
 
+	/**
+	 * Saves the current game, updating its running time. This updates
+	 * the database if the game was already saved or creates a new database entry.
+	 * Afterwards the game will have a valid id. Though there is no guarantee that the
+	 * id will be valid when the method returns.
+	 */
 	protected void saveState() {
 		Game game = getGame();
 		if (game != null) {
@@ -91,7 +149,19 @@ public abstract class GameDetailFragment extends ListFragment implements
 		}
 	}
 	
+	/**
+	 * Returns the displayed game.
+	 * @return The displayed game.
+	 */
 	protected abstract Game getGame();
+	
+	/**
+	 * If the hosting activity cannot or does not want to display the information given at the callback by
+	 * the fragment, this method will be invoked, giving the responsibility back to the fragment. So do not
+	 * invoked the callback method here but either ignore or handle the text yourself.
+	 * @param main The important information.
+	 * @param extra The extra information.
+	 */
 	protected abstract void setInfoText(CharSequence main, CharSequence extra);
 
 }

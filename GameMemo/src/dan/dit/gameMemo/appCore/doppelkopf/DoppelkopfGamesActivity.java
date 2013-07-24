@@ -21,6 +21,7 @@ import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfGame;
 import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfRuleSystem;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.storage.GameStorageHelper;
+import dan.dit.gameMemo.util.ActivityUtil;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 public class DoppelkopfGamesActivity extends GamesActivity  {
@@ -112,7 +113,7 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 	private void setDefaultRuleSystem(String ruleSysName) {
 		SharedPreferences.Editor editor = getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE).edit();
 		editor.putString(PREFERENCES_DEFAULT_RULE_SYSTEM, ruleSysName);
-		editor.commit();
+        ActivityUtil.commitOrApplySharedPreferencesEditor(editor);
 	}
 	
 	private void selectRuleSystem(final int forwardToOnGamesLoaded) {

@@ -193,6 +193,7 @@
 	<string name="doppelkopf_round_limit">Round limit: %1$d</string>
 	<string name="doppelkopf_overview_info_heading">Options: </string>
 	<string name="game_chooser_game_descr">%1$s games: %2$d</string>
+	<string name="game_chooser_game_descr_no_count">%1$s</string>
 	<string name="menu_game_info">Info</string>
 	<string name="select_rule_system">Select rule system</string>
 	<string name="doppelkopf_rule_system_info">Rule system: %1$s</string>

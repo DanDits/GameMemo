@@ -184,6 +184,7 @@
                 android:background="@null"
                 android:contentDescription="@string/tichu_game_tichu_button_4_content_description"
                 android:scaleType="centerInside" />
+
         </LinearLayout>
     </RelativeLayout>
 

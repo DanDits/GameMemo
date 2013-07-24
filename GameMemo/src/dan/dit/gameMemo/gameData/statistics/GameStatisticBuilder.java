@@ -9,6 +9,10 @@ import dan.dit.gameMemo.gameData.player.Player;
 public abstract class GameStatisticBuilder {
 	protected final List<Player> players;
 	
+	public interface StatisticBuildCompleteListener {
+		void statisticComplete(GameStatistic result);
+	}
+
 	public GameStatisticBuilder(List<Player> players) {
 		this.players = players;
 	}

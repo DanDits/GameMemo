@@ -30,9 +30,12 @@ public class Compacter implements Iterable<String> {
 	/**
 	 * Creates a new (De)Compacter which decompacts the given compacted data.
 	 * @param compactedData Compacted data that can then be read. 
-	 * @throws NullPointerException If given data string is <code>null</code>.
+	 * @throws IllegalArgumentException If given data string is <code>null</code>.
 	 */
 	public Compacter(String compactedData) {
+	    if (compactedData == null) {
+	        throw new IllegalArgumentException("Given compacted data is null, consider using an empty String for empty data.");
+	    }
 		data = new ArrayList<String>();
 		// search for SEPERATORS and extract data in between
 		int startIndex = 0;
@@ -77,12 +80,12 @@ public class Compacter implements Iterable<String> {
 	/**
 	 * Appends data to the Compacter.
 	 * @param dataString The data string to append.
-	 * @throws NullPointerException If dataString is <code>null</code>.
+	 * @throws IllegalArgumentException If dataString is <code>null</code>.
 	 * @return this
 	 */
 	public Compacter appendData(String dataString) {
 		if (dataString == null) {
-			throw new NullPointerException("Given String is null.");
+			throw new IllegalArgumentException("Given String is null.");
 		}
 		data.add(dataString);
 		return this;

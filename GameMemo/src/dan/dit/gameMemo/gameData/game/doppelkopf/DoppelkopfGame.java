@@ -95,7 +95,7 @@ public class DoppelkopfGame extends Game {
 		if (isFinished()) {
 			throw new IllegalStateException("Game is finished, no more rounds can be added.");
 		} else if (round == null) {
-			throw new NullPointerException("Cannot add null round.");
+			throw new IllegalArgumentException("Cannot add null round.");
 		} else if (!(round instanceof DoppelkopfRound)) {
 			throw new IllegalArgumentException("Given round is no DoppelkopfRound.");
 		} else {

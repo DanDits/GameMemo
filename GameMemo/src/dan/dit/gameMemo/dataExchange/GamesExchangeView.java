@@ -95,10 +95,12 @@ public class GamesExchangeView extends LinearLayout {
 	@SuppressWarnings("deprecation")
 	@SuppressLint("NewApi")
 	private void resetBackground() {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-			mShowGames.setBackgroundDrawable(mDefaultShowGamesBackground);
-		} else {
-			mShowGames.setBackground(mDefaultShowGamesBackground);
-		}
+	    if (mDefaultShowGamesBackground != null) {
+    		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+    			mShowGames.setBackgroundDrawable(mDefaultShowGamesBackground);
+    		} else {
+    			mShowGames.setBackground(mDefaultShowGamesBackground);
+    		}
+	    }
 	}
 }

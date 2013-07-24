@@ -26,7 +26,7 @@ import dan.dit.gameMemo.gameData.game.tichu.TichuRound;
  *
  */
 public class TichuGameRoundAdapter extends ArrayAdapter<GameRound> {
-	public static final boolean PREFERENCE_SHOW_DELTA_DEFAULT = false;
+	public static final boolean PREFERENCE_SHOW_DELTA_DEFAULT = true;
 	public static final boolean PREFERENCE_SHOW_TICHUS_DEFAULT = true;
 	private static final int TICHU_BID_SMALL_DRAWABLE_ID = R.drawable.tichu_small_bid_plain;
 	private static final int TICHU_BID_SMALL_LOST_DRAWABLE_ID = R.drawable.tichu_small_bid_lost_plain;

@@ -31,14 +31,6 @@ public class GamesDBContentProvider extends ContentProvider {
 
 	// must equal the authority in the manifest file
 	public static final String AUTHORITY = "dan.dit.gameMemo.gamesData.contentprovider";
-	private static final UriMatcher sURIMatcher = new UriMatcher(
-			UriMatcher.NO_MATCH);
-
-	static {
-		sURIMatcher.addURI(AUTHORITY, "content://" + AUTHORITY + "/#/" + GameStorageHelper.COLUMN_ID + "/#", GameStorageHelper.URI_TYPE_SINGLE_ID);
-		sURIMatcher.addURI(AUTHORITY, "content://" + AUTHORITY + "/#/" + GameStorageHelper.COLUMN_STARTTIME + "/#", GameStorageHelper.URI_TYPE_SINGLE_STARTTIME);
-		sURIMatcher.addURI(AUTHORITY, "content://" + AUTHORITY + "/#", GameStorageHelper.URI_TYPE_ALL);
-	}
 	
 	public static Uri makeUri(int gameKey, int uriType) {
 		switch (uriType) {
@@ -60,7 +52,7 @@ public class GamesDBContentProvider extends ContentProvider {
 	}
 
 	private int matchUriType(Uri uri) {
-		List<String> pathSegments = uri.getPathSegments(); //TODO temp fix  // lol... "temp"
+		List<String> pathSegments = uri.getPathSegments(); // temp fix  // lol... "temp", since uri matcher does not work with these uris, let it be...
 		if (pathSegments.size() == 1) {
 			return GameStorageHelper.URI_TYPE_ALL;
 		} else {

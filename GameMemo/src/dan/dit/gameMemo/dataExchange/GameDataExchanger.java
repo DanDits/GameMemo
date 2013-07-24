@@ -70,8 +70,10 @@ public class GameDataExchanger implements PostRecipient {
 		mGameKey = gameKey;
 		mService = service;
 		mService.registerRecipient(mGameKey, this);
-		if (service == null || resolver == null) {
-			throw new NullPointerException();
+		if (service == null) {
+			throw new IllegalArgumentException("ExchangeService null.");
+		} else if (resolver == null) {
+		    throw new IllegalArgumentException("ContentResolver is null.");
 		}
 		if (!GameKey.isGameSupported(gameKey)) {
 			throw new IllegalArgumentException("Game key not supported " + gameKey);

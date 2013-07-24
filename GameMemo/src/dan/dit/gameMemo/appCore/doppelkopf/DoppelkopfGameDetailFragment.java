@@ -11,12 +11,10 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,6 +36,7 @@ import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameDetailFragment;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
+import dan.dit.gameMemo.gameData.game.OriginBuilder;
 import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfBid;
 import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfExtraScore;
 import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfGame;
@@ -50,6 +49,7 @@ import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.storage.GameStorageHelper;
+import dan.dit.gameMemo.util.ActivityUtil;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 public class DoppelkopfGameDetailFragment extends GameDetailFragment {
@@ -378,7 +378,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		mAdapter.setShowDelta(show);
 		SharedPreferences.Editor editor = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE).edit();
 		editor.putBoolean(PREFERENCES_SHOW_DELTA, show);
-		editor.commit();
+		ActivityUtil.commitOrApplySharedPreferencesEditor(editor);
 	}
 	
 	private void loadOrStartGame(Bundle savedInstanceState) {
@@ -417,7 +417,6 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 			int roundsLimit = extras != null ? extras.getInt(EXTRA_NEW_GAME_ROUNDS_LIMIT, DoppelkopfGame.DEFAULT_DURCHLAEUFE) : DoppelkopfGame.DEFAULT_DURCHLAEUFE;
 			createNewGame(players, roundsLimit, dutySoliPerPlayer, extras.getString(EXTRA_RULE_SYSTEM));
 		} else {
-			Log.d("Doppelkopf", "Failed loading or creating game for id " + gameId);
 			mCallback.closeDetailView(true, false);
 			return;
 		}
@@ -501,7 +500,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 	
 	private void createNewGame(List<Player> players, int durchlauefe, int dutySoliPerPlayer, String ruleSysName) {
 		mGame = new DoppelkopfGame(ruleSysName, durchlauefe, dutySoliPerPlayer);
-		mGame.setOriginData(getBluetoothDeviceName(), Build.MODEL);
+        mGame.setOriginData(OriginBuilder.getInstance().getOriginHints());
 		mGame.setupPlayers(players);
 		fillData();
 		mStateMachine.updateUI();

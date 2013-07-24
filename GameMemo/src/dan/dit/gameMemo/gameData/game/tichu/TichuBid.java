@@ -19,7 +19,7 @@ public class TichuBid {
 		this.won = won;
 		this.type = type;
 		if (type == null) {
-			throw new NullPointerException("Tichu bid type cannot be null.");
+			throw new IllegalArgumentException("Tichu bid type cannot be null.");
 		}
 	}
 	

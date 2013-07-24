@@ -15,7 +15,7 @@ public class DummyPlayer extends Player {
 		super(String.format(baseName, number));
 		mPool = pool;
 		if (mPool == null) {
-			throw new NullPointerException();
+			throw new IllegalArgumentException("DummyPool is null.");
 		}
 		mNumber = number;
 	}

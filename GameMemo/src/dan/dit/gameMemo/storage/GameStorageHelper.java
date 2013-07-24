@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.SparseArray;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
@@ -62,21 +63,45 @@ public final class GameStorageHelper {
 	public static Collection<String> getAvailableColumns(int gameKey) {
 		return GameKey.getStorageAvailableColumns(gameKey);
 	}
+	
+	public static class RequestStoredGamesCountTask extends AsyncTask<Integer, Void, Integer> {
+	    private ContentResolver mResolver;
+	    private RequestStoredGamesCountTask.Callback mCallback;
+	    private int mGameKey;
+	    public interface Callback {
+	        void receiveStoredGamesCount(int gameKey, int gamesCount);
+	    }
+	    public RequestStoredGamesCountTask(ContentResolver resolver, RequestStoredGamesCountTask.Callback callback) {
+	        mResolver = resolver;
+	        mCallback = callback;
+	    }
+	    protected Integer doInBackground(Integer... gameKey) {
+	        mGameKey = gameKey[0];
+	        return getStoredGamesCount(mResolver, mGameKey);
+	    }
+	    
+	    /** The system calls this to perform work in the UI thread and delivers
+	      * the result from doInBackground() */
+	    protected void onPostExecute(Integer result) {
+	        mCallback.receiveStoredGamesCount(mGameKey, result);
+	    }
 
+	}
+	
 	public static int getStoredGamesCount(ContentResolver resolver, int gameKey) {
-		Cursor data = null;
-		int count = 0;
-		try {
-			data = resolver.query(getUriAllItems(gameKey), new String[] {COLUMN_ID}, null, null, null);
-			if (data != null) {
-				count = data.getCount();
-			}
-		} finally {
-			if (data != null) {
-				data.close();
-			}
-		}
-		return count;
+        Cursor data = null;
+        int count = 0;
+        try {
+            data = resolver.query(getUriAllItems(gameKey), new String[] {COLUMN_ID}, null, null, null);
+            if (data != null) {
+                count = data.getCount();
+            }
+        } finally {
+            if (data != null) {
+                data.close();
+            }
+        }
+        return count;
 	}
 	
 	public static Uri getUriAllItems(int gameKey) {

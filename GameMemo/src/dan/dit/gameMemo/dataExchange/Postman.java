@@ -37,7 +37,7 @@ public class Postman {
 	public Postman(ExchangeService target) {
 		mTarget = target;
 		if (target == null) {
-			throw new NullPointerException("ExchangeService null.");
+			throw new IllegalArgumentException("ExchangeService null.");
 		}
 		mDataIncomeState = DATA_INCOME_STATE_EXPECT_HEADER;
 		mBytesReceived = new ByteArrayOutputStream(512);

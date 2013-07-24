@@ -11,7 +11,7 @@ public class PlayerDuo extends AbstractPlayerTeam {
 		this.first = first;
 		this.second = second;
 		if (first == null || second == null) {
-			throw new NullPointerException();
+			throw new IllegalArgumentException("Null player: " + first + " or " + second);
 		}
 	}
 	

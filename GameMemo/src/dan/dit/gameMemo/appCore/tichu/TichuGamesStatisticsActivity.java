@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,10 +26,11 @@ import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.statistics.AsyncLoadAndBuildStatistics;
 import dan.dit.gameMemo.gameData.statistics.GameStatistic;
-import dan.dit.gameMemo.gameData.statistics.onStatisticBuildCompleteListener;
+import dan.dit.gameMemo.gameData.statistics.GameStatisticBuilder.StatisticBuildCompleteListener;
 import dan.dit.gameMemo.gameData.statistics.tichu.TichuStatistic;
 import dan.dit.gameMemo.gameData.statistics.tichu.TichuStatisticType;
 import dan.dit.gameMemo.storage.GameStorageHelper;
+import dan.dit.gameMemo.util.ActivityUtil;
 import dan.dit.gameMemo.util.ShowStacktraceUncaughtExceptionHandler;
 
 /**
@@ -70,12 +70,7 @@ public class TichuGamesStatisticsActivity extends Activity {
 		setContentView(R.layout.tichu_statistics);
 		Thread.setDefaultUncaughtExceptionHandler(new ShowStacktraceUncaughtExceptionHandler(
 				this));
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-			ActionBar bar = getActionBar();
-			if (bar != null) {
-				bar.hide();
-			}
-		}
+		ActivityUtil.hideActionBar(this, true);
 		if (savedInstanceState != null) {
 			mOnlyShowSignificantForGenre = savedInstanceState.getBoolean(
 					STORAGE_ONLY_SHOW_SIGNIFICANT,
@@ -170,7 +165,7 @@ public class TichuGamesStatisticsActivity extends Activity {
 	private void loadAndBuildStats() {
 		this.statBuilder = new AsyncLoadAndBuildStatistics(
 				getContentResolver(), players, GameKey.TICHU);
-		this.statBuilder.addListener(new onStatisticBuildCompleteListener() {
+		this.statBuilder.addListener(new StatisticBuildCompleteListener() {
 
 			@Override
 			public void statisticComplete(GameStatistic result) {

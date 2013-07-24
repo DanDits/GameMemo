@@ -25,16 +25,36 @@ import dan.dit.gameMemo.storage.GameStorageHelper;
 
 public abstract class GameOverviewAdapter extends SimpleCursorAdapter implements
 		GamesDeletionListener {
+    
+    /**
+     * A helper DateFormat for subclasses that display the time, e.g. the starttime of a game.
+     * Use for a consistent look.
+     */
 	protected static final DateFormat TIME_FORMAT = SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT);
+	
+	 /**
+     * A helper DateFormat for subclasses that display a date, e.g. the startdate of a game.
+     * Use for a consistent look.
+     */
 	protected static final DateFormat DATE_FORMAT = SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM);
 	private static final Calendar CALENDAR_CHECKER1 = Calendar.getInstance();
 	private static final Calendar CALENDAR_CHECKER2 = Calendar.getInstance();
+	
     protected int layout;
     protected Context context;
     private Map<Long, Long> checked; // mapping id to starttime
     private GameCheckedChangeListener mListener;
     
+    /**
+     * A listener interface to get notified if a game (or multiple) get(s) checked or unchecked by the user.
+     * @author Daniel
+     *
+     */
     public interface GameCheckedChangeListener {
+        /**
+         * The user checked or unchecked a game.
+         * @param checkedIds A collection of all ids of the checked games. Can be empty.
+         */
     	void onGameCheckedChange(Collection<Long> checkedIds);
     }
 
@@ -54,6 +74,10 @@ public abstract class GameOverviewAdapter extends SimpleCursorAdapter implements
     	checked = new HashMap<Long, Long>();
     }
 
+    /**
+     * Sets the GameCheckedChangeListener that is invoked when the user checks or unchecks games.
+     * @param listener The listener, can be <code>null</code>.
+     */
     public void setOnGameCheckedChangeListener(GameCheckedChangeListener listener) {
     	mListener = listener;
     }
@@ -64,7 +88,9 @@ public abstract class GameOverviewAdapter extends SimpleCursorAdapter implements
 		}
     }
     
-    
+    /**
+     * Checks all games available.
+     */
     public void checkAll() {
     	Cursor data = getCursor();
     	int pos = data.getPosition();
@@ -78,14 +104,25 @@ public abstract class GameOverviewAdapter extends SimpleCursorAdapter implements
 		notifyDataSetChanged();
     }
     
+    /**
+     * Returns all currently checked games' ids.
+     * @return The ids of all currently checked games.
+     */
     public Set<Long> getChecked() {
     	return checked.keySet();
     }
 
+    /**
+     * Returns all currently checked games' starttimes.
+     * @return The starttimes of all currently checked games.
+     */
 	public Collection<Long> getCheckedStarttimes() {
 		return checked.values();
 	}
 	
+	/**
+	 * Unchecks all currently checked games.
+	 */
     public void clearChecked() {
     	checked.clear();
     	notifyDataSetChanged();
@@ -101,8 +138,19 @@ public abstract class GameOverviewAdapter extends SimpleCursorAdapter implements
     	return true;
     }
 
+    /**
+     * Invoked by the system when a view for a row needs to update.
+     * @param row The row view to update. Can be recycled or <code>null</code>, handle with care.
+     * @param c The cursor pointing to the data of the row to update.
+     */
 	protected abstract void updateViewInfo(View row, Cursor c);
 	
+	/**
+	 * Helper method to find out if the given dates are on the same day.
+	 * @param first The first Date.
+	 * @param second The second Date.
+	 * @return If <code>true</code> then the dates are on the same day of the year in the same year.
+	 */
 	protected static boolean isSameDate(Date first, Date second) {
     	CALENDAR_CHECKER1.setTime(first);
     	CALENDAR_CHECKER2.setTime(second);
@@ -121,10 +169,22 @@ public abstract class GameOverviewAdapter extends SimpleCursorAdapter implements
 		}
 	}
 	
+	/**
+	 * Returns <code>true</code> if the game with the given id is checked.
+	 * @param id The id to test.
+	 * @return If the game with the given id is checked.
+	 */
 	protected boolean isChecked(long id) {
 		return checked.containsKey(id);
 	}
 	
+	/**
+	 * Helper method for the usual format: When the given date is at the current
+	 * day, then 'today' is displayed, or 'yesterday' accordingly, else the date according
+	 * to the DATE_FORMAT.
+	 * @param date The view that displays the date.
+	 * @param startDate The startdate of the game.
+	 */
     protected void applyDate(TextView date, Date startDate) {
     	Date today = new Date();
 		if (isSameDate(today, startDate)) {
@@ -140,6 +200,13 @@ public abstract class GameOverviewAdapter extends SimpleCursorAdapter implements
 		}
 	}
 	
+    /**
+     * Returns a new OnLongClickListener that -on a long click-
+     * checks all available games if the current game is unchecked
+     * or clears all checked if the current game is checked. Requires the clicked
+     * CheckBox to hold an Integer as a tag, which is the position of the game in the cursor.
+     * @return The listener.
+     */
 	protected OnLongClickListener getNewCheckedLongClickListener() {
 		return new OnLongClickListener() {
 		
@@ -163,6 +230,13 @@ public abstract class GameOverviewAdapter extends SimpleCursorAdapter implements
 		};
 	}
 	
+    /**
+     * Returns a new OnClickListener that -on a click-
+     * checks the clicked game if it is unchecked
+     * or removes it from the checked games if it is checked. Requires the clicked
+     * CheckBox to hold an Integer as a tag, which is the position of the game in the cursor.
+     * @return The listener.
+     */
 	protected OnClickListener getNewCheckedClickListener() {
 		return new OnClickListener() {
 			

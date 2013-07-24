@@ -7,9 +7,9 @@
     </item>
 
     <item android:id="@+id/open_data_exchanger_bluetooth" 
-		 android:showAsAction="never" android:title="@string/open_data_exchanger_bluetooth" ></item>
+		 android:showAsAction="ifRoom" android:title="@string/open_data_exchanger_bluetooth" android:icon="@drawable/bluetooth"></item>
     <item android:id="@+id/share" 
-		 android:showAsAction="never" android:title="@string/share" android:icon="@drawable/ic_menu_share" ></item>
+		 android:showAsAction="always" android:title="@string/share" android:icon="@drawable/ic_menu_share" ></item>
     <item
         android:id="@+id/rename_player"
         android:showAsAction="never"

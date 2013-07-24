@@ -41,7 +41,7 @@ public class GamesExchangeManager {
 	
 	public void setGamesExchangeView(GamesExchangeView gamesExchangeView){
 		if (gamesExchangeView == null) {
-			throw new NullPointerException("GamesExchangeView null.");
+			throw new IllegalArgumentException("GamesExchangeView null.");
 		}
 		mExchangeView = gamesExchangeView;
 		mExchangeView.setOnShowGamesClickListener(new OnClickListener() {
@@ -86,7 +86,7 @@ public class GamesExchangeManager {
 	
 	private void initFragManager(FragmentManager fragManager) {
 		if (fragManager == null) {
-			throw new NullPointerException("Fragment manager null.");
+			throw new IllegalArgumentException("Fragment manager null.");
 		}
 		mFragManager = fragManager;
 

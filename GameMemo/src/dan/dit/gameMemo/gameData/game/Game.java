@@ -16,7 +16,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.Log;
+import android.text.TextUtils;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
@@ -134,10 +134,15 @@ public abstract class Game implements Iterable<GameRound>, Compactable {
 		return getOriginData();
 	}
 	
-	public void setOriginData(String bluetoothDeviceName, String model) {
-		Compacter cmp = new Compacter(2);
-		cmp.appendData(bluetoothDeviceName == null ? "" : bluetoothDeviceName);
-		cmp.appendData(model == null ? "" : model);
+	public void setOriginData(List<String> originHints) {
+		Compacter cmp = new Compacter(originHints.size());
+		for (String hint : originHints) {
+		    if (TextUtils.isEmpty(hint)) {
+		        cmp.appendData("");
+		    } else {
+		        cmp.appendData(hint);
+		    }
+		}
 		originData = cmp.compact();
 	}
 	
@@ -149,7 +154,7 @@ public abstract class Game implements Iterable<GameRound>, Compactable {
 	
 	@Override
 	public void unloadData(Compacter compactedData) {
-		Log.e("gameMemo", "Attempting to unload data for game, ignored.");
+		//ignore
 	}
 
 	public boolean updateRound(int index, GameRound updatedRound) { // must not be supported (since it also uses reset)
@@ -157,7 +162,7 @@ public abstract class Game implements Iterable<GameRound>, Compactable {
 			throw new IndexOutOfBoundsException("Bounds 0 (incl.) to " + getRoundCount() + ", got " + index);
 		}
 		if (updatedRound == null) {
-			throw new NullPointerException("GameRound is null");
+			throw new IllegalArgumentException("GameRound is null");
 		} else if (updatedRound.equals(rounds.get(index))) {
 			return true;
 		}

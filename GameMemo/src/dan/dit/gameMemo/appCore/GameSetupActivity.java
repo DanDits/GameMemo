@@ -25,7 +25,6 @@ import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -132,6 +131,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	private MenuItem mShuffle;
 
 	//TODO make a builder class for all the extras and then hide them, make an option to hide options container by default and show options
+	//TODO Bug: Shuffling players when dummies are included will make dummies appear more than once somehow
 	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -649,7 +649,6 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		boolean[] isOptional = in.getBooleanArray(EXTRA_TEAM_IS_OPTIONAL);
 		if (!prepareTeamParameters(minTeamSize, maxTeamSize, teamNames, isOptional, teamColors)) {
 			setResult(RESULT_CANCELED);
-			Log.e(getClass().getName(), "Could not prepare parameters to start. Need at least one team minimum size.");
 			finish();
 			return;
 		}

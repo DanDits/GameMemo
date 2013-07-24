@@ -28,7 +28,6 @@ import dan.dit.gameMemo.appCore.GameChooserActivity;
 import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
 
-
 public class FileReadDataExchangeActivity extends DataExchangeActivity {
 	private File mDataFile;
 	private InputStream mDataStream;
@@ -50,7 +49,6 @@ public class FileReadDataExchangeActivity extends DataExchangeActivity {
 						mDataFile = new File(path);
 					}
 				} else if (uri.getScheme().equals("content")) {
-					Log.d("FileRead", "Content scheme uri = " + uri + " path= " + uri.getPath());
 					try {
 						mDataStream = getContentResolver().openInputStream(getIntent().getData());
 					} catch (FileNotFoundException fnf) {
@@ -149,7 +147,7 @@ public class FileReadDataExchangeActivity extends DataExchangeActivity {
 				connectionId = Integer.parseInt(matcher.group(1));
 				messageId = Integer.parseInt(matcher.group(2));
 			} catch (NumberFormatException nfe) {
-				return false; // matched numbers, could only happen that matched number is too long if data is corrupt
+				return false; // matched numbers, could only happen that matched number is too long if data is corrupt, that once cost me points in a test..
 			}
 			containedGames.add(connectionId);
 		}

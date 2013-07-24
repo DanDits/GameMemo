@@ -34,6 +34,7 @@ import dan.dit.gameMemo.gameData.statistics.tichu.TichuGameStatisticBuilder;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.storage.database.CardGameTable;
 import dan.dit.gameMemo.storage.database.GamesDBContentProvider;
+import dan.dit.gameMemo.util.ActivityUtil;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 /**
@@ -218,18 +219,23 @@ public final class GameKey {
 
 	private static final String PREFERENCES_STAY_AWAKE = "dan.dit.gameMemo.STAY_AWAKE_";
 	
-	public static void applySleepBehavior(int gameKey, Activity act) {
-		if (getStayAwake(gameKey, act)) {
-			act.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		} else {
-			act.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		}
+	public static void applySleepBehavior(final int gameKey, final Activity act) {
+	    new Thread(new Runnable() {
+	        @Override
+	        public void run() {
+        		if (getStayAwake(gameKey, act)) {
+        			act.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        		} else {
+        			act.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        		}
+	        }
+	    }).start();
 	}
 	
 	public static void setStayAwake(int gameKey, Activity act, boolean stayAwake) {
 		SharedPreferences.Editor editor = act.getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE).edit();
 		editor.putBoolean(PREFERENCES_STAY_AWAKE + gameKey, stayAwake);
-		editor.commit();
+        ActivityUtil.commitOrApplySharedPreferencesEditor(editor);
 		applySleepBehavior(gameKey, act);
 	}
 	
@@ -404,4 +410,13 @@ public final class GameKey {
 			throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
+
+    public static boolean isGameKey(int gameKey) {
+        for (int key : ALL_GAMES) {
+            if (key == gameKey) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

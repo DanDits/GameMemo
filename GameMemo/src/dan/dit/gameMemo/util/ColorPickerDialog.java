@@ -6,10 +6,10 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import dan.dit.gameMemo.gameData.player.PlayerColors;
 import dan.dit.gameMemo.util.ColorPickerView.OnColorChangedListener;
 
 public class ColorPickerDialog extends DialogFragment {
+	public static final int DEFAULT_COLOR = 0xFF000000;
 	public static final String EXTRA_COLOR = "dan.dit.gameMemo.EXTRA_START_COLOR";
 	private OnColorChangedListener mCallback;
 	private ColorPickerView mColorView;
@@ -25,9 +25,9 @@ public class ColorPickerDialog extends DialogFragment {
 		  	ColorPickerView baseView = new ColorPickerView(getActivity());
 		  	mColorView = baseView;
 		  	if (savedInstanceState == null) {
-		  		baseView.setColor(getArguments() != null ? getArguments().getInt(EXTRA_COLOR, PlayerColors.DEFAULT_COLOR) : PlayerColors.DEFAULT_COLOR);
+		  		baseView.setColor(getArguments() != null ? getArguments().getInt(EXTRA_COLOR, DEFAULT_COLOR) : DEFAULT_COLOR);
 		  	} else {
-		  		baseView.setColor(savedInstanceState.getInt(EXTRA_COLOR, PlayerColors.DEFAULT_COLOR));
+		  		baseView.setColor(savedInstanceState.getInt(EXTRA_COLOR, DEFAULT_COLOR));
 		  	}
 		  	// Use the Builder class for convenient dialog construction
 	        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());

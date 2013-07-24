@@ -9,19 +9,15 @@ import java.util.List;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -38,6 +34,7 @@ import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameDetailFragment;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
+import dan.dit.gameMemo.gameData.game.OriginBuilder;
 import dan.dit.gameMemo.gameData.game.tichu.TichuBidType;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.game.tichu.TichuRound;
@@ -112,9 +109,6 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 	 * The drawable id of the drawable used to symbol a big lost tichu bid.
 	 */
 	private static final int TICHU_BID_BIG_LOST_DRAWABLE_ID = R.drawable.tichu_big_bid_lost;
-	
-	private static final String PREFERENCES_SHOW_DELTA = "dan.dit.gameMemo.PREFERENCE_SHOW_DELTA";
-	private static final String PREFERENCES_SHOW_TICHUS = "dan.dit.gameMemo.PREFERENCE_SHOW_TICHUS";
 	
 	private static final String STORAGE_IS_IMMUTABLE = "STORAGE_IS_IMMUTABLE";
 	private static final String STORAGE_SELECTED_ROUND = "STORAGE_SELECTED_ROUND";
@@ -270,7 +264,6 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 			createNewGame(new PlayerDuo(player1, player2, TichuGame.PLAYERS), new PlayerDuo(player3, player4, TichuGame.PLAYERS),
 					useMercyRule, scoreLimit);
 		} else {
-			Log.d("Tichu", "Failed loading or creating game for id " + gameId);
 			mCallback.closeDetailView(true, false);
 			return;
 		}
@@ -434,11 +427,12 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.tichu_game_detail, menu);
-		menu.findItem(R.id.game_detail_option_show_delta).setChecked(getPreferencesShowDelta());
-		menu.findItem(R.id.game_detail_option_show_tichus).setChecked(getPreferencesShowTichus());
+		//menu.findItem(R.id.game_detail_option_show_delta).setChecked(getPreferencesShowDelta());
+		//menu.findItem(R.id.game_detail_option_show_tichus).setChecked(getPreferencesShowTichus());
 	}
 	
-	// Reaction to the menu selection
+	// preferences for options deactivated since they only complicate the UI, but can be readded by making a menu button and uncommenting the code
+	/*// Reaction to the menu selection
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -454,31 +448,37 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	}
+	}*/
+    
+    //private static final String PREFERENCES_SHOW_DELTA = "dan.dit.gameMemo.PREFERENCE_SHOW_DELTA";
+    //private static final String PREFERENCES_SHOW_TICHUS = "dan.dit.gameMemo.PREFERENCE_SHOW_TICHUS";
 	
 	private boolean getPreferencesShowDelta() {
-		SharedPreferences sharedPref = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE);
-		return sharedPref.getBoolean(PREFERENCES_SHOW_DELTA, TichuGameRoundAdapter.PREFERENCE_SHOW_DELTA_DEFAULT);
+		//SharedPreferences sharedPref = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE);
+		//return sharedPref.getBoolean(PREFERENCES_SHOW_DELTA, TichuGameRoundAdapter.PREFERENCE_SHOW_DELTA_DEFAULT);
+	    return TichuGameRoundAdapter.PREFERENCE_SHOW_DELTA_DEFAULT;
 	}
-	
-	private void setPreferencesShowDelta(boolean show) {
+	   
+    private boolean getPreferencesShowTichus() {
+        //SharedPreferences sharedPref = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE);
+        //return sharedPref.getBoolean(PREFERENCES_SHOW_TICHUS, TichuGameRoundAdapter.PREFERENCE_SHOW_TICHUS_DEFAULT);
+        return TichuGameRoundAdapter.PREFERENCE_SHOW_TICHUS_DEFAULT;
+    }
+    
+	/*private void setPreferencesShowDelta(boolean show) {
 		mAdapter.setShowDelta(show);
 		SharedPreferences.Editor editor = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE).edit();
 		editor.putBoolean(PREFERENCES_SHOW_DELTA, show);
-		editor.commit();
+        ActivityUtil.commitOrApplySharedPreferencesEditor(editor);
 	}
 	
 	private void setPreferencesShowTichus(boolean show) {
 		mAdapter.setShowTichus(show);
 		SharedPreferences.Editor editor = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE).edit();
 		editor.putBoolean(PREFERENCES_SHOW_TICHUS, show);
-		editor.commit();
-	}
-	
-	private boolean getPreferencesShowTichus() {
-		SharedPreferences sharedPref = getActivity().getSharedPreferences(Game.PREFERENCES_FILE, Context.MODE_PRIVATE);
-		return sharedPref.getBoolean(PREFERENCES_SHOW_TICHUS, TichuGameRoundAdapter.PREFERENCE_SHOW_TICHUS_DEFAULT);
-	}
+        ActivityUtil.commitOrApplySharedPreferencesEditor(editor);
+	}*/
+
 	
 	private void createNewGame(PlayerDuo first, PlayerDuo second, boolean useMercyRule, int scoreLimit) {
 		if (scoreLimit < TichuGame.MIN_SCORE_LIMIT || scoreLimit > TichuGame.MAX_SCORE_LIMIT) {
@@ -486,7 +486,7 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 		} else {
 			mGame = new TichuGame(scoreLimit, useMercyRule);
 		}
-		mGame.setOriginData(getBluetoothDeviceName(), Build.MODEL);
+		mGame.setOriginData(OriginBuilder.getInstance().getOriginHints());
 		mGame.setupPlayers(first.getFirst(), first.getSecond(), second.getFirst(),
 				second.getSecond());
 

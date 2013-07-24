@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
@@ -22,14 +23,51 @@ import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.ShowStacktraceUncaughtExceptionHandler;
 
+/**
+ * Activity that holds a GameDetailFragment. Allows showing the fragment
+ * on a single screen for devices that cannot hold a GameDetailFragment and a GameOverviewFragment
+ * at once because of lacking screen size.
+ * @author Daniel
+ *
+ */
 public class GameDetailActivity extends FragmentActivity implements
 		DetailViewCallback, ChoosePlayerDialogListener {
 
-	public static final String EXTRA_PARAMETER_BUNDLE = "dan.dit.gameMemo.detail_parameter_bundle";
+	private static final String EXTRA_PARAMETER_BUNDLE = "dan.dit.gameMemo.detail_parameter_bundle";
 	private int mGameKey;
 	private ActionBar mBar;
 	private GameDetailFragment mDetails;
 	
+	/**
+	 * Creates an intent for a GameDetailActivity belonging to the given gamekey.
+	 * This starts a GameDetailFragment that will create a new game from the given parameters.
+	 * @param context The context of the intent.
+	 * @param gameKey The game key for the GameDetailActivity.
+	 * @param parameters The parameters for the GameDetailFragment.
+	 * @return An intent to start a GameDetailActivity.
+	 */
+	public static Intent newInstance(Context context, int gameKey, Bundle parameters) {
+        Intent i = new Intent(context, GameKey.getGameDetailActivity(gameKey));
+        i.putExtra(GameKey.EXTRA_GAMEKEY, gameKey);
+        i.putExtra(EXTRA_PARAMETER_BUNDLE, parameters);
+        return i;
+	}
+	
+	   /**
+     * Creates an intent for a GameDetailActivity belonging to the given gamekey.
+     * This starts a GameDetailFragment that will display the game belonging to the id.
+     * @param context The context of the intent.
+     * @param gameKey The game key for the GameDetailActivity.
+     * @param gameId The id of the game to display.
+     * @return An intent to start a GameDetailActivity.
+     */
+    public static Intent newInstance(Context context, int gameKey, long gameId) {
+        Intent i = new Intent(context, GameKey.getGameDetailActivity(gameKey));
+        i.putExtra(GameKey.EXTRA_GAMEKEY, gameKey);
+        i.putExtra(GameStorageHelper.getCursorItemType(gameKey), gameId);
+        return i;
+    }
+    
 	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,12 +135,10 @@ public class GameDetailActivity extends FragmentActivity implements
 	
 	private void prepareSuccessfulResult(boolean rematch) {
 		if (mDetails != null ) {
-			Intent i = new Intent();
 			if (mDetails.getDisplayedGameId() == Game.NO_ID) {
 				mDetails.saveState();
 			}
-			i.putExtra(GameStorageHelper.getCursorItemType(mGameKey), mDetails.getDisplayedGameId());
-			i.putExtra(GamesActivity.EXTRA_RESULT_WANT_REMATCH, rematch);
+            Intent i = GamesActivity.newResultIntent(mGameKey, mDetails.getDisplayedGameId(), rematch);           
 			setResult(RESULT_OK, i);
 		} else {
 			setResult(RESULT_OK);
