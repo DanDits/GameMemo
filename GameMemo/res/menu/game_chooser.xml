@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <item android:id="@+id/open_data_exchanger_bluetooth" 
-		 android:showAsAction="never" android:title="@string/open_data_exchanger_bluetooth" ></item>
+		 android:showAsAction="never" android:title="@string/open_data_exchanger_bluetooth" android:icon="@drawable/bluetooth"></item>
     <item android:id="@+id/share" 
 		 android:showAsAction="never" android:title="@string/share" android:icon="@drawable/ic_menu_share" ></item>
     <item
         android:id="@+id/rename_player"
         android:showAsAction="never"
-        android:title="@string/rename_player">
+        android:title="@string/rename_player"
+        android:icon="@drawable/ic_menu_edit">
     </item>
     <item android:id="@+id/about" android:title="@string/about" 
-     		android:showAsAction="never">
+     		android:showAsAction="never"
+        android:icon="@drawable/ic_menu_info">
     </item>
 
 </menu>

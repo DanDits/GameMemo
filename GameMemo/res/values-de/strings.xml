@@ -67,7 +67,7 @@
     </plurals>
 	<string name="data_exchange_bluetooth_button_ensure_discoverable">Auffindbar machen</string>
 	<string name="data_exchange_bluetooth_make_discoverable_on_start">Auffindbar starten</string>
-	<string name="data_exchange_filewriter_failed">Datei erstellen fehlgeschlagen</string>
+	<string name="data_exchange_filewriter_failed">Exportieren fehlgeschlagen</string>
 	<plurals
         name="import_success">
         <item quantity="zero">Importieren fehlgeschlagen</item>

@@ -132,6 +132,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 
 	//TODO make a builder class for all the extras and then hide them, make an option to hide options container by default and show options
 	//TODO Bug: Shuffling players when dummies are included will make dummies appear more than once somehow
+	//TODO make big controller that takes care of all the different teamSetupViewControllers and let each game have a controller and a view for options
 	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

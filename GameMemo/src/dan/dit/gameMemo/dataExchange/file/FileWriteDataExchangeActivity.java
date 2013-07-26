@@ -23,6 +23,7 @@ import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
 import dan.dit.gameMemo.gameData.game.GameKey;
+import dan.dit.gameMemo.storage.GameStorageHelper;
 
 public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 	private static final String EXTRA_FLAG_START_SHARE_IMMEDIATELY = "dan.dit.gameMemo.START_SHARE_IMMEDIATELY";
@@ -30,6 +31,7 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 	private static final String GAMES_DATA_FILE_NAME = "games" + EXTENSION;
 	private static final String SAVE_GAME_PREFIX = "save_";
 	private FileWriteService mService;
+    private boolean mIsShareConnection;
 	private File mTempGamesData;
 	private List<Integer> mTempGamesDataForGames;
 	private Button mStartShare;
@@ -69,15 +71,6 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 			finish();
 			return;
 		}
-		int[] toShare = GameKey.calculateUsedGames(getContentResolver());
-		if (toShare.length == 0) {
-			setResult(RESULT_CANCELED);
-			Toast.makeText(this, getResources().getString(R.string.share_no_data), Toast.LENGTH_SHORT).show();
-			super.onCreate(savedInstanceState);
-			finish();
-			return;
-		}
-		getIntent().putExtra(DataExchangeActivity.EXTRA_ALL_GAMES, toShare);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.data_exchange_filewrite);
 
@@ -109,10 +102,31 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
 	@Override
 	public void onStart() {
 		super.onStart();
+		calculateAllAvailableGames();
 		if (mStartImmediately) {
 			mStartImmediately = false;
 			startShareOrSave(true);
 		}
+	}
+	
+	private void calculateAllAvailableGames() {
+       new GameStorageHelper.RequestStoredGamesCountTask(getContentResolver(), new GameStorageHelper.RequestStoredGamesCountTask.Callback() {
+            
+            @Override
+            public void receiveStoredGamesCount(Integer[] gameKeys, Integer[] gamesCount) {
+                // filter out gamekeys that have save games
+                List<Integer> newAllGames = new ArrayList<Integer>(gameKeys.length);
+                for (int i = 0; i < gameKeys.length; i++) {
+                    if (gamesCount[i] > 0) {
+                        newAllGames.add(gameKeys[i]);
+                    }
+                }
+                if (mTempGamesDataForGames != null) {
+                    mTempGamesDataForGames.retainAll(newAllGames); // so that mTempGamesDataForGames is a subset of newAllGames
+                }
+                mManager.setAllGames(newAllGames);
+            }
+        }).execute(GameKey.toIntegerArray(GameKey.ALL_GAMES));
 	}
 	
 	@Override
@@ -138,7 +152,7 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
     	if (successfullyExchanged == 0) {
     		onFailure();
     	} else {
-    		shareGamesData();
+    		startShareOrSave(mIsShareConnection);
     	}
     	try {
 			mService.close();
@@ -204,7 +218,11 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
     
 	private int findNextFreeFileNumber(File inDir) {
     	TreeSet<Integer> taken = new TreeSet<Integer>();
-    	for (File f : inDir.listFiles()) {
+    	File[] filesInDir = inDir.listFiles();
+    	if (filesInDir == null) {
+    	    return 404;
+    	}
+    	for (File f : filesInDir) {
     		String name = f.getName();
     		if (name.startsWith(SAVE_GAME_PREFIX) && name.length() > SAVE_GAME_PREFIX.length() + EXTENSION.length()) {
     			String rest = name.substring(SAVE_GAME_PREFIX.length(), name.length() - EXTENSION.length());
@@ -219,10 +237,17 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
     			}
     		}
     	}
-    	Integer currNumber = Integer.valueOf(0);
+    	final Integer firstNumber = Integer.valueOf(0);
+    	Integer currNumber = null;
+    	
+    	/*// Use to take the lowest free number >= firstNumber
+    	 * currNumber = firstNumber;
     	while (taken.contains(currNumber)) {
     		currNumber = currNumber + 1; // cannot use TreeSet methods like higher since I support version 8
-    	}
+    	}*/
+    	// Use to take a number by one higher than the highest number
+    	currNumber = taken.isEmpty() ? firstNumber : taken.last();
+    	currNumber = currNumber == null ? firstNumber : (currNumber + 1);
     	return currNumber.intValue();
     }
     
@@ -257,6 +282,7 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
     	mSaveToSD.setEnabled(false);  
 		int[] shareFor = mManager.getSelectedGames();
 		if (requiresData(shareFor)) {
+		    mIsShareConnection = share;
 			initData(shareFor);
 		} else {
 			if (share) {

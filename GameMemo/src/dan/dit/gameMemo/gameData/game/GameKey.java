@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -94,28 +93,24 @@ public final class GameKey {
 		return array;
 	}
 	
+    public static Integer[] toIntegerArray(int[] data) {
+        if (data == null) {
+            return null;
+        }
+        Integer[] array = new Integer[data.length];
+        int index = 0;
+        for (int m : data) {
+            array[index++] = m;
+        }
+        return array;
+    }
+	
 	public static Set<Player> getAllPlayers() {
 		Set<Player> allPlayers = new TreeSet<Player>();
 		for (int key : ALL_GAMES) {
 			allPlayers.addAll(getPool(key).getAll());
 		}
 		return allPlayers;
-	}
-	
-	public static int[] calculateUsedGames(ContentResolver resolver) {
-		// all games were something is stored for
-		LinkedList<Integer> used = new LinkedList<Integer>();
-		for (int key : ALL_GAMES) {
-			if (GameStorageHelper.getStoredGamesCount(resolver, key) > 0) {
-				used.add(key);
-			}
-		}
-		int[] data = new int[used.size()];
-		int index = 0;
-		for (int key : used) {
-			data[index++] = key;
-		}
-		return data;
 	}
 	
 	public static GameStatisticBuilder getStatisticBuilder(int gameKey, List<Player> players) {
@@ -419,4 +414,5 @@ public final class GameKey {
         }
         return false;
     }
+
 }

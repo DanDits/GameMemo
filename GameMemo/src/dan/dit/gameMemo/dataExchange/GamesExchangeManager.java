@@ -32,9 +32,8 @@ public class GamesExchangeManager {
 	private SparseArray<Collection<Long>> mGameOffers;
 	public GamesExchangeManager(FragmentManager fragManager, int[] gamesSuggestions, int[] allGames) {
 		mDataExchangers = new LinkedList<GameDataExchanger>(); 
-		mAllGames = (allGames != null && allGames.length > 0) ? GameKey.toList(allGames) : GameKey.toList(GameKey.ALL_GAMES);
-		GameKey.sortByName(mAllGames);
-		mGameOffers = new SparseArray<Collection<Long>>(1);
+		setAllGames(allGames == null ? null : GameKey.toList(allGames));
+		mGameOffers = new SparseArray<Collection<Long>>(5);
 		setSelectedGames(gamesSuggestions);
 		initFragManager(fragManager);
 	}
@@ -76,6 +75,9 @@ public class GamesExchangeManager {
 	}
 	
 	public int[] getSelectedGames() {
+	    if (mSelectedGames == null) {
+	        return null;
+	    }
 		int[] keys = new int[mSelectedGames.size()];
 		int index = 0;
 		for (int key : mSelectedGames) {
@@ -160,6 +162,15 @@ public class GamesExchangeManager {
 
 	public List<Integer> getAllGames() {
 		return mAllGames;
+	}
+	
+	public void setAllGames(List<Integer> allGames) {
+        mAllGames = (allGames != null && allGames.size() > 0) ? allGames : GameKey.toList(GameKey.ALL_GAMES);
+        GameKey.sortByName(mAllGames);
+        setSelectedGames(getSelectedGames());
+        if (mGamesOverviewDialog != null) {
+            mGamesOverviewDialog.notifyDataSetChanged();
+        }
 	}
 	
 }

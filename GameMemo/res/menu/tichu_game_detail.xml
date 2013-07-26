@@ -4,7 +4,7 @@
     <item 
         android:id="@+id/info"
         android:showAsAction="ifRoom"
-        android:icon="@drawable/ic_menu_info_details"
+        android:icon="@drawable/ic_menu_info"
         android:title="@string/menu_game_info">
        </item>  
 </menu>

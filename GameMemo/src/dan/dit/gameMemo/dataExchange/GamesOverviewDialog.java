@@ -39,7 +39,7 @@ public class GamesOverviewDialog extends DialogFragment {
 	private ListView mListView;
 	private GamesAdapter mGamesAdapter;
 	private List<Integer> mCurrentlySelectedGames;
-	private List<Integer> mAllGamesList;
+	private List<Integer> mAllGamesList; // pointer to all games list of corresponding GamesExchangeManager
 	
 	/**
 	 * Required for the GamesOverviewDialog.
@@ -125,6 +125,7 @@ public class GamesOverviewDialog extends DialogFragment {
 	   }
 	   
 	public void notifyDataSetChanged() {
+        mCurrentlySelectedGames.retainAll(mAllGamesList); // so currently selected games are a subset of all games
 		mGamesAdapter.notifyDataSetChanged();
 	}
 	

@@ -64,42 +64,55 @@ public final class GameStorageHelper {
 		return GameKey.getStorageAvailableColumns(gameKey);
 	}
 	
-	public static class RequestStoredGamesCountTask extends AsyncTask<Integer, Void, Integer> {
+	public static class RequestStoredGamesCountTask extends AsyncTask<Integer, Void, Integer[]> {
 	    private ContentResolver mResolver;
 	    private RequestStoredGamesCountTask.Callback mCallback;
-	    private int mGameKey;
+	    private Integer[] mGameKey;
 	    public interface Callback {
-	        void receiveStoredGamesCount(int gameKey, int gamesCount);
+	        /**
+	         * Returns the games count for all given game keys. Both arrays
+	         * are of equal length which is equal to the amount of game keys given to the task's execute
+	         * method in the same order.
+	         * @param gameKeys The game keys in the same order as given to the task by execute().
+	         * @param gamesCount The amount of games stored for each key.
+	         */
+	        void receiveStoredGamesCount(Integer[] gameKeys, Integer[] gamesCount);
 	    }
 	    public RequestStoredGamesCountTask(ContentResolver resolver, RequestStoredGamesCountTask.Callback callback) {
 	        mResolver = resolver;
 	        mCallback = callback;
 	    }
-	    protected Integer doInBackground(Integer... gameKey) {
-	        mGameKey = gameKey[0];
+	    @Override
+	    protected Integer[] doInBackground(Integer... gameKey) {
+	        mGameKey = gameKey;
 	        return getStoredGamesCount(mResolver, mGameKey);
 	    }
 	    
 	    /** The system calls this to perform work in the UI thread and delivers
 	      * the result from doInBackground() */
-	    protected void onPostExecute(Integer result) {
+	    @Override
+	    protected void onPostExecute(Integer[] result) {
 	        mCallback.receiveStoredGamesCount(mGameKey, result);
 	    }
 
 	}
 	
-	public static int getStoredGamesCount(ContentResolver resolver, int gameKey) {
+	private static Integer[] getStoredGamesCount(ContentResolver resolver, Integer... gameKey) {
         Cursor data = null;
-        int count = 0;
-        try {
-            data = resolver.query(getUriAllItems(gameKey), new String[] {COLUMN_ID}, null, null, null);
-            if (data != null) {
-                count = data.getCount();
+        Integer[] count = new Integer[gameKey.length];
+        int index = 0;
+        for (int key : gameKey) {
+            try {
+                data = resolver.query(getUriAllItems(key), new String[] {COLUMN_ID}, null, null, null);
+                if (data != null) {
+                    count[index] = Integer.valueOf(data.getCount());
+                }
+            } finally {
+                if (data != null) {
+                    data.close();
+                }
             }
-        } finally {
-            if (data != null) {
-                data.close();
-            }
+            index++;
         }
         return count;
 	}

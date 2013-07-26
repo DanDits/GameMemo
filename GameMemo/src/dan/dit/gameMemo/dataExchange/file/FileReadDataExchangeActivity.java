@@ -50,7 +50,7 @@ public class FileReadDataExchangeActivity extends DataExchangeActivity {
 					}
 				} else if (uri.getScheme().equals("content")) {
 					try {
-						mDataStream = getContentResolver().openInputStream(getIntent().getData());
+						mDataStream = getContentResolver().openInputStream(uri);
 					} catch (FileNotFoundException fnf) {
 						//bad luck
 					}

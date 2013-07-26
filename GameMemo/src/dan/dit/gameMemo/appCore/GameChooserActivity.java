@@ -110,9 +110,11 @@ public class GameChooserActivity extends FragmentActivity implements
 	    new GameStorageHelper.RequestStoredGamesCountTask(getContentResolver(), new GameStorageHelper.RequestStoredGamesCountTask.Callback() {
             
             @Override
-            public void receiveStoredGamesCount(int gameKey, int gamesCount) {
-                setDescription(gameKey, getResources().getString(R.string.game_chooser_game_descr,
-                        GameKey.getGameName(gameKey), gamesCount));
+            public void receiveStoredGamesCount(Integer[] gameKeys, Integer[] gamesCount) {
+                for (int i = 0; i < gameKeys.length; i++) {
+                    setDescription(gameKeys[i], getResources().getString(R.string.game_chooser_game_descr,
+                        GameKey.getGameName(gameKeys[i]), gamesCount[i]));
+                }
             }
         }).execute(gameKey);
 
