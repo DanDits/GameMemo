@@ -91,7 +91,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	private static final String STORAGE_CHOOSING_COLOR_CONTROLLER_INDEX = "STORAGE_CHOOSING_COLOR_CONTROLLER_INDEX"; //int ignored if no color chooser dialog open, index of controller to chose color for
 	private static final DummyPool DUMMY_PLAYERS = new DummyPool();
 	private static final long SHUFFLE_PERIOD = 200; // in ms
-	protected static final long SHUFFLE_DURATION = 1500; // in ms
+	protected static final long SHUFFLE_DURATION = 1000; // in ms
 	
 	private int mGameKey;
 	private boolean mSuggestUnfinished;

@@ -42,6 +42,7 @@ public class DoppelkopfGame extends Game {
 	protected int mRoundLimit;
 	protected DoppelkopfRuleSystem mRuleSystem;
 	protected int mDutySoliCountPerPlayer;
+	protected boolean mIsLocked;
 	
 	public DoppelkopfGame(String ruleSysName, int roundLimit, int dutySoliCountPerPlayer) {
 		mRuleSystem = DoppelkopfRuleSystem.getInstanceByName(ruleSysName);
@@ -119,9 +120,27 @@ public class DoppelkopfGame extends Game {
 		return mRoundLimit != NO_LIMIT;
 	}
 
+	/**
+	 * Returns <code>true</code> if the game is locked. A locked game is always considered
+	 * to be finished, even though the RuleSystem might think differently. An unlocked game
+	 * gets no special treatment.
+	 * @return If the game is locked.
+	 */
+	public boolean isLocked() {
+	    return mIsLocked;
+	}
+	
+	public boolean setLocked(boolean locked) {
+	    if (mRuleSystem.isLockStateAcceptable(this, locked)) {
+	        mIsLocked = locked;
+	        return true;
+	    }
+	    return false;
+	}
+	
 	@Override
 	public boolean isFinished() {
-		return mRuleSystem.isFinished(this, rounds.size());
+		return mIsLocked || mRuleSystem.isFinished(this, rounds.size());
 	}
 
 	@Override
@@ -165,15 +184,25 @@ public class DoppelkopfGame extends Game {
 		cmp.appendData(mRuleSystem.getName());
 		cmp.appendData(mRoundLimit);
 		cmp.appendData(mDutySoliCountPerPlayer);
+		cmp.appendData(mIsLocked ? 1 : 0);
 		return cmp.compact();
 	}
-	
+
+    public static DoppelkopfRuleSystem extractRuleSystemOfMetadata(
+            Compacter metaData) {
+        return DoppelkopfRuleSystem.getInstanceByName(metaData.getData(0));
+    }
+    
 	public static int extractRoundLimitOfMetadata(Compacter metaData) throws CompactedDataCorruptException {
 		return metaData.getInt(1);
 	}
 	
 	public static int extractDutySoliOfMetadata(Compacter metaData) throws CompactedDataCorruptException {
 		return metaData.getInt(2);
+	}
+	
+	public static boolean extractIsLockedOfMetadata(Compacter metaData)  throws CompactedDataCorruptException {
+	    return metaData.getSize() >= 4 ? (metaData.getInt(3) == 1) : false;
 	}
 
 	@Override
@@ -408,6 +437,5 @@ public class DoppelkopfGame extends Game {
 			}
 		}
 		return count;
-	}
-	
+	}	
 }

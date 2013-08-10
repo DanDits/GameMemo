@@ -34,9 +34,9 @@ public class GameDetailActivity extends FragmentActivity implements
 		DetailViewCallback, ChoosePlayerDialogListener {
 
 	private static final String EXTRA_PARAMETER_BUNDLE = "dan.dit.gameMemo.detail_parameter_bundle";
-	private int mGameKey;
+	protected int mGameKey;
 	private ActionBar mBar;
-	private GameDetailFragment mDetails;
+	protected GameDetailFragment mDetails;
 	
 	/**
 	 * Creates an intent for a GameDetailActivity belonging to the given gamekey.

@@ -204,4 +204,6 @@
 	<string name="doppelkopf_rule_system_info">Regelwerk: %1$s</string>
 	<string name="doppelkopf_rule_system_descr_tournament1">Orientiert sich an den offiziellen Tunierregeln.</string>
 	<string name="doppelkopf_rule_system_descr_ka1">Modifiziert tournament1: Re/Contra +1, Pflichtsoli am Ende, endet nach x Runden statt Spielen.</string>
+	<string name="lock_game">Spiel sperren</string>
+	<string name="unlock_game">Spiel entsperren</string>
 </resources>

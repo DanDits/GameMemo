@@ -119,8 +119,8 @@ public class DoppelkopfRound extends GameRound {
 	
 	@Override
 	public String toString() {
-		return "Re result=" + mRoundResult.toString() + ", ReBid= " + mReBid.toString() + ", ContraBid= " + mContraBid.toString()
-				+ "\nreScore=" + mRuleSys.getTotalScore(true, this);
+		return "DoppelkopfRound " + mRoundStyle.toString() + " , re result=" + mRoundResult.toString() + ", ReBid= " + mReBid.toString() + ", ContraBid= " + mContraBid.toString()
+				+ "\nreScore=" + mRuleSys.getTotalScore(true, this) + " extra score " + mExtraScore.toString();
 	}
 
 	public DoppelkopfRoundStyle getRoundStyle() {

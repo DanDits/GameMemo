@@ -510,7 +510,7 @@ public final class BluetoothExchangeService  implements ExchangeService {
 	/**
 	 * Starts a timeout timer, cancelling the current one. If there is no in
 	 * or output activity for the given duration, the connection is terminated.
-	 * @param timeoutDuration The maximum duration of silence between the devices that is accepted.
+	 * @param timeoutDuration The maximum duration of silence between the devices that is accepted .
 	 */
 	public void startTimeoutTimer(long timeoutDuration) {
 		mIsTimedOut = false;
@@ -530,7 +530,7 @@ public final class BluetoothExchangeService  implements ExchangeService {
 				}
 			}
 			
-		}, 0, timeoutDuration / 2);
+		}, 0, ((timeoutDuration % 2 == 1) ? (timeoutDuration + 1) : timeoutDuration) / 2);
 	}
 	
 	/**

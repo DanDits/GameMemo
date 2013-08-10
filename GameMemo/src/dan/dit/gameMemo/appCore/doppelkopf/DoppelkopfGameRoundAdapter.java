@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.GameRound;
@@ -63,8 +64,15 @@ public class DoppelkopfGameRoundAdapter extends ArrayAdapter<GameRound> {
 		playerInfos[2] = (TextView) row.findViewById(R.id.round_player3);
 		playerInfos[3] = (TextView) row.findViewById(R.id.round_player4);
 		playerInfos[4] = (TextView) row.findViewById(R.id.round_player5);
+		ImageView[] playerImages = new ImageView[DoppelkopfGame.MAX_PLAYERS];
+		playerImages[0] = (ImageView) row.findViewById(R.id.round_player1_image);
+		playerImages[1] = (ImageView) row.findViewById(R.id.round_player2_image);
+		playerImages[2] = (ImageView) row.findViewById(R.id.round_player3_image);
+		playerImages[3] = (ImageView) row.findViewById(R.id.round_player4_image);
+		playerImages[4] = (ImageView) row.findViewById(R.id.round_player5_image);
 		if (game.getPlayerCount() == DoppelkopfGame.MAX_PLAYERS) {
-			playerInfos[DoppelkopfGame.MAX_PLAYERS - 1].setVisibility(View.VISIBLE);
+            playerInfos[DoppelkopfGame.MAX_PLAYERS - 1].setVisibility(View.VISIBLE);
+            playerImages[DoppelkopfGame.MAX_PLAYERS - 1].setVisibility(View.VISIBLE);
 		}
 		DoppelkopfRound round = ((DoppelkopfRound) getItem(position));
 		int reScore = game.getRuleSystem().getTotalScore(true, round);
@@ -79,9 +87,9 @@ public class DoppelkopfGameRoundAdapter extends ArrayAdapter<GameRound> {
 				playerInfos[i].setTextColor(COLOR_ROUND_LOST);				
 			}
 			if (round.isSolo() && round.isPlayerRe(i)) {
-				playerInfos[i].setCompoundDrawablesWithIntrinsicBounds(reScoredMore ? ICON_SOLO_WON : ICON_SOLO_LOST, 0, 0, 0);
+			    playerImages[i].setImageResource(reScoredMore ? ICON_SOLO_WON : ICON_SOLO_LOST);
 			} else {
-				playerInfos[i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);				
+				playerImages[i].setImageResource(0);	
 			}
 			if (round.isPlayerRe(i)) {
 				playerInfos[i].setPaintFlags(playerInfos[i].getPaintFlags() | Paint.FAKE_BOLD_TEXT_FLAG);

@@ -34,5 +34,7 @@ public class CompactedDataCorruptException extends Exception {
 		return setCorruptData(dataCompressor.compact());
 	}
 	
-	
+	public String toString() {
+	    return super.getMessage() + " corrupt: " + corruptData;
+	}
 }

@@ -96,7 +96,7 @@ public class DoppelkopfRe extends DoppelkopfRoundStyle {
 			typeString = "Hochzeit";
 			break;
 		}
-		return "GameStyle: " + typeString;
+		return "GameStyle: " + typeString + " by " + getFirstIndex() + " and " + getSecondIndex();
 	}
 
 	@Override

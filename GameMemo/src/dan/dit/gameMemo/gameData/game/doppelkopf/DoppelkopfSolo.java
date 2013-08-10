@@ -27,7 +27,7 @@ public class DoppelkopfSolo extends DoppelkopfRoundStyle {
 	
 	@Override
 	public boolean isValidType(int type) {
-		return type >= FLEISCHLOSER && type <= STILLE_HOCHZEIT;
+		return type >= FLEISCHLOSER && type <= FARB;
 	}
 	
 	public boolean isValidDutySolo() {
@@ -47,11 +47,11 @@ public class DoppelkopfSolo extends DoppelkopfRoundStyle {
 	public void unloadData(Compacter compactedData)
 			throws CompactedDataCorruptException {
 		if (compactedData.getSize() < 3) {
-			throw new CompactedDataCorruptException().setCorruptData(compactedData);
+			throw new CompactedDataCorruptException("Too little data to build DoppelkopfSolo.").setCorruptData(compactedData);
 		}
 		mType = compactedData.getInt(1);
 		if (!isValidType(mType)) {
-			throw new CompactedDataCorruptException().setCorruptData(compactedData);
+			throw new CompactedDataCorruptException("Invalid solo type " + mType).setCorruptData(compactedData);
 		}
 		setFirstReIndex(compactedData.getInt(2));
 	}
@@ -87,7 +87,7 @@ public class DoppelkopfSolo extends DoppelkopfRoundStyle {
 			break;
 			
 		}
-		return "GameStyle: " + typeString;
+		return "GameStyle: " + typeString + " by " + getFirstIndex();
 	}
 
 	@Override

@@ -43,7 +43,7 @@ public class DoppelkopfRuleSystem {
 		ALL.put(name, this);
 	}
 	
-	public int getScoreMultplier() { // applies to getTotalScore and getBidAndResultScore
+	public int getScoreMultplier() { // applies to getTotalScore and getBidAndResultScore, unequal to zero
 		return 1;
 	}
 	
@@ -55,7 +55,7 @@ public class DoppelkopfRuleSystem {
 		return new DoppelkopfRoundResult(compactedData);
 	}
 	
-	private int getWinner(DoppelkopfRound round) {
+	protected int getWinner(DoppelkopfRound round) {
 		// 0 = no winner, 1 = re won, 2 = contra won
 		DoppelkopfRoundResult res = round.getRoundResult();
 		DoppelkopfBid reBid = round.getReBid();
@@ -109,12 +109,13 @@ public class DoppelkopfRuleSystem {
 		int sum = (hasWinner ? pointsByBid : 0) 
 				+ getPointsForOverwin(reWon, res) 
 				+ ((hasWinner) ? getPointsForWinner(reWon) : 0)
+				+ ((hasWinner) ? getPointsForOverwinningEnemyBid(reWon, round) : 0)
 				+ (!reWon ? getScoreForGegenDieAlten(round.getRoundStyle()) : 0);
 		int reSum = reWon ? sum : -sum;
 		return (re ? reSum : -reSum) * getScoreMultplier();
 	}
 	
-	private int getPointsForOverwin(boolean re, DoppelkopfRoundResult res) {
+	protected int getPointsForOverwin(boolean re, DoppelkopfRoundResult res) {
 		int overwin = 0;
 		if (re) {
 			overwin = (res.getReResult() - DoppelkopfRoundResult.R_120) - 1;
@@ -122,6 +123,38 @@ public class DoppelkopfRuleSystem {
 			overwin = (res.getContraResult() - DoppelkopfRoundResult.R_120) - 1;			
 		}
 		return overwin < 0 ? 0 : overwin;
+	}
+	
+	protected int getPointsForOverwinningEnemyBid(boolean reWon, DoppelkopfRound round) {
+	    // get points for getting a higher round result than required because of the enemy bid
+	    DoppelkopfBid enemyBid = reWon ? round.getContraBid() : round.getReBid();
+	    int ownResult = reWon ? round.getRoundResult().getReResult() : round.getRoundResult().getContraResult();
+	    switch (enemyBid.getType()) {
+	    case DoppelkopfBid.OHNE_90:
+	        return ownResult == DoppelkopfRoundResult.R_120 ? 1 :
+	            ownResult > DoppelkopfRoundResult.R_120 ? ownResult - DoppelkopfRoundResult.R_120 :
+	                0;
+	    case DoppelkopfBid.OHNE_60:
+           return ownResult == DoppelkopfRoundResult.R_90_119 ? 1 :
+                  ownResult == DoppelkopfRoundResult.R_120 ? 2 :
+                ownResult > DoppelkopfRoundResult.R_120 ? 1 + ownResult - DoppelkopfRoundResult.R_120 :
+                    0;
+	    case DoppelkopfBid.OHNE_30:
+           return ownResult == DoppelkopfRoundResult.R_60_89 ? 1 :
+                ownResult == DoppelkopfRoundResult.R_90_119 ? 2 :
+                ownResult == DoppelkopfRoundResult.R_120 ? 3 :
+                ownResult > DoppelkopfRoundResult.R_120 ? 2 + ownResult - DoppelkopfRoundResult.R_120 :
+                    0;
+	    case DoppelkopfBid.SCHWARZ:
+           return ownResult == DoppelkopfRoundResult.R_30_59 ? 1 :
+                ownResult == DoppelkopfRoundResult.R_60_89 ? 2 :
+                ownResult == DoppelkopfRoundResult.R_90_119 ? 3 :
+                ownResult == DoppelkopfRoundResult.R_120 ? 4 :
+                ownResult > DoppelkopfRoundResult.R_120 ? 3 + ownResult - DoppelkopfRoundResult.R_120 :
+                    0;
+	    default:
+	        return 0;
+	    }
 	}
 	
 	public int getPointsForWinner(boolean re) {
@@ -173,13 +206,28 @@ public class DoppelkopfRuleSystem {
 	
 	public boolean isFinished(DoppelkopfGame doppelkopfGame, int round) {
 		// finished when all rounds are played and all soli done
-		boolean limitCond = (doppelkopfGame.getLimit() == DoppelkopfGame.NO_LIMIT) ? 
+		boolean limitCond = (!doppelkopfGame.hasLimit()) ? 
 					DoppelkopfGame.IS_FINISHED_WITHOUT_LIMIT : 
 					(doppelkopfGame.getRoundCount() >= doppelkopfGame.getLimit() * doppelkopfGame.getPlayerCount());
-		boolean soliCond = doppelkopfGame.getRemainingSoli(round) == 0;
+		boolean soliCond = isSoliConditionFulfilled(doppelkopfGame, round);
 		return limitCond && soliCond;
 	}
 	
+	protected boolean isSoliConditionFulfilled(DoppelkopfGame game, int round) {
+	    return game.getRemainingSoli(round) == 0;
+	}
+
+    public boolean isLockStateAcceptable(DoppelkopfGame game,
+            boolean state_locked) {
+        // If the lock state is acceptable then the game can be considered finished according to the rule system even though
+        // isFinished() might think differently
+        if (!state_locked) {
+            return true; // always allowed to unlock a game since these games get no special treatment
+        } else {
+            return !game.hasLimit() && isSoliConditionFulfilled(game, game.getRoundCount());
+        }
+    }
+
 	public boolean enforcesDutySolo(DoppelkopfGame doppelkopfGame, int round) {
 		if (doppelkopfGame.hasLimit() && doppelkopfGame.getDutySoliCountPerPlayer() > 0) {
 			if (!isFinished(doppelkopfGame, round)) {

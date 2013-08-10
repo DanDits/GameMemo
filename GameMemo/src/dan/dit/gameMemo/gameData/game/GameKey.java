@@ -18,6 +18,7 @@ import android.view.WindowManager;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameDetailActivity;
 import dan.dit.gameMemo.appCore.GameDetailFragment;
+import dan.dit.gameMemo.appCore.doppelkopf.DoppelkopfGameDetailActivity;
 import dan.dit.gameMemo.appCore.doppelkopf.DoppelkopfGameDetailFragment;
 import dan.dit.gameMemo.appCore.doppelkopf.DoppelkopfGamesActivity;
 import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment;
@@ -314,6 +315,8 @@ public final class GameKey {
 
 	public static Class<?> getGameDetailActivity(int gameKey) {
 		switch (gameKey) {
+		case DOPPELKOPF:
+		    return DoppelkopfGameDetailActivity.class;
 		default:
 			return GameDetailActivity.class;			
 		}

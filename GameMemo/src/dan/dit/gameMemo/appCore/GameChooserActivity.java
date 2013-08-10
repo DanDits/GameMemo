@@ -23,7 +23,6 @@ import dan.dit.gameMemo.gameData.game.Game.PlayerRenamedListener;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.player.RenamePlayerDialogFragment;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.util.ActivityUtil;
 
 /**
  * Activity to choose a game from a list of available games. As new games get
@@ -69,7 +68,6 @@ public class GameChooserActivity extends FragmentActivity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		ActivityUtil.hideActionBar(this, true);
 		setContentView(R.layout.game_chooser);
 		mTichu = (Button) findViewById(R.id.tichu);
 		mDoppelkopf = (Button) findViewById(R.id.doppelkopf);

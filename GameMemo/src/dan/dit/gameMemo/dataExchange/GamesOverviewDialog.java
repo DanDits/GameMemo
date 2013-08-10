@@ -15,6 +15,7 @@ import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -79,7 +80,8 @@ public class GamesOverviewDialog extends DialogFragment {
 			}
 	    	   
 	       });
-
+	       this.getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+	       
 	        // Use the Builder class for convenient dialog construction
 	        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 	        builder.setTitle(R.string.games_selection_title)
@@ -101,6 +103,14 @@ public class GamesOverviewDialog extends DialogFragment {
 	        return builder.create();
 	    }
 	 
+	 @Override
+	 public void onStart() {
+	     super.onStart();
+	     Dialog dialog = getDialog();
+	     if (dialog != null) {
+	         dialog.setCanceledOnTouchOutside(true);
+	     }
+	 }
 	 
 	 private void onConfirmation() {
 		 int[] selectedGames = new int[mCurrentlySelectedGames.size()];

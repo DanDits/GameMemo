@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -88,6 +89,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 	private TextView mStatusText;
 	private ViewSwitcher mSwitcher;
 	private ImageButton mMainAction;
+	private MenuItem mLockItem;
 	private DetailViewCallback mCallback;
 
 	private DoppelkopfRound mCurrRound;
@@ -351,7 +353,9 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.doppelkopf_game_detail, menu);
 		menu.findItem(R.id.game_detail_option_show_delta).setChecked(getPreferencesShowDelta());
+		mLockItem = menu.findItem(R.id.lock_game);
 	}
+
 	
 	// Reaction to the menu selection
 	@Override
@@ -365,6 +369,9 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		case R.id.game_detail_action_rematch:
 			saveCloseAndRematch();
 			return true;
+		case R.id.lock_game:
+		    toggleLocked();
+		    return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -380,7 +387,23 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		editor.putBoolean(PREFERENCES_SHOW_DELTA, show);
 		ActivityUtil.commitOrApplySharedPreferencesEditor(editor);
 	}
-	
+	   
+    private void applyLock() {
+        if (mGame.isLocked()) {
+            mLockItem.setVisible(true);
+            mLockItem.setTitle(R.string.unlock_game);
+            mLockItem.setIcon(R.drawable.ic_menu_locked);
+            mLockItem.setEnabled(mGame.getRuleSystem().isLockStateAcceptable(mGame, false));
+        } else if (mGame.getRuleSystem().isLockStateAcceptable(mGame, true)) {
+            mLockItem.setVisible(true);
+            mLockItem.setEnabled(true);
+            mLockItem.setTitle(R.string.lock_game);
+            mLockItem.setIcon(R.drawable.ic_menu_unlocked); 
+        } else {
+            mLockItem.setVisible(false);
+        }
+    }
+    
 	private void loadOrStartGame(Bundle savedInstanceState) {
 		// Check from the saved Instance
 		long gameId = (savedInstanceState == null) ? Game.NO_ID : savedInstanceState
@@ -425,6 +448,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 			mPlayerInfo[4].setVisibility(View.VISIBLE);
 		}
 		applyGiverAndInactive();
+        applyLock();
 	}
 	
 	@Override
@@ -468,7 +492,19 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 	}
 	
 	protected boolean isImmutable() {
-		return LOADED_FINISHED_GAMES_ARE_IMMUTABLE && mIsLoadedFinishedGame;
+		return (mGame != null && mGame.isLocked()) || (LOADED_FINISHED_GAMES_ARE_IMMUTABLE && mIsLoadedFinishedGame);
+	}
+	
+	private void toggleLocked() {
+	    mGame.setLocked(!mGame.isLocked());
+	    if (mGame.isLocked()) {
+	        deselectRound();
+	        makeUserInputAvailable(false);
+	    } else if (!mGame.isFinished()) {
+	        mIsLoadedFinishedGame = false;
+	        makeUserInputAvailable(true);
+	    }
+	    applyLock();
 	}
 	
 	private void makeUserInputAvailable(boolean available) {
@@ -512,6 +548,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		try {
 			games = DoppelkopfGame.loadGames(getActivity().getContentResolver(), GameStorageHelper.getUriWithId(GameKey.DOPPELKOPF, gameId), true);
 		} catch (CompactedDataCorruptException e) {
+		    Log.e("Doppelkopf", "Compacted data corrupt: " + e.getCorruptData() + " : " + e.toString() + " : " + games);
 			games = null;
 		}
 		if (games != null && games.size() > 0) {
@@ -839,6 +876,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 			setOtherExtraScoreCount(party, 0);
 		}
 		mStateMachine.updateUI();
+		applyLock();
 	}
 
 	protected void selectRound(int index) {
@@ -918,6 +956,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 				} else if (mGame.getRound(mCurrRoundIndex).equals(mCurrRound)) {
 					mState = STATE_OLD_ROUND_SELECTED;
 				} else {
+				    Log.d("Doppelkopf", "Changed selected round: " + mGame.getRound(mCurrRoundIndex) + " to " + mCurrRound);
 					mState = STATE_OLD_ROUND_EDITED;
 				}
 			}
@@ -1048,5 +1087,9 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 			.setNeutralButton(android.R.string.ok, null).show();
 		}
 	}
+
+    public boolean hasSelectedRound() {
+        return mStateMachine == null || mStateMachine.mState != DoppelkopfGameStateMachine.STATE_DETAIL_HIDDEN;
+    }
 
 }

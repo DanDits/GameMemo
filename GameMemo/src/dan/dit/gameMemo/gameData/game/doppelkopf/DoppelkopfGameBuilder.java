@@ -3,13 +3,15 @@ package dan.dit.gameMemo.gameData.game.doppelkopf;
 import java.util.ArrayList;
 import java.util.List;
 
+import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameBuilder;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
 public class DoppelkopfGameBuilder extends GameBuilder {
-
+    private boolean mIsGameLocked;
+    
 	public DoppelkopfGameBuilder() {
 		mInst = new DoppelkopfGame();
 	}
@@ -21,7 +23,7 @@ public class DoppelkopfGameBuilder extends GameBuilder {
 		if (metaData.getSize() < 3) {
 			throw new CompactedDataCorruptException("Too little data for Doppelkopf metaData.").setCorruptData(metaData);
 		}
-		game.mRuleSystem = DoppelkopfRuleSystem.getInstanceByName(metaData.getData(0));
+		game.mRuleSystem = DoppelkopfGame.extractRuleSystemOfMetadata(metaData);
 		if (game.mRuleSystem == null) {
 			game.mRuleSystem = DoppelkopfRuleSystem.getInstanceByName(DoppelkopfRuleSystem.NAME_TOURNAMENT1);
 		}
@@ -30,6 +32,8 @@ public class DoppelkopfGameBuilder extends GameBuilder {
 		
 		int dutySoliPerPlayer = DoppelkopfGame.extractDutySoliOfMetadata(metaData);
 		game.mDutySoliCountPerPlayer = dutySoliPerPlayer < 0 ? 0 : dutySoliPerPlayer;
+		
+		mIsGameLocked = DoppelkopfGame.extractIsLockedOfMetadata(metaData);
 		return this;
 	}
 
@@ -63,9 +67,10 @@ public class DoppelkopfGameBuilder extends GameBuilder {
 	public GameBuilder loadRounds(Compacter roundData)
 			throws CompactedDataCorruptException {
 		// parsing round data
+	    DoppelkopfRuleSystem ruleSys = ((DoppelkopfGame) mInst).getRuleSystem();
 		for (String round : roundData) {
 			DoppelkopfRound currDKRound = null;
-			currDKRound = new DoppelkopfRound(((DoppelkopfGame) mInst).getRuleSystem(), new Compacter(round));
+			currDKRound = new DoppelkopfRound(ruleSys, new Compacter(round));
 			if (currDKRound != null) {
 				if (mInst.isFinished()) {
 					break;
@@ -74,6 +79,13 @@ public class DoppelkopfGameBuilder extends GameBuilder {
 			}
 		}
 		return this;
+	}
+	
+	@Override
+	public Game build() {
+	    DoppelkopfGame game = (DoppelkopfGame) mInst;
+	    game.mIsLocked = mIsGameLocked;
+	    return mInst;
 	}
 
 }

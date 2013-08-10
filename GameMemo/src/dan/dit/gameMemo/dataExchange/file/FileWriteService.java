@@ -78,7 +78,9 @@ public class FileWriteService implements ExchangeService {
 		String header = buildHeader(connectionId, messageId);
 		try {
 			mFileWriter.write(header);
-			mFileWriter.write(message);
+			if (message != null) {
+			    mFileWriter.write(message);
+			}
 			mFileWriter.flush();
 		} catch (IOException e) {
         	try {

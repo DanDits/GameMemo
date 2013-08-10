@@ -211,5 +211,11 @@ public class DoppelkopfExtraScore implements Compactable {
 		mCharlyCountRe = compactedData.getInt(6);
 		mCharlyCountContra = compactedData.getInt(7);
 	}
+	
+	@Override
+	public String toString() {
+	    return "Extras(" + mExtraRe + "," + mExtraContra + "," + mDoppelkopfCountRe + "," + mDoppelkopfCountContra 
+	            + "," + mFoxCountRe + "," + mFoxCountContra + "," + mCharlyCountRe + "," + mCharlyCountContra;
+	}
 
 }

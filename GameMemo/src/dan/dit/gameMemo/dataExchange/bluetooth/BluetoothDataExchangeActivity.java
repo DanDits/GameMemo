@@ -224,15 +224,19 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 	protected void setConnectionStatusText(int status) {
 		switch (status) {
 		case BluetoothExchangeService.STATE_NONE:
+		    mConnectionStatusText.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 			mConnectionStatusText.setText(getResources().getString(R.string.data_exchange_connection_status_none));
 			break;
 		case BluetoothExchangeService.STATE_CONNECTING:
+            mConnectionStatusText.setCompoundDrawablesWithIntrinsicBounds(R.drawable.bluetooth_connected, 0, 0, 0);
 			mConnectionStatusText.setText(getResources().getString(R.string.data_exchange_connection_status_connecting));
 			break;
 		case BluetoothExchangeService.STATE_CONNECTED:
+            mConnectionStatusText.setCompoundDrawablesWithIntrinsicBounds(R.drawable.bluetooth_connected, 0, 0, 0);
 			mConnectionStatusText.setText(getResources().getString(R.string.data_exchange_connection_status_connected));
 			break;
 		case BluetoothExchangeService.STATE_LISTEN:
+            mConnectionStatusText.setCompoundDrawablesWithIntrinsicBounds(R.drawable.bluetooth, 0, 0, 0);
 			mConnectionStatusText.setText(getResources().getString(R.string.data_exchange_connection_status_listen));
 			break;
 		}
@@ -361,6 +365,7 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
             // When discovery is finished, change the Activity title
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 setProgressBarIndeterminateVisibility(false);
+                setConnectionStatusText(mExchangeService.getState());
             // Bluetooth adapter changes state
             } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
             	switch (intent.getExtras().getInt(BluetoothAdapter.EXTRA_STATE)) {
@@ -379,9 +384,10 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
     };
 
 	private void doDiscovery() {
-        // Indicate scanning in the title
+        // Indicate scanning in the title and by icon
         setProgressBarIndeterminateVisibility(true);
-
+        mConnectionStatusText.setCompoundDrawablesWithIntrinsicBounds(R.drawable.bluetooth_searching, 0, 0, 0);
+        
         // If we're already discovering, stop it
         if (mBtAdapter.isDiscovering()) {
             mBtAdapter.cancelDiscovery();

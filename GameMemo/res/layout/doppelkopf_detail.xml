@@ -157,7 +157,8 @@
             <RelativeLayout
                 android:id="@+id/gameRoundDetails"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:focusableInTouchMode="true" >
 
                 <Button
                     android:id="@+id/doppelkopf_game_style"
@@ -207,7 +208,6 @@
                     android:id="@+id/main_action"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBottom="@+id/contra_bid"
                     android:layout_below="@+id/doppelkopf_game_status"
                     android:layout_centerHorizontal="true"
                     android:background="@drawable/doppelkopf_button"
@@ -226,8 +226,9 @@
                     android:id="@+id/contra_bid"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/contra_extra_fox"
                     android:layout_alignParentRight="true"
-                    android:layout_below="@+id/contra_descr"
+                    android:layout_below="@+id/bid_separator"
                     android:background="@drawable/doppelkopf_button"
                     android:text="@string/doppelkopf_bid_no_bid" />
 
@@ -235,6 +236,7 @@
                     android:id="@+id/contra_result"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignLeft="@id/contra_bid"
                     android:layout_alignParentRight="true"
                     android:layout_below="@+id/contra_bid"
                     android:background="@drawable/doppelkopf_button"
@@ -279,6 +281,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
+                    android:layout_alignRight="@+id/re_bid"
                     android:layout_below="@+id/contra_bid"
                     android:background="@drawable/doppelkopf_button"
                     android:text="@string/doppelkopf_result_120" />
@@ -308,6 +311,8 @@
                     android:layout_height="wrap_content"
                     android:layout_above="@+id/re_result"
                     android:layout_alignParentLeft="true"
+                    android:layout_alignRight="@+id/re_extra_fox"
+                    android:layout_below="@+id/bid_separator"
                     android:background="@drawable/doppelkopf_button"
                     android:text="@string/doppelkopf_bid_no_bid" />
 
@@ -333,8 +338,7 @@
                     android:id="@+id/re_result_score"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBottom="@+id/result_descr"
-                    android:layout_alignRight="@+id/re_extra_fox"
+                    android:layout_alignBottom="@+id/re_result"
                     android:layout_alignTop="@+id/re_result"
                     android:layout_toRightOf="@+id/re_result"
                     android:gravity="center_vertical|center_horizontal"
@@ -345,10 +349,9 @@
                     android:id="@+id/contra_result_score"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBottom="@+id/result_descr"
-                    android:layout_alignLeft="@+id/contra_extra_fox"
-                    android:layout_below="@+id/contra_bid"
-                    android:layout_toLeftOf="@+id/contra_bid"
+                    android:layout_alignBottom="@+id/contra_result"
+                    android:layout_alignTop="@+id/re_result"
+                    android:layout_toLeftOf="@+id/contra_result"
                     android:gravity="center_vertical|center_horizontal"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@color/green" />
@@ -357,7 +360,8 @@
                     android:id="@+id/result_descr"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/contra_bid"
+                    android:layout_alignBottom="@+id/re_bid"
+                    android:layout_below="@+id/bid_separator"
                     android:layout_centerHorizontal="true"
                     android:src="@drawable/kartenstich" />
 
@@ -373,12 +377,12 @@
                     android:id="@+id/re_result_total_score"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_above="@+id/re_bid"
+                    android:layout_above="@+id/bid_separator"
                     android:layout_alignTop="@+id/main_action"
                     android:layout_marginLeft="22dp"
-                    android:layout_toLeftOf="@+id/ImageView1"
+                    android:layout_toLeftOf="@+id/main_action"
                     android:layout_toRightOf="@+id/re_descr"
-                    android:gravity="right"
+                    android:gravity="center_vertical|center_horizontal"
                     android:paddingRight="3dp"
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textColor="@color/green_strong" />
@@ -387,14 +391,25 @@
                     android:id="@+id/contra_result_total_score"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_above="@+id/contra_bid"
+                    android:layout_above="@+id/bid_separator"
                     android:layout_below="@+id/doppelkopf_game_status"
-                    android:layout_toLeftOf="@+id/contra_bid"
-                    android:layout_toRightOf="@+id/ImageView1"
-                    android:gravity="left"
+                    android:layout_toLeftOf="@+id/contra_descr"
+                    android:layout_toRightOf="@+id/main_action"
+                    android:gravity="center_vertical|center_horizontal"
                     android:paddingLeft="3dp"
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textColor="@color/green_strong" />
+
+                <View
+                    android:id="@+id/bid_separator"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="false"
+                    android:layout_below="@id/main_action"
+                    android:layout_margin="2dp"
+                    android:background="@android:color/black" />
+
             </RelativeLayout>
         </ScrollView>
 

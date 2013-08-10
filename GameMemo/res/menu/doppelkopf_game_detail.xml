@@ -3,6 +3,12 @@
     <item android:id="@+id/game_detail_option_show_delta" android:title="@string/game_detail_option_show_delta" android:checkable="true" android:showAsAction="never"></item>
     <item android:id="@+id/game_detail_action_rematch" android:title="@string/tichu_game_state_rematch" 
         android:checkable="false" android:showAsAction="never"></item>
+   	<item
+	    android:id="@+id/lock_game"
+	    android:showAsAction="always"
+	    android:icon="@drawable/ic_menu_unlocked"
+	    android:title="@string/lock_game"
+	    android:visible="false"></item>
     <item 
         android:id="@+id/info"
         android:showAsAction="always"

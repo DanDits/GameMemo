@@ -3,7 +3,7 @@
     <item android:id="@+id/delete" android:title="@string/delete_game" android:icon="@drawable/ic_menu_delete" android:visible="false" android:showAsAction="ifRoom"></item>
 
     <item android:id="@+id/open_data_exchanger_bluetooth" 
-		 android:showAsAction="ifRoom" android:title="@string/open_data_exchanger_bluetooth" android:icon="@drawable/bluetooth"></item>
+		 android:showAsAction="ifRoom" android:title="@string/open_data_exchanger_bluetooth" android:icon="@drawable/ic_menu_synch"></item>
     <item android:id="@+id/share" 
 		 android:showAsAction="always" android:title="@string/share" android:icon="@drawable/ic_menu_share" ></item>
     <item

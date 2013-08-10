@@ -199,4 +199,6 @@
 	<string name="doppelkopf_rule_system_info">Rule system: %1$s</string>
 	<string name="doppelkopf_rule_system_descr_tournament1">Orientated at the official tournament rules.</string>
 	<string name="doppelkopf_rule_system_descr_ka1">Modified tournament1: Re/Contra +1, different duty soli enforcement.</string>
+	<string name="lock_game">Lock game</string>
+	<string name="unlock_game">Unlock game</string>
 </resources>
