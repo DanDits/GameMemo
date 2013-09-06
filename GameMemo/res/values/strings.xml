@@ -179,11 +179,11 @@
 	<string name="doppelkopf_game_style_normal">Normal</string>
 	<string name="doppelkopf_game_style_hochzeit">Wedding</string>
 	<string name="doppelkopf_game_style_armut">Poverty</string>
-	<string name="doppelkopf_game_style_fleischloser">Fleischloser</string>
-	<string name="doppelkopf_game_style_buben_solo">Buben Solo</string>
-	<string name="doppelkopf_game_style_damen_solo">Damen Solo</string>
-	<string name="doppelkopf_game_style_farb_solo">Farb Solo</string>
-	<string name="doppelkopf_game_style_stille_hochzeit">Stille Hochzeit</string>
+	<string name="doppelkopf_game_style_fleischloser">fleshless</string>
+	<string name="doppelkopf_game_style_buben_solo">Jack solo</string>
+	<string name="doppelkopf_game_style_damen_solo">Queen solo</string>
+	<string name="doppelkopf_game_style_farb_solo">color solo</string>
+	<string name="doppelkopf_game_style_stille_hochzeit">silent solo</string>
 	<string name="doppelkopf_remaining_soli_info">Duty soli %1$d/%2$d</string>	
 	<string name="doppelkopf_game_state_add_round">Add round</string>
 	<string name="doppelkopf_game_state_new_round">New round</string>
@@ -198,7 +198,7 @@
 	<string name="select_rule_system">Select rule system</string>
 	<string name="doppelkopf_rule_system_info">Rule system: %1$s</string>
 	<string name="doppelkopf_rule_system_descr_tournament1">Orientated at the official tournament rules.</string>
-	<string name="doppelkopf_rule_system_descr_ka1">Modified tournament1: Re/Contra +1, different duty soli enforcement.</string>
+	<string name="doppelkopf_rule_system_descr_ka1">Modified tournament1: Re/Contra +1, duty soli after rounds, ends after x rounds not matches</string>
 	<string name="lock_game">Lock game</string>
 	<string name="unlock_game">Unlock game</string>
 </resources>

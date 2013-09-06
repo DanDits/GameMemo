@@ -261,6 +261,7 @@
                     android:layout_alignTop="@+id/re_extra_charly"
                     android:layout_toRightOf="@+id/re_extra_charly"
                     android:ems="10"
+                    android:gravity="center_vertical|center_horizontal"
                     android:inputType="numberSigned"
                     android:textColor="@color/green" />
 
@@ -273,6 +274,7 @@
                     android:layout_alignTop="@+id/contra_extra_charly"
                     android:layout_toLeftOf="@+id/contra_extra_charly"
                     android:ems="10"
+                    android:gravity="center_vertical|center_horizontal"
                     android:inputType="numberSigned"
                     android:textColor="@color/green" />
 
@@ -378,10 +380,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_above="@+id/bid_separator"
-                    android:layout_alignTop="@+id/main_action"
-                    android:layout_marginLeft="22dp"
+                    android:layout_alignLeft="@+id/bid_separator"
+                    android:layout_below="@+id/re_descr"
                     android:layout_toLeftOf="@+id/main_action"
-                    android:layout_toRightOf="@+id/re_descr"
                     android:gravity="center_vertical|center_horizontal"
                     android:paddingRight="3dp"
                     android:textAppearance="?android:attr/textAppearanceLarge"
@@ -392,8 +393,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_above="@+id/bid_separator"
-                    android:layout_below="@+id/doppelkopf_game_status"
-                    android:layout_toLeftOf="@+id/contra_descr"
+                    android:layout_alignRight="@+id/bid_separator"
+                    android:layout_below="@+id/contra_descr"
                     android:layout_toRightOf="@+id/main_action"
                     android:gravity="center_vertical|center_horizontal"
                     android:paddingLeft="3dp"
