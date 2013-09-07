@@ -36,16 +36,20 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 	private boolean mUseDummys;
 	private TeamSetupCallback mCallback;
 	private int mTeamNumber;
+	private boolean mIsDeletable;
 	
 	public interface TeamSetupCallback extends ChoosePlayerDialogListener {
-		DummyPlayer obtainNewDummy();
+		List<DummyPlayer> obtainNewDummys(int amount);
 		void choosePlayer(int teamIndex, int playerInex);
 		void chooseTeamColor(int teamIndex);		
 		void notifyPlayerCountChanged();
 		void requestTeamDelete(int teamIndex);
+        void applyTheme(View view);
 	}
 	
-	public TeamSetupViewController(Context context, int teamNumber, int minPlayer, int maxPlayer, List<Player> players, boolean useDummys, TeamSetupCallback callback) {
+	public TeamSetupViewController(Context context, 
+	        int teamNumber, int minPlayer, int maxPlayer, List<Player> players, boolean useDummys, TeamSetupCallback callback,
+	        boolean isDeletable) {
 		if (minPlayer < 1 || maxPlayer < minPlayer) {
 			throw new IllegalArgumentException("Min/Max player illegal: " + minPlayer + "/" + maxPlayer);
 		} else if (callback == null) {
@@ -62,7 +66,7 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 		mTeamName = (EditText) mRoot.findViewById(R.id.team_name);
 		setTeamName(null, false);
 		mTeamDelete = (ImageButton) mRoot.findViewById(R.id.team_delete);
-		setTeamDeletable(false);
+		setTeamDeletable(isDeletable);
 		mTeamDelete.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -84,7 +88,7 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 			
 			@Override
 			public void onClick(View v) {
-				addPlayer();
+				addPlayers(1);
 				choosePlayer(mPlayers.size() - 1);
 			}
 		});
@@ -103,52 +107,42 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 		mCallback.choosePlayer(mTeamNumber, playerIndex);
 	}
 	
-	private boolean addPlayer() {
-		return addPlayer(mPlayers.size());
+	private boolean addPlayers(int amount) {
+	    if (amount <= 0) {
+	        return true;
+	    }
+	    if (mPlayers.size() + amount <= mMaxPlayer) {
+	        if (mUseDummys) {
+	            mPlayers.addAll(mCallback.obtainNewDummys(amount));
+	        } else {
+	            for (int i = 0; i < amount; i++) {
+	                mPlayers.add(mPlayers.size(), NoPlayer.INSTANCE);
+	            }
+	        }
+            applyAddRemovePlayerState(true);
+	        return true;
+	    }
+        applyAddRemovePlayerState(true);
+	    return false;
 	}
 	
-	private boolean addPlayer(int index) {
-		if (mPlayers.size() < mMaxPlayer) {
-			if (mUseDummys) {
-				mPlayers.add(index, mCallback.obtainNewDummy());
-			} else {
-				mPlayers.add(index, new NoPlayer());
-			}
-			applyAddRemovePlayerState();
-			return true;
-		}
-		applyAddRemovePlayerState();
-		return false;
-	}
-	
-	private void replacePlayer(int index, Player p) {
-		if (mPlayers.get(index) instanceof DummyPlayer) {
-			((DummyPlayer) mPlayers.get(index)).release();
-		}
-		if (p instanceof DummyPlayer) {
-			((DummyPlayer) p).obtain();
-		}
+	public void replacePlayer(int index, Player p) {
 		mPlayers.set(index, p);
-		applyAddRemovePlayerState();
+		fillRequiredSlots();
+		applyAddRemovePlayerState(true);
 	}
 	
 	private Player removePlayer(int index) {
 		Player removed = null;
-		boolean isDummy = mPlayers.get(index) instanceof DummyPlayer;
-		if (isDummy || mPlayers.get(index) instanceof NoPlayer) {
+		if (mPlayers.get(index) instanceof DummyPlayer || mPlayers.get(index) instanceof NoPlayer) {
 			if (mPlayers.size() > mMinPlayer) {
-				if (isDummy) {
-					((DummyPlayer) mPlayers.get(index)).release();
-				}
 				removed = mPlayers.remove(index);
 			}
 		} else {
 			removed = mPlayers.remove(index);
-			if (mPlayers.size() < mMinPlayer) {
-				addPlayer(index); // dummy or no player
-			}
 		}
-		applyAddRemovePlayerState();
+		fillRequiredSlots();
+		applyAddRemovePlayerState(true);
 		return removed;
 	}
 	
@@ -166,42 +160,33 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 	}
 	
 	private void clearPlayers() {
-		for (Player p : mPlayers) {
-			if (p instanceof DummyPlayer) {
-				((DummyPlayer) p).release();
-			}
-		}
 		mPlayers.clear();
 	}
 	
 	private void fillRequiredSlots() {
 		// fill required slots with no players or dummy players based on wishes
-		for (int i = mPlayers.size(); i < mMinPlayer; i++) {
-			addPlayer();
-		}
+		addPlayers(mMinPlayer - mPlayers.size());
 	}
 	
 	public void reset() {
 		clearPlayers();
 		fillRequiredSlots();
-		applyAddRemovePlayerState();
+		applyAddRemovePlayerState(true);
 	}
 	
 	public void setPlayers(List<Player> players) {
+	    int oldPlayerCount = mPlayers.size();
 		clearPlayers();
 		// first use given players
 		if (players != null) {
-			for (Player p: players) {
-				if (p != null && mPlayers.size() < mMaxPlayer) {
-					if (p instanceof DummyPlayer) {
-						((DummyPlayer) p).obtain();
-					}
-					mPlayers.add(p);
-				}
-			}
+		    for (Player p : players) {
+		        if (p != null) {
+		            mPlayers.add(p);
+		        }
+		    }
 		}
 		fillRequiredSlots();
-		applyAddRemovePlayerState();
+		applyAddRemovePlayerState(oldPlayerCount != mPlayers.size());
 	}
 	
 	public boolean hasRequiredPlayers(boolean includeDummys) {
@@ -227,21 +212,24 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 		return players;
 	}
 	
-	private void applyAddRemovePlayerState() {
+	private void applyAddRemovePlayerState(boolean playerCountChange) {
 		boolean enableAdd = mPlayers.size() < mMaxPlayer;
 		mAddPlayer.setEnabled(enableAdd);
 		mAddPlayer.setVisibility(enableAdd ? View.VISIBLE : View.GONE);
 		if (mTeamPlayerAdapter != null) {
 			mTeamPlayerAdapter.notifyDataSetChanged();
 		}
-		mCallback.notifyPlayerCountChanged();
+		if (playerCountChange) {
+		    mCallback.notifyPlayerCountChanged();
+		}
 	}
 	
 	private boolean canRemovePlayer() {
 		return mPlayers.size() > mMinPlayer;
 	}
 	
-	public void setTeamDeletable(boolean deleteable) {
+	private void setTeamDeletable(boolean deleteable) {
+        mIsDeletable = deleteable;
 		mTeamDelete.setVisibility(deleteable ? View.VISIBLE : View.GONE);
 	}
 	
@@ -254,7 +242,7 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 	}
 	
 	public void setTeamColor(int color) {
-		mTeamColorChooser.setTextColor(color);
+	    mTeamName.setTextColor(color);
 		mTeamColor = color;
 	}
 	
@@ -263,7 +251,6 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 	}
 	
 	private class TeamPlayerAdapter extends BaseAdapter {
-		private int mBackgroundRes = -1;
 		private OnClickListener mPlayerRemoveListener = new OnClickListener() {
 
 			@Override
@@ -326,10 +313,8 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 				holder.mPlayerName.setText(mPlayers.get(position).getName());
 			}
 			holder.mPlayerName.setTextColor(mPlayers.get(position).getColor());
-			if (mBackgroundRes != -1) {
-				holder.mPlayerName.setBackgroundResource(mBackgroundRes);
-				holder.mPlayerDelete.setBackgroundResource(mBackgroundRes);
-			}
+            mCallback.applyTheme(holder.mPlayerName);
+            mCallback.applyTheme(holder.mPlayerDelete);
 		}
 	}
 
@@ -355,6 +340,7 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 		// only accept valid new player
 		if (chosen == null || mCallback.toFilter().contains(chosen)) return;
 		replacePlayer(playerIndex, chosen);
+		mRoot.requestFocus();
 	}
 
 	public int getMaxPlayers() {
@@ -373,16 +359,14 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 		return p;
 	}
 	
-	public void applyBackgroundTheme(int btnResId) {
-		mTeamPlayerAdapter.mBackgroundRes = btnResId;
-		mTeamColorChooser.setBackgroundResource(btnResId);
-		mAddPlayer.setBackgroundResource(btnResId);
-		mTeamPlayerAdapter.notifyDataSetChanged();
-		mTeamDelete.setBackgroundResource(btnResId);
+	public int getPlayerCount() {
+	    return mPlayers.size();
 	}
-
-	public void close() {
-		clearPlayers();
+	
+	public void applyTheme() {
+	    mCallback.applyTheme(mTeamColorChooser);
+        mCallback.applyTheme(mAddPlayer);
+        mCallback.applyTheme(mTeamDelete);
 	}
 
 	public int getTeamNumber() {
@@ -398,4 +382,8 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 	public void notifyDataSetChanged() {
 		mTeamPlayerAdapter.notifyDataSetChanged();
 	}
+
+    public boolean isDeletable() {
+        return mIsDeletable;
+    }
 }

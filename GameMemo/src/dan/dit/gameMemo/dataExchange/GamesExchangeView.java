@@ -81,7 +81,7 @@ public class GamesExchangeView extends LinearLayout {
 			if (mDefaultShowGamesBackground == null) {
 				mDefaultShowGamesBackground = mShowGames.getBackground();
 			}
-			mShowGames.setBackgroundResource(GameKey.getButtonResource(key));
+			GameKey.applyTheme(key, getResources(), mShowGames);
 			mShowGames.setText(res.getString(R.string.games_selected_single, GameKey.getGameName(selectedGames.get(0))));
 		} else if (selectedGames.size() < GameKey.ALL_GAMES.length) {
 			mShowGames.setText(res.getString(R.string.games_selected, selectedGames.size(), GameKey.ALL_GAMES.length));

@@ -12,9 +12,12 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameDetailActivity;
 import dan.dit.gameMemo.appCore.GameDetailFragment;
@@ -258,7 +261,25 @@ public final class GameKey {
 		}
 	}
 	
-	public static int getButtonResource(int gameKey) {
+	public static void applyTheme(int gameKey, Resources res, View view) {
+	    view.setBackgroundResource(getButtonResource(gameKey));
+	    if (view instanceof TextView) {
+	        ((TextView) view).setTextColor(res.getColorStateList(getButtonTextColorResource(gameKey)));
+	    }
+	}
+	
+	private static int getButtonTextColorResource(int gameKey) {
+        switch (gameKey) {
+        case GameKey.TICHU:
+            return R.color.tichu_text_color;
+        case GameKey.DOPPELKOPF:
+            return R.color.doppelkopf_text_color;
+        default:
+            throw new IllegalArgumentException("Game not supported: " + gameKey);               
+        }
+	}
+	
+	private static int getButtonResource(int gameKey) {
 		switch (gameKey) {
 		case GameKey.TICHU:
 			return R.drawable.tichu_button;

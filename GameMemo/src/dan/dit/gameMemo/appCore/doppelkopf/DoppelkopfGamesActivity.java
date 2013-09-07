@@ -20,13 +20,12 @@ import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfGame;
 import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfRuleSystem;
 import dan.dit.gameMemo.gameData.player.Player;
+import dan.dit.gameMemo.gameData.player.TeamSetupTeamsController;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.ActivityUtil;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 public class DoppelkopfGamesActivity extends GamesActivity  {
-	private static final int[] DOPPELKOPF_GAME_MIN_PLAYERS = new int[] {4};
-	private static final int[] DOPPELKOPF_GAME_MAX_PLAYERS = new int[] {5};
 	private static final int[] DOPPELKOPF_OPTIONS_MIN_NUMBERS = new int[] {0, 0};
 	private static final int[] DOPPELKOPF_OPTIONS_MAX_NUMBERS = new int[] {Integer.MAX_VALUE, Integer.MAX_VALUE};
 	private static final String PREFERENCES_DEFAULT_RULE_SYSTEM = "dan.dit.gameMemo.PREF_DEF_RULE_SYSTEM";
@@ -35,9 +34,6 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 	protected void startGameSetup(long id) {
 		Intent i = new Intent(this, GameSetupActivity.class);
 		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.DOPPELKOPF);
-		i.putExtra(GameSetupActivity.EXTRA_TEAM_MIN_PLAYERS, DOPPELKOPF_GAME_MIN_PLAYERS);
-		i.putExtra(GameSetupActivity.EXTRA_TEAM_MAX_PLAYERS, DOPPELKOPF_GAME_MAX_PLAYERS);
-		i.putExtra(GameSetupActivity.EXTRA_TEAM_NAMES, new String[] { getResources().getString(R.string.doppelkopf_team_name)});
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_MAX_VALUES, DOPPELKOPF_OPTIONS_MAX_NUMBERS);
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_MIN_VALUES, DOPPELKOPF_OPTIONS_MIN_NUMBERS);
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES, makeOptionsNumbers());
@@ -50,6 +46,7 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 				copyGameSetupId = checked.iterator().next();
 			}
 		}
+		String[] playerNames = null;
 		if (Game.isValidId(copyGameSetupId)) {
 			List<Game> games = null;
 			try {
@@ -60,15 +57,24 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 			if (games != null && games.size() > 0) {
 				DoppelkopfGame game = (DoppelkopfGame) games.get(0);
 				List<Player> players = new ArrayList<Player>(game.getPlayers());			
-				String[] playerNames = new String[players.size()];
+				playerNames = new String[players.size()];
 				for (int index = 0; index < playerNames.length; index++) {
 					Player curr = players.get(index);
 					playerNames[index] = curr == null ? null : curr.getName();
 				}
-				i.putExtra(GameSetupActivity.EXTRA_PLAYER_NAMES, playerNames);
 				i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES, new int[] {game.getLimit(), game.getDutySoliCountPerPlayer()});
 			}
 		}
+		
+        // make teams
+        TeamSetupTeamsController.Builder teamsBuilder = new TeamSetupTeamsController.Builder(true, true);
+        //teamsBuilder.addTeam(4, 5, false, getResources().getString(R.string.doppelkopf_team_name), false, 0, false, playerNames); // correct team
+        //TODO for testing:
+        teamsBuilder.addTeam(4, 7, true, getResources().getString(R.string.doppelkopf_team_name), true, 0xFF123456, true, playerNames);
+        teamsBuilder.addTeam(1, 2, true, "Die coolen", false, 0xFFFF4321, true, null); 
+        
+        i.putExtra(GameSetupActivity.EXTRA_TEAMS_PARAMETERS, teamsBuilder.build());
+        
 		startActivityForResult(i, GAME_SETUP_ACTIVITY);
 	}
 	
@@ -87,7 +93,8 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 			if (extras.containsKey(GameStorageHelper.getCursorItemType(GameKey.DOPPELKOPF))) {
 				selectGame(extras.getLong(GameStorageHelper.getCursorItemType(GameKey.DOPPELKOPF)));
 			} else {
-				String[] playerNames = extras.getStringArray(GameSetupActivity.EXTRA_PLAYER_NAMES);
+			    Bundle parameters = extras.getBundle(GameSetupActivity.EXTRA_TEAMS_PARAMETERS);
+				String[] playerNames = parameters.getStringArray(TeamSetupTeamsController.EXTRA_PLAYER_NAMES);
 				int[] numberOptions = extras.getIntArray(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES);
 				if (playerNames != null && playerNames.length >= DoppelkopfGame.MIN_PLAYERS) {
 					extras.putStringArray(DoppelkopfGameDetailFragment.EXTRAS_NEW_GAME_PLAYERS, playerNames);

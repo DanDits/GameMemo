@@ -84,7 +84,7 @@
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
                 android:text="@string/default_player_name"
-                android:textColor="@android:color/black" />
+                android:textColor="@color/tichu_text_color" />
 
             <Button
                 android:id="@+id/tichu_game_player2"
@@ -97,7 +97,7 @@
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
                 android:text="@string/default_player_name"
-                android:textColor="@android:color/black" />
+                android:textColor="@color/tichu_text_color" />
 
             <View
        			android:layout_width="@dimen/tichu_detail_separator_line_width"
@@ -115,7 +115,7 @@
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
                 android:text="@string/default_player_name"
-                android:textColor="@android:color/black" />
+                android:textColor="@color/tichu_text_color" />
 
             <Button
                 android:id="@+id/tichu_game_player4"
@@ -130,7 +130,7 @@
                 android:paddingTop="10dp"
                 android:scrollHorizontally="true"
                 android:text="@string/default_player_name"
-                android:textColor="@android:color/black" />
+                android:textColor="@color/tichu_text_color" />
 
         </LinearLayout>
 

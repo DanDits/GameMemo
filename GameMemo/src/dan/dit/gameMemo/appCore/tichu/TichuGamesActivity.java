@@ -1,6 +1,5 @@
 package dan.dit.gameMemo.appCore.tichu;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -13,7 +12,7 @@ import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothDataExchangeActivity;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
-import dan.dit.gameMemo.gameData.player.Player;
+import dan.dit.gameMemo.gameData.player.TeamSetupTeamsController;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
@@ -28,8 +27,6 @@ import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
  *
  */
 public class TichuGamesActivity extends GamesActivity  {
-	private static final int[] TICHU_GAME_MIN_PLAYERS = new int[] {2, 2};
-	private static final int[] TICHU_GAME_MAX_PLAYERS = new int[] {2, 2};
 	private static final boolean[] TICHU_OPTIONS_BOOLEAN = new boolean[] {false}; // {MERCY_RULE}
 	private static final int[] TICHU_OPTIONS_NUMBER = new int[] {TichuGame.DEFAULT_SCORE_LIMIT};//{SCORE_LIMIT}
 	private static final int[] TICHU_OPTIONS_MIN_NUMBERS = new int[] {TichuGame.MIN_SCORE_LIMIT};
@@ -37,10 +34,9 @@ public class TichuGamesActivity extends GamesActivity  {
  	
 	@Override
 	protected void startGameSetup(long id) {
+        // make intent to start setup activity
 		Intent i = new Intent(this, GameSetupActivity.class);
 		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.TICHU);
-		i.putExtra(GameSetupActivity.EXTRA_TEAM_MIN_PLAYERS, TICHU_GAME_MIN_PLAYERS);
-		i.putExtra(GameSetupActivity.EXTRA_TEAM_MAX_PLAYERS, TICHU_GAME_MAX_PLAYERS);
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_MAX_VALUES, TICHU_OPTIONS_MAX_NUMBERS);
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_MIN_VALUES, TICHU_OPTIONS_MIN_NUMBERS);
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES, TICHU_OPTIONS_NUMBER);
@@ -48,12 +44,7 @@ public class TichuGamesActivity extends GamesActivity  {
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_NAMES, new String[] {getResources().getString(R.string.tichu_game_score_limit)});
 		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_NAMES, new String[] {getResources().getString(R.string.tichu_game_mery_rule)});
 		i.putExtra(GameSetupActivity.EXTRA_FLAG_SUGGEST_UNFINISHED_GAME, true);
-		/*i.putExtra(GameSetupActivity.EXTRA_FLAG_ALLOW_PLAYER_COLOR_EDITING, true);
-		i.putExtra(GameSetupActivity.EXTRA_FLAG_ALLOW_TEAM_COLOR_EDITING, true);
-		i.putExtra(GameSetupActivity.EXTRA_FLAG_ALLOW_TEAM_NAME_EDITING, true);
-		i.putExtra(GameSetupActivity.EXTRA_FLAG_USE_DUMMY_PLAYERS, true);
-		i.putExtra(GameSetupActivity.EXTRA_TEAM_COLORS, new int[] {0xFFFF6543, 0xFFAA1245});
-		i.putExtra(GameSetupActivity.EXTRA_TEAM_IS_OPTIONAL, new boolean[] {false, false, true, true});*/
+
 		// priority to copy info from: parameter id, highlighted id, single checked id
 		long copyGameSetupId = Game.isValidId(id) ? id : getHighlightedGame();
 		if (!Game.isValidId(copyGameSetupId)) {
@@ -62,6 +53,8 @@ public class TichuGamesActivity extends GamesActivity  {
 				copyGameSetupId = checked.iterator().next();
 			}
 		}
+		String[] team1Names = new String[2];
+		String[] team2Names = new String[2];
 		if (Game.isValidId(copyGameSetupId)) {
 			List<Game> games = null;
 			try {
@@ -71,19 +64,21 @@ public class TichuGamesActivity extends GamesActivity  {
 			}
 			if (games != null && games.size() > 0) {
 				TichuGame game = (TichuGame) games.get(0);
-				List<Player> players = new ArrayList<Player>(TichuGame.TOTAL_PLAYERS);
-				for (Player p : game.getTeam1()) {players.add(p);}
-				for (Player p : game.getTeam2()) {players.add(p);}				
-				String[] playerNames = new String[TichuGame.TOTAL_PLAYERS];
-				for (int index = 0; index < playerNames.length; index++) {
-					Player curr = players.get(index);
-					playerNames[index] = curr == null ? null : curr.getName();
-				}
-				i.putExtra(GameSetupActivity.EXTRA_PLAYER_NAMES, playerNames);
+				team1Names[0] = game.getTeam1().getFirst().getName();
+                team1Names[1] = game.getTeam1().getSecond().getName();
+                team2Names[0] = game.getTeam2().getFirst().getName();
+                team2Names[1] = game.getTeam2().getSecond().getName();
 				i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES, new int[] {game.getScoreLimit()});
 				i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_VALUES, new boolean[] {game.usesMercyRule()});
 			}
 		}
+		
+	    // make teams
+        TeamSetupTeamsController.Builder teamsBuilder = new TeamSetupTeamsController.Builder(false, false);
+        teamsBuilder.addTeam(2, 2, false, null, false, 0, false, team1Names);
+        teamsBuilder.addTeam(2, 2, false, null, false, 0, false, team2Names);
+        i.putExtra(GameSetupActivity.EXTRA_TEAMS_PARAMETERS, teamsBuilder.build());
+        
 		startActivityForResult(i, GAME_SETUP_ACTIVITY);
 	}
 	
@@ -93,7 +88,8 @@ public class TichuGamesActivity extends GamesActivity  {
 			if (extras.containsKey(GameStorageHelper.getCursorItemType(GameKey.TICHU))) {
 				selectGame(extras.getLong(GameStorageHelper.getCursorItemType(GameKey.TICHU)));
 			} else {
-				String[] playerNames = extras.getStringArray(GameSetupActivity.EXTRA_PLAYER_NAMES);
+			    Bundle parameters = extras.getBundle(GameSetupActivity.EXTRA_TEAMS_PARAMETERS);
+				String[] playerNames = parameters.getStringArray(TeamSetupTeamsController.EXTRA_PLAYER_NAMES);
 				boolean[] boolOptions = extras.getBooleanArray(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_VALUES);
 				int[] numberOptions = extras.getIntArray(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES);
 				if (playerNames != null && playerNames.length >= TichuGame.TOTAL_PLAYERS) {

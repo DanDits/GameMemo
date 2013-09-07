@@ -1,18 +1,9 @@
 package dan.dit.gameMemo.appCore;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.SortedSet;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -25,7 +16,6 @@ import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -43,17 +33,14 @@ import android.widget.TextView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
-import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
 import dan.dit.gameMemo.gameData.player.DummyPlayer;
-import dan.dit.gameMemo.gameData.player.DummyPlayer.DummyPool;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
-import dan.dit.gameMemo.gameData.player.TeamSetupViewController;
-import dan.dit.gameMemo.gameData.player.TeamSetupViewController.TeamSetupCallback;
+import dan.dit.gameMemo.gameData.player.TeamSetupTeamsController;
 import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.util.ColorPickerDialog;
 import dan.dit.gameMemo.util.ColorPickerView.OnColorChangedListener;
+import dan.dit.gameMemo.util.NotifyMajorChangeCallback;
 
 /**
  * This activity is used to select teams for a new Game and setup game options. Players
@@ -67,18 +54,9 @@ import dan.dit.gameMemo.util.ColorPickerView.OnColorChangedListener;
  * @author Daniel
  *
  */
-public class GameSetupActivity extends FragmentActivity implements ChoosePlayerDialogListener, TeamSetupCallback, OnColorChangedListener {
-	public static final String EXTRA_TEAM_COLORS = "dan.dit.gameMemo.TEAM_COLORS"; // optional int[]
-	public static final String EXTRA_FLAG_ALLOW_PLAYER_COLOR_EDITING = "dan.dit.gameMemo.ALLOW_PLAYER_COLOR_EDITING"; // boolean, default false
-	public static final String EXTRA_FLAG_ALLOW_TEAM_COLOR_EDITING = "dan.dit.gameMemo.ALLOW_TEAM_COLOR_EDITING"; // boolean, default false
-	public static final String EXTRA_FLAG_ALLOW_TEAM_NAME_EDITING = "dan.dit.gameMemo.ALLOW_TEAM_NAME_EDITING"; // boolean, default false
+public class GameSetupActivity extends FragmentActivity implements ChoosePlayerDialogListener, OnColorChangedListener {
+    public static final String EXTRA_TEAMS_PARAMETERS = "dan.dit.gameMemo.TEAMS_PARAMETERS";
 	public static final String EXTRA_FLAG_SUGGEST_UNFINISHED_GAME = "dan.dit.gameMemo.SUGGEST_UNFINISHED"; // boolean, default false
-	public static final String EXTRA_FLAG_USE_DUMMY_PLAYERS = "dan.dit.gameMemo.USE_DUMMY_PLAYERS"; // boolean, default false
-	public static final String EXTRA_TEAM_NAMES = "dan.dit.gameMemo.EXTRA_TEAM_NAMES"; // optional String[], if not given default name is used
-	public static final String EXTRA_TEAM_IS_OPTIONAL = "dan.dit.gameMemo.EXTRA_TEAM_IS_OPTIONAL"; // optional boolean[], defaults to false for all not supplied values
-	public static final String EXTRA_TEAM_MIN_PLAYERS = "dan.dit.gameMemo.EXTRA_TEAM_MIN_PLAYERS"; // int[], negative values will be interpreted as 0
-	public static final String EXTRA_TEAM_MAX_PLAYERS = "dan.dit.gameMemo.EXTRA_TEAM_MAX_PLAYERS"; // int[], if not given default 10, must be > 0 each
-	public static final String EXTRA_PLAYER_NAMES = "dan.dit.gameMemo.EXTRA_PLAYER_NAMES"; // optional String[], give suggestions for the slots, if result = ok these contains names, null for not required players of a team
 	public static final String EXTRA_OPTIONS_BOOLEAN_VALUES = "dan.dit.gameMemo.EXTRA_OPTIONS_BOOLEAN_VALUES"; // optional boolean[]
 	public static final String EXTRA_OPTIONS_BOOLEAN_NAMES = "dan.dit.gameMemo.EXTRA_OPTIONS_BOOLEAN_NAMES"; // optional String[], comes with OPTIONS_BOOLEAN_VALUES
 	public static final String EXTRA_OPTIONS_NUMBER_VALUES = "dan.dit.gameMemo.EXTRA_OPTIONS_INT_VALUES"; // optinal int[]
@@ -87,23 +65,13 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	public static final String EXTRA_OPTIONS_NUMBER_MAX_VALUES = "dan.dit.gameMemo.EXTRA_OPTIONS_NUMBER_MAX_VALUES"; // optional int[], comes with OPTIONS_INT_VALUES
 	private static final String STORAGE_OPTIONS_NUMBER_VALUES_DEFAULT = "STORAGE_OPTIONS_INT_VALUES_DEFAULT"; // int[] for current values of OPTIONS_INT_VALUES
 	private static final String STORAGE_OPTIONS_BOOLEAN_VALUES_DEFAULT = "STORAGE_OPTIONS_BOOLEAN_VALUES_DEFAULT"; // boolean[] for current values of OPTIONS_BOOLEAN_VALUES
-	private static final String STORAGE_CHOOSING_PLAYER_CONTROLLER_INDEX = "STORAGE_CHOOSING_PLAYER_CONTROLLER_INDEX"; //int ignored if no choose player dialog open, index of controller to chose player for 
-	private static final String STORAGE_CHOOSING_COLOR_CONTROLLER_INDEX = "STORAGE_CHOOSING_COLOR_CONTROLLER_INDEX"; //int ignored if no color chooser dialog open, index of controller to chose color for
-	private static final DummyPool DUMMY_PLAYERS = new DummyPool();
-	private static final long SHUFFLE_PERIOD = 200; // in ms
-	protected static final long SHUFFLE_DURATION = 1000; // in ms
+	private static final long SHUFFLE_PERIOD = 150; // in ms
+	protected static final long SHUFFLE_DURATION = 900; // in ms
 	
 	private int mGameKey;
+	private TeamSetupTeamsController mController;
 	private boolean mSuggestUnfinished;
-	private boolean mUseDummys;
-	private boolean mAllowTeamNameEditing;
-	private boolean mAllowPlayerColorChoosing;
-	private boolean mAllowTeamColorChoosing;
-	private int[] mTeamColor;
-	private int[] mMinTeamSizes;
-	private int[] mMaxTeamSizes;
-	private boolean[] mTeamIsOptional;
-	private String[] mTeamNames;
+
 	private boolean[] mOptionsBoolean;
 	private boolean[] mOptionsBooleanDefault;
 	private CheckBox[] mOptionBooleanCheckers;
@@ -118,21 +86,15 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	private ScrollView mScrollView;
 	private LinearLayout mOptionsContainer;
 	private Button mShowOptions;
-	private LinearLayout mTeamsContainer;
 	private Button mStartGame;
-	private SortedSet<Integer> mHiddenTeams;
-	private Map<Integer, TeamSetupViewController> mTeamControllers;
 	private Timer mShufflePlayersTimer;
 	private final Handler mTimerHandler = new Handler();
 
-	private int mChoosingPlayerControllerIndex = -1;
-	private int mChoosingColorControllerIndex = -1;
 	private MenuItem mAddTeam;
 	private MenuItem mShuffle;
 
 	//TODO make a builder class for all the extras and then hide them, make an option to hide options container by default and show options
-	//TODO Bug: Shuffling players when dummies are included will make dummies appear more than once somehow
-	//TODO make big controller that takes care of all the different teamSetupViewControllers and let each game have a controller and a view for options
+	//TODO let each game have a controller and a view for options
 	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -147,9 +109,8 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 			}
 		}
 		setContentView(R.layout.game_setup);
-		DUMMY_PLAYERS.setDummyBaseName(getResources().getString(R.string.player_dummy_name), getResources().getString(R.string.player_dummy_name_regex));
+		DummyPlayer.initNames(getResources());
 		mScrollView = (ScrollView) findViewById(R.id.game_setup_mainscroll);
-		mTeamsContainer = (LinearLayout) findViewById(R.id.teams_container);
 		mOptionsContainer = (LinearLayout) findViewById(R.id.options_container);
 		mStartGame = (Button) findViewById(R.id.startGame);
 		mShowOptions = (Button) findViewById(R.id.options_show);
@@ -164,10 +125,6 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		});
 		// load flags and immutable parameters here, the rest after all creation is done
 		mSuggestUnfinished = getIntent().getExtras().getBoolean(EXTRA_FLAG_SUGGEST_UNFINISHED_GAME);
-		mUseDummys = getIntent().getExtras().getBoolean(EXTRA_FLAG_USE_DUMMY_PLAYERS);
-		mAllowTeamNameEditing = getIntent().getExtras().getBoolean(EXTRA_FLAG_ALLOW_TEAM_NAME_EDITING);
-		mAllowTeamColorChoosing = getIntent().getExtras().getBoolean(EXTRA_FLAG_ALLOW_TEAM_COLOR_EDITING);
-		mAllowPlayerColorChoosing = getIntent().getExtras().getBoolean(EXTRA_FLAG_ALLOW_PLAYER_COLOR_EDITING);
 		initListeners();
 	}
 	
@@ -219,29 +176,13 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 			buildUIFromBundle(savedInstanceState);
 		}
 		applyButtonsState();
-		mScrollView.fullScroll(View.FOCUS_UP);
-		scrollTop();
+		mScrollView.fullScroll(ScrollView.FOCUS_UP);
 	}
 	
 	@Override
 	public void onResume() {
 		super.onResume();
 		applyButtonsState();
-	}
-	
-	private void scrollTop() {
-		View firstTeamView = mTeamsContainer.getChildAt(0);
-		if (firstTeamView != null) {
-			firstTeamView.requestFocus();
-		}
-	}
-	
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		for (TeamSetupViewController ctr : mTeamControllers.values()) {
-			ctr.close();
-		}
 	}
 	
 	private void initListeners() {
@@ -260,14 +201,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	}
 	
 	private void resetFields() {
-		for (int i = 0; i < mMinTeamSizes.length; i++) {
-			TeamSetupViewController ctr = mTeamControllers.get(i);
-			if (ctr != null && isTeamDeletable(i)) {
-				removeTeam(i);
-			} else if (ctr != null) {
-				ctr.reset();
-			}
-		}
+	    mController.resetFields();
 		if (mOptionBooleanCheckers != null) {
 			for (int i = 0; i < mOptionBooleanCheckers.length; i++) {
 				mOptionBooleanCheckers[i].setChecked(mOptionsBooleanDefault[i]);
@@ -287,15 +221,15 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		if (mShuffle != null) {
 			mShuffle.setEnabled(shuffleButtonCondition());
 		}
-		if (mAddTeam != null && mTeamControllers != null && mMinTeamSizes != null) {
-			boolean enableNewTeam = mTeamControllers.size() < mMinTeamSizes.length;
+		if (mAddTeam != null && mController != null) {
+			boolean enableNewTeam = mController.hasMissingTeam();
 			mAddTeam.setEnabled(enableNewTeam);
 			mAddTeam.setVisible(enableNewTeam);
 		}
 	}
 	
 	private boolean startGameButtonCondition() {
-		return hasAllPlayers();
+		return mController == null ? false : mController.hasRequiredPlayers();
 	}
 	
 	private void onGameStart() {
@@ -304,21 +238,13 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		}
 	}
 	
-	private List<Player> getAllPlayers(boolean includeDummys) {
-		List<Player> team = new ArrayList<Player>();
-		for (TeamSetupViewController ctr : mTeamControllers.values()) {
-			team.addAll(ctr.getPlayers(includeDummys));
-		}
-		return team;
-	}
-	
 	private boolean searchAndSuggestUnfinished() {
-		List<Player> team = getAllPlayers(false);
+		List<Player> team = mController.getAllPlayers(false);
 		if (team.size() == 0) {
 			return false;
 		}
 		// if dummys are being used then look for a subset, else an exact match
-		final long unfinishedId = team.size() > 0 ? Game.getUnfinishedGame(mGameKey, getContentResolver(), team, mUseDummys) : Game.NO_ID;
+		final long unfinishedId = team.size() > 0 ? Game.getUnfinishedGame(mGameKey, getContentResolver(), team, false) : Game.NO_ID;
 		if (Game.isValidId(unfinishedId)) {
 			 // there is an unfinished game with exactly the selected players, ask if they want to continue this game
 			new AlertDialog.Builder(this)
@@ -349,18 +275,15 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	
 	private void startNewGame() {
 		Intent returnIntent = new Intent();
-		savePlayerToIntent(returnIntent);
 		PlayerPool pool = getPool();
 		// for all used dummys we need to populate a real player (with the same color) since dummys are only used by the setup activity
-		for (Player p : getAllPlayers(true)) {
+		for (Player p : mController.getAllPlayers(true)) {
 			if (p instanceof DummyPlayer) {
 				Player dedummiedPlayer = pool.populatePlayer(p.getName());
 				dedummiedPlayer.setColor(p.getColor());
 			}
 		}
-		refreshTeamNamesAndColors();
-		returnIntent.putExtra(EXTRA_TEAM_NAMES, mTeamNames);
-		returnIntent.putExtra(EXTRA_TEAM_COLORS, mTeamColor);
+		returnIntent.putExtra(EXTRA_TEAMS_PARAMETERS, mController.getParameters());
 		returnIntent.putExtra(EXTRA_OPTIONS_NUMBER_VALUES, mOptionsNumbers);
 		returnIntent.putExtra(EXTRA_OPTIONS_BOOLEAN_VALUES, mOptionsBoolean);
 		setResult(RESULT_OK, returnIntent);
@@ -417,84 +340,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		} else {
 			getWindow().setFeatureInt(Window.FEATURE_PROGRESS, 10000);
 		}
-		List<Integer> playerCountForTeams = new ArrayList<Integer>(mTeamControllers.size());
-		List<Player> allPlayers = new ArrayList<Player>();
-		for (TeamSetupViewController ctr : mTeamControllers.values()) {
-			List<Player> curr = ctr.getPlayers(true);
-			allPlayers.addAll(curr);
-			playerCountForTeams.add(Integer.valueOf(curr.size())); 
-		}
-		Collections.shuffle(allPlayers);
-		if (mUseDummys) {
-			int index = 0;
-			int currStartPos = 0;
-			// give each team as many players as it had before, can be dummys or real players
-			for (TeamSetupViewController ctr : mTeamControllers.values()) {
-				assert playerCountForTeams.get(index) >= ctr.getMinPlayers();
-				int currTeamNewPlayerCount = playerCountForTeams.get(index);
-				ctr.setPlayers(allPlayers.subList(currStartPos, currStartPos + currTeamNewPlayerCount));
-				currStartPos += currTeamNewPlayerCount;
-				index++;
-			}
-		} else {
-			SparseArray<List<Player>> playersForTeam = new SparseArray<List<Player>>(mTeamControllers.size());
-			// first prefer filling teams to have the minimum required player count
-			List<TeamSetupViewController> possibleControllers = new ArrayList<TeamSetupViewController>(mTeamControllers.values());
-			Random rnd = new Random();
-			Iterator<Player> it = allPlayers.iterator();
-			while (it.hasNext() && possibleControllers.size() > 0) {
-				Player p = it.next();
-				TeamSetupViewController ctr = possibleControllers.get(rnd.nextInt(possibleControllers.size()));
-				int index = ctr.getTeamNumber();
-				List<Player> playersForTeamCurr = playersForTeam.get(index);
-				if (playersForTeamCurr == null) {
-					playersForTeamCurr = new ArrayList<Player>(ctr.getMaxPlayers());
-					playersForTeam.put(index, playersForTeamCurr);
-				}
-				playersForTeamCurr.add(p);
-				if (ctr.getMinPlayers() <= playersForTeamCurr.size()) {
-					possibleControllers.remove(ctr);
-				}
-			}
-			if (it.hasNext()) {
-				// second fill teams that still have capacity with remaining players
-				for (TeamSetupViewController ctr : mTeamControllers.values()) {
-					if (playersForTeam.get(ctr.getTeamNumber()) == null || playersForTeam.get(ctr.getTeamNumber()).size() < ctr.getMaxPlayers() ) {
-						possibleControllers.add(ctr);
-					}
-				}
-				while (it.hasNext() && possibleControllers.size() > 0) {
-					Player p = it.next();
-					TeamSetupViewController ctr = possibleControllers.get(rnd.nextInt(possibleControllers.size()));
-					int index = ctr.getTeamNumber();
-					List<Player> playersForTeamCurr = playersForTeam.get(index);
-					if (playersForTeamCurr == null) {
-						playersForTeamCurr = new ArrayList<Player>(ctr.getMaxPlayers());
-						playersForTeam.put(index, playersForTeamCurr);
-					}
-					playersForTeamCurr.add(p);
-					if (playersForTeamCurr.size() >= ctr.getMaxPlayers()) {
-						possibleControllers.remove(ctr);
-					}
-				}
-				assert !it.hasNext();
-			}
-			for (TeamSetupViewController ctr : mTeamControllers.values()) {
-				ctr.setPlayers(playersForTeam.get(ctr.getTeamNumber()));
-			}
-		}
-	}
-
-	private boolean hasAllPlayers() {
-		if (mTeamControllers == null) {
-			return false;
-		}
-		for (TeamSetupViewController ctr : mTeamControllers.values()) {
-			if (!ctr.hasRequiredPlayers(true)) {
-				return false;
-			}
-		}
-		return true;
+		mController.performShuffle();
 	}
 	
 	@Override
@@ -506,13 +352,6 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		savePlayerToBundle(outState);
-		outState.putIntArray(EXTRA_TEAM_MIN_PLAYERS, mMinTeamSizes);
-		outState.putIntArray(EXTRA_TEAM_MAX_PLAYERS, mMaxTeamSizes);
-		refreshTeamNamesAndColors();
-		outState.putStringArray(EXTRA_TEAM_NAMES, mTeamNames);
-		outState.putIntArray(EXTRA_TEAM_COLORS, mTeamColor);
-		outState.putBooleanArray(EXTRA_TEAM_IS_OPTIONAL, mTeamIsOptional);
 		outState.putInt(GameKey.EXTRA_GAMEKEY, mGameKey);
 		outState.putIntArray(EXTRA_OPTIONS_NUMBER_MAX_VALUES, mOptionsNumberMaxValues);
 		outState.putIntArray(EXTRA_OPTIONS_NUMBER_MIN_VALUES, mOptionsNumberMinValues);
@@ -522,150 +361,26 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		outState.putStringArray(EXTRA_OPTIONS_NUMBER_NAMES, mOptionsNumberNames);
 		outState.putStringArray(EXTRA_OPTIONS_BOOLEAN_NAMES, mOptionsBooleanNames);
 		outState.putIntArray(STORAGE_OPTIONS_NUMBER_VALUES_DEFAULT, mOptionsNumbersDefault);
-		outState.putInt(STORAGE_CHOOSING_COLOR_CONTROLLER_INDEX, mChoosingColorControllerIndex);
-		outState.putInt(STORAGE_CHOOSING_PLAYER_CONTROLLER_INDEX, mChoosingPlayerControllerIndex);
-	}
-	
-	private void refreshTeamNamesAndColors() {
-		if (mTeamControllers != null) {
-			for (TeamSetupViewController ctr : mTeamControllers.values()) {
-				mTeamNames[ctr.getTeamNumber()] = ctr.getTeamName();
-				mTeamColor[ctr.getTeamNumber()] = ctr.getTeamColor();
-			}
+		if (mController != null) {
+		    outState.putBundle(EXTRA_TEAMS_PARAMETERS, mController.getParameters());
 		}
-	}
-	
-	@Override
-	public void onRestoreInstanceState(Bundle savedInstanceState) {
-		super.onRestoreInstanceState(savedInstanceState);
-		if (savedInstanceState != null) {
-			mChoosingColorControllerIndex = savedInstanceState.getInt(STORAGE_CHOOSING_COLOR_CONTROLLER_INDEX, -1);
-			mChoosingPlayerControllerIndex = savedInstanceState.getInt(STORAGE_CHOOSING_PLAYER_CONTROLLER_INDEX, -1);
-		}
-	}
-	
-	private String[] allPlayersToArray() {
-		List<String> allPlayerNames = new LinkedList<String>();
-		for (int i = 0; i < mMinTeamSizes.length; i++) {
-			if (mHiddenTeams.contains(i)) {
-				// team not used, fill with null names
-				for (int k = 0; k < mMaxTeamSizes[i]; k++) {
-					allPlayerNames.add(null);
-				}
-			} else {
-				TeamSetupViewController ctr = mTeamControllers.get(i);
-				assert ctr != null;
-				List<Player> curr = ctr.getPlayers(true);
-				for (Player p : curr) {
-					allPlayerNames.add(p.getName());
-				}
-				// fill every not taken player with a null name
-				for (int k = 0; k < ctr.getMaxPlayers() - curr.size(); k++) {
-					allPlayerNames.add(null);
-				}
-			}
-		}
-		String[] playerNames = new String[allPlayerNames.size()];
-		for (int i = 0; i < playerNames.length; i++) {
-			playerNames[i] = allPlayerNames.get(i);
-		}
-		return playerNames;
-	}
-	
-	private void savePlayerToBundle(Bundle out) {
-		if (out == null) {
-			return;
-		}
-		out.putStringArray(EXTRA_PLAYER_NAMES, allPlayersToArray());
-	}
-	
-	private void savePlayerToIntent(Intent out) {
-		if (out == null) {
-			return;
-		}
-		out.putExtra(EXTRA_PLAYER_NAMES, allPlayersToArray());
-	}
-	
-	private boolean prepareTeamParameters(int[] minTeamSize, int[] maxTeamSize, 
-			String[] teamNames, boolean[] isOptional, int[] teamColors) {
-		if (minTeamSize == null || minTeamSize.length == 0) {
-			return false; // there is nothing we can do when we did not even get a min single min size
-		}
-		// ensure minTeamSize.length == maxTeamSize.length, use the greater one
-		if (maxTeamSize == null) {
-			maxTeamSize = new int[minTeamSize.length];
-		} else if (maxTeamSize.length < minTeamSize.length) {
-			int[] temp = maxTeamSize;
-			maxTeamSize = new int[minTeamSize.length];
-			System.arraycopy(temp, 0, maxTeamSize, 0, temp.length);
-		} else if (maxTeamSize.length > minTeamSize.length) {
-			int[] temp = minTeamSize;
-			minTeamSize = new int[maxTeamSize.length];
-			System.arraycopy(temp, 0, minTeamSize, 0, temp.length);
-		}
-		// ensure maxTeamSize >= minTeamSize >= 1
-		for (int i = 0; i < minTeamSize.length; i++) {
-			minTeamSize[i] = Math.max(1, minTeamSize[i]);
-			maxTeamSize[i] = Math.max(minTeamSize[i], maxTeamSize[i]);
-		}
-		mMaxTeamSizes = maxTeamSize;
-		mMinTeamSizes = minTeamSize;
-		// ensure teamNames.length = TeamSize.length, null values allowed
-		if (teamNames == null) {
-			teamNames = new String[minTeamSize.length];
-		} else if (teamNames.length != minTeamSize.length) {
-			String[] temp = teamNames;
-			teamNames = new String[minTeamSize.length];
-			System.arraycopy(temp, 0, teamNames, 0, Math.min(temp.length, minTeamSize.length));
-		}
-		mTeamNames = teamNames;
-		// ensure isOptional.length = TeamSize.length, default to false
-		if (isOptional == null) {
-			isOptional = new boolean[minTeamSize.length];
-		} else if (isOptional.length != minTeamSize.length) {
-			boolean[] temp = isOptional;
-			isOptional = new boolean[minTeamSize.length];
-			System.arraycopy(temp, 0, isOptional, 0, Math.min(temp.length, minTeamSize.length));
-		}
-		mTeamIsOptional = isOptional;
-		// ensure mTeamColor.length = TeamSize.length, use default color
-		if (teamColors == null) {
-			teamColors = new int[minTeamSize.length];
-			Arrays.fill(teamColors, TeamSetupViewController.DEFAULT_TEAM_COLOR);
-		} else if (teamColors.length != minTeamSize.length) {
-			int[] temp = teamColors;
-			teamColors = new int[minTeamSize.length];
-			Arrays.fill(teamColors, TeamSetupViewController.DEFAULT_TEAM_COLOR);			
-			System.arraycopy(temp, 0, teamColors, 0, Math.min(temp.length, minTeamSize.length));
-		}
-		mTeamColor = teamColors;		
-		return true;
 	}
 	
 	private void buildUIFromBundle(Bundle in) {
-		int[] minTeamSize = in.getIntArray(EXTRA_TEAM_MIN_PLAYERS);
-		int[] maxTeamSize = in.getIntArray(EXTRA_TEAM_MAX_PLAYERS);
-		String[] teamNames = in.getStringArray(EXTRA_TEAM_NAMES);
-		int[] teamColors = in.getIntArray(EXTRA_TEAM_COLORS);
-		boolean[] isOptional = in.getBooleanArray(EXTRA_TEAM_IS_OPTIONAL);
-		if (!prepareTeamParameters(minTeamSize, maxTeamSize, teamNames, isOptional, teamColors)) {
-			setResult(RESULT_CANCELED);
-			finish();
-			return;
-		}
 		initTitle();
-		initTeamsUI(in.getStringArray(EXTRA_PLAYER_NAMES));
+		initTeamsUI(in.getBundle(EXTRA_TEAMS_PARAMETERS));
 		initOptionsUI(in);
 		applyBackgroundTheme();
 	}
 	
 	private void applyBackgroundTheme() {
-		int btnResId = GameKey.getButtonResource(mGameKey);
-		mStartGame.setBackgroundResource(btnResId);
-		mShowOptions.setBackgroundResource(btnResId);
-		for (TeamSetupViewController ctr : mTeamControllers.values()) {
-			ctr.applyBackgroundTheme(btnResId);
-		}
+	    applyTheme(mStartGame);
+	    applyTheme(mShowOptions);
+	    mController.applyTheme();
+	}
+	
+	private void applyTheme(View view) {
+        GameKey.applyTheme(mGameKey, getResources(), view);	    
 	}
 	
 	private void initTitle() {
@@ -673,83 +388,21 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		mStartGame.setText(getResources().getString(R.string.game_setup_start, GameKey.getGameName(mGameKey)));
 	}
 	
-	private void initTeamsUI(String[] playerNames) {
-		mTeamControllers = new TreeMap<Integer, TeamSetupViewController>();
-		mTeamsContainer.removeAllViews();
-		int index = 0;
-		mHiddenTeams = new TreeSet<Integer>();
-		for (int i = 0; i < mMinTeamSizes.length; i++) {
-			boolean showController = false;
-			if (!mTeamIsOptional[i]) {
-				// if team is not optional show it
-				showController = true;
-			} else if (playerNames != null) {
-				// if there is a not-null name in the range for this team, then use a controller, else keep it hidden
-				boolean hasNotNull = false;
-				for (int j = index; j < index + mMaxTeamSizes[i] && j < playerNames.length; j++) {
-					hasNotNull |= playerNames[j] != null;
-				}
-				if (hasNotNull) {
-					showController = true;
-				}
-			}
-			if (showController) {
-				List<Player> range = null;
-				if (playerNames != null) {
-					range = new ArrayList<Player>(mMaxTeamSizes[i]);
-					// get the players for the names, in case the player is a dummy by name, use the dummy in this case
-					PlayerPool pool = getPool();
-					for (int j = index; j < index + mMaxTeamSizes[i] && j < playerNames.length; j++) {
-						if (playerNames[j] == null) {
-							range.add(null);
-						} else {
-							DummyPlayer asDummy = DUMMY_PLAYERS.obtainDummy(playerNames[j]);
-							if (asDummy != null) {
-								range.add(asDummy);
-							} else {
-								range.add(pool.populatePlayer(playerNames[j]));
-							}
-						}
-					}
-				}
-				addTeam(i, range);
-			} else {
-				mHiddenTeams.add(i);
-			}
-			index += mMaxTeamSizes[i];
-		}
+	private void initTeamsUI(Bundle parameters) {
+	    NotifyMajorChangeCallback cb = new NotifyMajorChangeCallback() {
+            
+            @Override
+            public void onMajorChange() {
+                applyButtonsState();
+            }
+        };
+	    mController = new TeamSetupTeamsController(mGameKey, this, cb, parameters, (LinearLayout) findViewById(R.id.teams_container));
 		applyButtonsState();
 	}
 	
-	private void addTeam(int teamIndex, List<Player> defaultPlayers) {
-		if (teamIndex < 0 || teamIndex >= mMinTeamSizes.length) {
-			return;
-		}
-		removeTeam(teamIndex);
-		TeamSetupViewController ctr = new TeamSetupViewController(this, teamIndex, mMinTeamSizes[teamIndex], 
-				mMaxTeamSizes[teamIndex], defaultPlayers, mUseDummys, this);
-		int viewIndex = 0;
-		for (int i : mTeamControllers.keySet()) {
-			if (i > teamIndex) {
-				break;
-			} else {
-				viewIndex++;
-			}
-		}
-		mTeamControllers.put(teamIndex, ctr);
-		ctr.setTeamDeletable(isTeamDeletable(teamIndex));
-		ctr.setTeamName(mTeamNames[teamIndex], mAllowTeamNameEditing);
-		ctr.setTeamColorChoosable(mAllowTeamColorChoosing);
-		ctr.setTeamColor(mTeamColor[teamIndex]);
-		ctr.applyBackgroundTheme(GameKey.getButtonResource(mGameKey));
-		mTeamsContainer.addView(ctr.getView(), viewIndex);
-	}
-	
 	private void onNewTeamClicked() {
-		if (mHiddenTeams.size() > 0) {
-			Integer newTeamIndex = mHiddenTeams.first();
-			addTeam(newTeamIndex, null);
-			mHiddenTeams.remove(newTeamIndex);
+		if (mController.hasMissingTeam()) {
+			mController.addMissingTeam();
 		}
 		applyButtonsState();
 	}
@@ -856,120 +509,26 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 
 	@Override
 	public List<Player> toFilter() {
-		List<Player> filter = new LinkedList<Player>();
-		if (mTeamControllers != null) {
-			for (TeamSetupViewController ctr : mTeamControllers.values()) {
-				filter.addAll(ctr.toFilter());
-			}
+		if (mController != null) {
+		    return mController.toFilter();
+		} else {
+		    return Collections.emptyList();
 		}
-		return filter;
-	}
-
-	@Override
-	public void playerChosen(int playerIndex, Player chosen) {
-		if (chosen == null) {
-			return;
-		}
-		TeamSetupViewController ctr = mTeamControllers.get(mChoosingPlayerControllerIndex);
-		if (ctr == null) {
-			addTeam(mChoosingPlayerControllerIndex, null); 
-			ctr = mTeamControllers.get(mChoosingPlayerControllerIndex);
-		}
-		if (ctr != null) {
-			// maybe the player entered a dummy player name, then we want this dummy and not a player that mimiks the dummy but is not one
-			Player reallyChosen = DUMMY_PLAYERS.obtainDummy(chosen);
-			if (reallyChosen == null) {
-				reallyChosen = chosen;
-			}
-			ctr.playerChosen(playerIndex, reallyChosen);
-			applyButtonsState();
-		}
-	}
-
-	@Override
-	public void choosePlayer(int teamIndex, int playerIndex) {
-		mChoosingPlayerControllerIndex = teamIndex;
-		// do not change colors of dummys (since this is also not supported, would only change color of copy of dummy in players pool
-		Player oldPlayer = mTeamControllers.get(teamIndex).getPlayer(playerIndex);
-		if (oldPlayer instanceof DummyPlayer) {
-			oldPlayer = null;
-		}
-		ChoosePlayerDialogFragment dialog = ChoosePlayerDialogFragment.newInstance(playerIndex, 
-				oldPlayer, mAllowPlayerColorChoosing);
-		dialog.show(getSupportFragmentManager(), "ChoosePlayerDialog");
-	}
-
-	@Override
-	public void chooseTeamColor(int teamIndex) {
-		mChoosingColorControllerIndex = teamIndex;
-		showColorChooserDialog(mTeamControllers.get(teamIndex).getTeamColor(), "ChooseTeamColorDialog");		
-	}
-	
-	private void showColorChooserDialog(int color, String tag) {
-		ColorPickerDialog dialog = new ColorPickerDialog();
-		Bundle args = new Bundle();
-		args.putInt(ColorPickerDialog.EXTRA_COLOR, color);
-		dialog.setArguments(args);
-		dialog.show(getSupportFragmentManager(), tag);
-	}
-
-	@Override
-	public void notifyPlayerCountChanged() {
-		applyButtonsState();
-	}
-
-	private boolean isTeamDeletable(int teamIndex) {
-		return teamIndex >= 0 && teamIndex < mTeamIsOptional.length && mTeamIsOptional[teamIndex];
-	}
-
-	@Override
-	public void requestTeamDelete(int teamIndex) {
-		if (isTeamDeletable(teamIndex)) {
-			removeTeam(teamIndex);
-		}
-		applyButtonsState();
-	}
-	
-	private boolean removeTeam(int teamIndex) {
-		// if there currently is a controller for the team with the given index, remove the controller and view
-		if (teamIndex >= 0 && teamIndex < mMinTeamSizes.length) {
-			TeamSetupViewController ctr = mTeamControllers.remove(teamIndex);
-			if (ctr != null) {
-				ctr.close();
-				mTeamsContainer.removeView(ctr.getView());
-				mHiddenTeams.add(teamIndex);
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@Override
 	public void onColorChanged(int color) {
-		TeamSetupViewController ctr = mTeamControllers.get(mChoosingColorControllerIndex);
-		if (ctr == null) {
-			addTeam(mChoosingColorControllerIndex, null); 
-			ctr = mTeamControllers.get(mChoosingColorControllerIndex);
-		}
-		if (ctr != null) {
-			ctr.setTeamColor(color);
-		}
+		mController.onColorChanged(color);
 	}
 
-	@Override
-	public DummyPlayer obtainNewDummy() {
-		return DUMMY_PLAYERS.obtainNewDummy();
-	}
+    @Override
+    public void playerChosen(int arg, Player chosen) {
+        mController.playerChosen(arg, chosen);
+    }
 
-	@Override
-	public void onPlayerColorChanged(int arg, Player concernedPlayer) {
-		TeamSetupViewController ctr = mTeamControllers.get(mChoosingPlayerControllerIndex);
-		if (ctr == null) {
-			addTeam(mChoosingPlayerControllerIndex, null); 
-			ctr = mTeamControllers.get(mChoosingPlayerControllerIndex);
-		}
-		if (ctr != null) {
-			ctr.notifyDataSetChanged();
-		}
-	}	
+    @Override
+    public void onPlayerColorChanged(int arg, Player concernedPlayer) {
+        mController.onPlayerColorChanged(arg, concernedPlayer);
+    }
+
 }

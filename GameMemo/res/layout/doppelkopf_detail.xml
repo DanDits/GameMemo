@@ -75,7 +75,7 @@
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
                 android:text="@string/default_player_name"
-                android:textColor="@android:color/black" />
+                android:textColor="@color/doppelkopf_text_color" />
 
             <Button
                 android:id="@+id/game_player2"
@@ -88,7 +88,7 @@
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
                 android:text="@string/default_player_name"
-                android:textColor="@android:color/black" />
+                android:textColor="@color/doppelkopf_text_color" />
 
             <Button
                 android:id="@+id/game_player3"
@@ -101,7 +101,7 @@
                 android:paddingBottom="10dp"
                 android:paddingTop="10dp"
                 android:text="@string/default_player_name"
-                android:textColor="@android:color/black" />
+                android:textColor="@color/doppelkopf_text_color" />
 
             <Button
                 android:id="@+id/game_player4"
@@ -116,7 +116,7 @@
                 android:paddingTop="10dp"
                 android:scrollHorizontally="true"
                 android:text="@string/default_player_name"
-                android:textColor="@android:color/black" />
+                android:textColor="@color/doppelkopf_text_color" />
 
             <Button
                 android:id="@+id/game_player5"
@@ -131,7 +131,7 @@
                 android:paddingTop="10dp"
                 android:scrollHorizontally="true"
                 android:text="@string/default_player_name"
-                android:textColor="@android:color/black"
+                android:textColor="@color/doppelkopf_text_color"
                 android:visibility="gone" />
         </LinearLayout>
     </RelativeLayout>
@@ -167,7 +167,8 @@
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentTop="true"
                     android:background="@drawable/doppelkopf_button"
-                    android:text="@string/doppelkopf_game_style_normal" />
+                    android:text="@string/doppelkopf_game_style_normal"
+                    android:textColor="@color/doppelkopf_text_color" />
 
                 <TextView
                     android:id="@+id/doppelkopf_game_status"
@@ -230,7 +231,8 @@
                     android:layout_alignParentRight="true"
                     android:layout_below="@+id/bid_separator"
                     android:background="@drawable/doppelkopf_button"
-                    android:text="@string/doppelkopf_bid_no_bid" />
+                    android:text="@string/doppelkopf_bid_no_bid"
+                    android:textColor="@color/doppelkopf_text_color" />
 
                 <Button
                     android:id="@+id/contra_result"
@@ -240,7 +242,8 @@
                     android:layout_alignParentRight="true"
                     android:layout_below="@+id/contra_bid"
                     android:background="@drawable/doppelkopf_button"
-                    android:text="@string/doppelkopf_result_120" />
+                    android:text="@string/doppelkopf_result_120"
+                    android:textColor="@color/doppelkopf_text_color" />
 
                 <ImageButton
                     android:id="@+id/contra_extra_fox"
@@ -286,7 +289,8 @@
                     android:layout_alignRight="@+id/re_bid"
                     android:layout_below="@+id/contra_bid"
                     android:background="@drawable/doppelkopf_button"
-                    android:text="@string/doppelkopf_result_120" />
+                    android:text="@string/doppelkopf_result_120"
+                    android:textColor="@color/doppelkopf_text_color" />
 
                 <ImageButton
                     android:id="@+id/re_extra_dk"
@@ -316,7 +320,8 @@
                     android:layout_alignRight="@+id/re_extra_fox"
                     android:layout_below="@+id/bid_separator"
                     android:background="@drawable/doppelkopf_button"
-                    android:text="@string/doppelkopf_bid_no_bid" />
+                    android:text="@string/doppelkopf_bid_no_bid"
+                    android:textColor="@color/doppelkopf_text_color" />
 
                 <ImageButton
                     android:id="@+id/re_extra_charly"
