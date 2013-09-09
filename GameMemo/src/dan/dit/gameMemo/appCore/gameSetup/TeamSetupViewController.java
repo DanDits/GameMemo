@@ -1,4 +1,4 @@
-package dan.dit.gameMemo.gameData.player;
+package dan.dit.gameMemo.appCore.gameSetup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +15,10 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
+import dan.dit.gameMemo.gameData.player.DummyPlayer;
+import dan.dit.gameMemo.gameData.player.NoPlayer;
+import dan.dit.gameMemo.gameData.player.Player;
+import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.util.LinearLayoutList;
 
 public class TeamSetupViewController implements ChoosePlayerDialogListener {
@@ -92,7 +96,6 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 				choosePlayer(mPlayers.size() - 1);
 			}
 		});
-		setTeamName(null, false);
 		mPlayerContainer = (LinearLayoutList) mRoot.findViewById(R.id.player_container);
 		mPlayers = new ArrayList<Player>(mMaxPlayer);
 		setPlayers(players);
@@ -119,17 +122,17 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 	                mPlayers.add(mPlayers.size(), NoPlayer.INSTANCE);
 	            }
 	        }
-            applyAddRemovePlayerState(true);
+            applyAddRemovePlayerState();
 	        return true;
 	    }
-        applyAddRemovePlayerState(true);
+        applyAddRemovePlayerState();
 	    return false;
 	}
 	
 	public void replacePlayer(int index, Player p) {
 		mPlayers.set(index, p);
 		fillRequiredSlots();
-		applyAddRemovePlayerState(true);
+		applyAddRemovePlayerState();
 	}
 	
 	private Player removePlayer(int index) {
@@ -142,7 +145,7 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 			removed = mPlayers.remove(index);
 		}
 		fillRequiredSlots();
-		applyAddRemovePlayerState(true);
+		applyAddRemovePlayerState();
 		return removed;
 	}
 	
@@ -159,7 +162,7 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 		return mRoot;
 	}
 	
-	private void clearPlayers() {
+	protected void clearPlayers() { // afterwards setPlayers or reset must be invoked
 		mPlayers.clear();
 	}
 	
@@ -171,11 +174,10 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 	public void reset() {
 		clearPlayers();
 		fillRequiredSlots();
-		applyAddRemovePlayerState(true);
+		applyAddRemovePlayerState();
 	}
 	
 	public void setPlayers(List<Player> players) {
-	    int oldPlayerCount = mPlayers.size();
 		clearPlayers();
 		// first use given players
 		if (players != null) {
@@ -186,7 +188,7 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 		    }
 		}
 		fillRequiredSlots();
-		applyAddRemovePlayerState(oldPlayerCount != mPlayers.size());
+		applyAddRemovePlayerState();
 	}
 	
 	public boolean hasRequiredPlayers(boolean includeDummys) {
@@ -212,16 +214,14 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
 		return players;
 	}
 	
-	private void applyAddRemovePlayerState(boolean playerCountChange) {
+	private void applyAddRemovePlayerState() {
 		boolean enableAdd = mPlayers.size() < mMaxPlayer;
 		mAddPlayer.setEnabled(enableAdd);
 		mAddPlayer.setVisibility(enableAdd ? View.VISIBLE : View.GONE);
 		if (mTeamPlayerAdapter != null) {
 			mTeamPlayerAdapter.notifyDataSetChanged();
 		}
-		if (playerCountChange) {
-		    mCallback.notifyPlayerCountChanged();
-		}
+		mCallback.notifyPlayerCountChanged();
 	}
 	
 	private boolean canRemovePlayer() {

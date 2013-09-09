@@ -28,8 +28,6 @@
     <string name="tichu_game_tichu_button_2_content_description">Tichu Ansage umschalten für Spieler 2</string>
     <string name="tichu_game_tichu_button_3_content_description">Tichu Ansage umschalten für Spieler 3</string>
     <string name="tichu_game_tichu_button_4_content_description">Tichu Ansage umschalten für Spieler 4</string>
-    <string name="game_detail_option_show_delta">Zeige Punktedelta</string>
-    <string name="game_detail_option_show_tichus">Zeige Tichus</string>
     <string name="tichu_game_tichu_round_bid_image_content_description">Visualisiert Tichu Ansage in einer Runde</string>
     <string name="game_failed_loading">Spiel konnte nicht geladen werden.</string>
     <string name ="show_statistics">Statistik</string>
@@ -117,6 +115,8 @@
 	<string name="tichu_game_mery_rule">Mercy Regel</string>
 	<string name="tichu_game_mery_rule_short">Mercy</string>
 	<string name="game_winner">Gewinner</string>
+	<string name="game_detail_option_show_delta">Delta zeigen</string>
+	<string name="tichu_game_score_limit_with_value">Punktelimit: %1$d</string>
 	<string name="tichu_game_score_limit">Punktelimit</string>
 	<string name="tichu_game_score_limit_short">Limit</string>
 	<string name="game_origin">Herkunft</string>
@@ -151,7 +151,10 @@
 	<string name="color">Farbe</string>
 	<string name="game_setup_new_team">Neues Team</string>
 	<string name="doppelkopf_option_cycles">Runden</string>
+	<string name="doppelkopf_option_cycles_with_value">Runden: %1$d</string>
+	<string name="doppelkopf_option_cycles_no_limit">Runden unbegrenzt</string>
 	<string name="doppelkopf_option_duty_soli">Pflichtsoli</string>
+	<string name="doppelkopf_option_duty_soli_with_value">Pflichtsoli: %1$d</string>
 	<string name="doppelkopf_team_name">Spieler</string>
 	<string name="doppelkopf_re_party">Re</string>
 	<string name="doppelkopf_contra_party">Contra</string>
@@ -184,6 +187,7 @@
 	<string name="doppelkopf_game_style_fleischloser">Fleischloser</string>
 	<string name="doppelkopf_game_style_buben_solo">Buben Solo</string>
 	<string name="doppelkopf_game_style_damen_solo">Damen Solo</string>
+	<string name="doppelkopf_game_style_farb_solo">Farb Solo</string>
 	<string name="doppelkopf_game_style_pik_solo">Pik Solo</string>
 	<string name="doppelkopf_game_style_karo_solo">Karo Solo</string>
 	<string name="doppelkopf_game_style_herz_solo">Herz Solo</string>

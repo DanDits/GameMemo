@@ -5,14 +5,14 @@ import java.util.List;
 
 import android.content.Intent;
 import android.os.Bundle;
-import dan.dit.gameMemo.R;
-import dan.dit.gameMemo.appCore.GameSetupActivity;
 import dan.dit.gameMemo.appCore.GamesActivity;
+import dan.dit.gameMemo.appCore.gameSetup.GameSetupActivity;
+import dan.dit.gameMemo.appCore.gameSetup.TeamSetupTeamsController;
+import dan.dit.gameMemo.appCore.gameSetup.TeamSetupViewController;
 import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothDataExchangeActivity;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
-import dan.dit.gameMemo.gameData.player.TeamSetupTeamsController;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
@@ -27,22 +27,15 @@ import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
  *
  */
 public class TichuGamesActivity extends GamesActivity  {
-	private static final boolean[] TICHU_OPTIONS_BOOLEAN = new boolean[] {false}; // {MERCY_RULE}
-	private static final int[] TICHU_OPTIONS_NUMBER = new int[] {TichuGame.DEFAULT_SCORE_LIMIT};//{SCORE_LIMIT}
-	private static final int[] TICHU_OPTIONS_MIN_NUMBERS = new int[] {TichuGame.MIN_SCORE_LIMIT};
-	private static final int[] TICHU_OPTIONS_MAX_NUMBERS = new int[] {TichuGame.MAX_SCORE_LIMIT};
  	
 	@Override
 	protected void startGameSetup(long id) {
+	    // make options, in case there is a game to copy values from, change the option values
+	    GameSetupOptions.Builder options = new GameSetupOptions.Builder();
+	    
         // make intent to start setup activity
 		Intent i = new Intent(this, GameSetupActivity.class);
 		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.TICHU);
-		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_MAX_VALUES, TICHU_OPTIONS_MAX_NUMBERS);
-		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_MIN_VALUES, TICHU_OPTIONS_MIN_NUMBERS);
-		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES, TICHU_OPTIONS_NUMBER);
-		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_VALUES, TICHU_OPTIONS_BOOLEAN);
-		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_NAMES, new String[] {getResources().getString(R.string.tichu_game_score_limit)});
-		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_NAMES, new String[] {getResources().getString(R.string.tichu_game_mery_rule)});
 		i.putExtra(GameSetupActivity.EXTRA_FLAG_SUGGEST_UNFINISHED_GAME, true);
 
 		// priority to copy info from: parameter id, highlighted id, single checked id
@@ -55,6 +48,7 @@ public class TichuGamesActivity extends GamesActivity  {
 		}
 		String[] team1Names = new String[2];
 		String[] team2Names = new String[2];
+		
 		if (Game.isValidId(copyGameSetupId)) {
 			List<Game> games = null;
 			try {
@@ -68,17 +62,21 @@ public class TichuGamesActivity extends GamesActivity  {
                 team1Names[1] = game.getTeam1().getSecond().getName();
                 team2Names[0] = game.getTeam2().getFirst().getName();
                 team2Names[1] = game.getTeam2().getSecond().getName();
-				i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES, new int[] {game.getScoreLimit()});
-				i.putExtra(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_VALUES, new boolean[] {game.usesMercyRule()});
+                options.setMercyRuleEnabled(game.usesMercyRule());
+                options.setScoreLimit(game.getScoreLimit());
 			}
 		}
 		
 	    // make teams
         TeamSetupTeamsController.Builder teamsBuilder = new TeamSetupTeamsController.Builder(false, false);
-        teamsBuilder.addTeam(2, 2, false, null, false, 0, false, team1Names);
-        teamsBuilder.addTeam(2, 2, false, null, false, 0, false, team2Names);
+        teamsBuilder.addTeam(2, 2, false, null, false, TeamSetupViewController.DEFAULT_TEAM_COLOR, false, team1Names);
+        teamsBuilder.addTeam(2, 2, false, null, false, TeamSetupViewController.DEFAULT_TEAM_COLOR, false, team2Names);
         i.putExtra(GameSetupActivity.EXTRA_TEAMS_PARAMETERS, teamsBuilder.build());
         
+        // set options
+        i.putExtra(GameSetupActivity.EXTRA_OPTIONS_PARAMETERS, options.build());
+        
+        // start the setup
 		startActivityForResult(i, GAME_SETUP_ACTIVITY);
 	}
 	
@@ -88,23 +86,20 @@ public class TichuGamesActivity extends GamesActivity  {
 			if (extras.containsKey(GameStorageHelper.getCursorItemType(GameKey.TICHU))) {
 				selectGame(extras.getLong(GameStorageHelper.getCursorItemType(GameKey.TICHU)));
 			} else {
-			    Bundle parameters = extras.getBundle(GameSetupActivity.EXTRA_TEAMS_PARAMETERS);
-				String[] playerNames = parameters.getStringArray(TeamSetupTeamsController.EXTRA_PLAYER_NAMES);
-				boolean[] boolOptions = extras.getBooleanArray(GameSetupActivity.EXTRA_OPTIONS_BOOLEAN_VALUES);
-				int[] numberOptions = extras.getIntArray(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES);
+			    Bundle options = extras.getBundle(GameSetupActivity.EXTRA_OPTIONS_PARAMETERS);
+                extras.putInt(TichuGameDetailFragment.EXTRA_NEW_GAME_SCORE_LIMIT, GameSetupOptions.extractScoreLimit(options));
+                extras.putBoolean(TichuGameDetailFragment.EXTRA_NEW_GAME_USE_MERCY_RULE, GameSetupOptions.extractMercyRule(options));
+                
+			    Bundle teamParameters = extras.getBundle(GameSetupActivity.EXTRA_TEAMS_PARAMETERS);
+				String[] playerNames = teamParameters.getStringArray(TeamSetupTeamsController.EXTRA_PLAYER_NAMES);
 				if (playerNames != null && playerNames.length >= TichuGame.TOTAL_PLAYERS) {
 					extras.putString(TichuGameDetailFragment.EXTRAS_TEAM1_PLAYER_1, playerNames[0]);
 					extras.putString(TichuGameDetailFragment.EXTRAS_TEAM1_PLAYER_2, playerNames[1]);
 					extras.putString(TichuGameDetailFragment.EXTRAS_TEAM2_PLAYER_1, playerNames[2]);
 					extras.putString(TichuGameDetailFragment.EXTRAS_TEAM2_PLAYER_2, playerNames[3]);
-					if (numberOptions != null) {
-						extras.putInt(TichuGameDetailFragment.EXTRA_NEW_GAME_SCORE_LIMIT, numberOptions[0]);
-					}
-					if (boolOptions != null) {
-						extras.putBoolean(TichuGameDetailFragment.EXTRA_NEW_GAME_USE_MERCY_RULE, boolOptions[0]);
-					}
 					loadGameDetails(extras);
 				}
+
 			}
 		}
 	}

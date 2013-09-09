@@ -21,8 +21,6 @@
     <string name="tichu_game_tichu_button_2_content_description">Toggle tichu bid player 2</string>
     <string name="tichu_game_tichu_button_3_content_description">Toggle tichu bid player 3</string>
     <string name="tichu_game_tichu_button_4_content_description">Toggle tichu bid player 4</string>
-    <string name="game_detail_option_show_delta">Show score delta</string>
-    <string name="game_detail_option_show_tichus">Show tichus</string>
     <string name="tichu_game_tichu_round_bid_image_content_description">Visualizes tichu bid for player</string>
     <string name="game_failed_loading">Failed loading game.</string>
     <string name ="GamesDBAccessPermissionDescription">Access to games database table</string>
@@ -110,6 +108,8 @@
 	<string name="statistics_only_show_significant">Only show significant</string>
 	<string name="tichu_game_mery_rule">Mercy rule</string>
 	<string name="tichu_game_mery_rule_short">mercy</string>
+	<string name="game_detail_option_show_delta">Show delta</string>
+	<string name="tichu_game_score_limit_with_value">Score limit: %1$d</string>
 	<string name="tichu_game_score_limit">Score limit</string>
 	<string name="tichu_game_score_limit_short">limit</string>
 	<string name="game_winner">Winner</string>
@@ -149,7 +149,10 @@
 	<string name="choose_color">Choose color</string>
 	<string name="game_setup_new_team">New team</string>
 	<string name="doppelkopf_option_cycles">Cycles</string>
+	<string name="doppelkopf_option_cycles_with_value">Cycles: %1$d</string>
+	<string name="doppelkopf_option_cycles_no_limit">Infinite rounds</string>
 	<string name="doppelkopf_option_duty_soli">Duty soli</string>
+	<string name="doppelkopf_option_duty_soli_with_value">Duty soli: %1$d</string>
 	<string name="doppelkopf_team_name">Players</string>
 	<string name="doppelkopf_re_party">Re</string>
 	<string name="doppelkopf_contra_party">Contra</string>

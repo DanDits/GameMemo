@@ -16,6 +16,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
 import dan.dit.gameMemo.R;
@@ -24,6 +25,8 @@ import dan.dit.gameMemo.appCore.GameDetailFragment;
 import dan.dit.gameMemo.appCore.doppelkopf.DoppelkopfGameDetailActivity;
 import dan.dit.gameMemo.appCore.doppelkopf.DoppelkopfGameDetailFragment;
 import dan.dit.gameMemo.appCore.doppelkopf.DoppelkopfGamesActivity;
+import dan.dit.gameMemo.appCore.gameSetup.GameSetupNoOptions;
+import dan.dit.gameMemo.appCore.gameSetup.GameSetupOptionsController;
 import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment;
 import dan.dit.gameMemo.appCore.tichu.TichuGamesActivity;
 import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfGame;
@@ -399,6 +402,18 @@ public final class GameKey {
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
 	}
+
+    public static GameSetupOptionsController makeGameSetupOptionsController(
+            int gameKey, Context context, ViewGroup container, Bundle parameters) {
+        switch (gameKey) {
+        case GameKey.TICHU:
+            return new dan.dit.gameMemo.appCore.tichu.GameSetupOptions(context, container, parameters);
+        case DOPPELKOPF: 
+            return new dan.dit.gameMemo.appCore.doppelkopf.GameSetupOptions(context, container, parameters);
+        default:
+            return GameSetupNoOptions.INSTANCE;               
+        }
+    }
 
 	public static String getStorageTableName(int gameKey) {
 		switch(gameKey) {

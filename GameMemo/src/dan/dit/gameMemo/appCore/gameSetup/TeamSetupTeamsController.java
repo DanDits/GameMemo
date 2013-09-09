@@ -1,4 +1,4 @@
-package dan.dit.gameMemo.gameData.player;
+package dan.dit.gameMemo.appCore.gameSetup;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,19 +7,23 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.view.ViewGroup;
+import dan.dit.gameMemo.appCore.gameSetup.TeamSetupViewController.TeamSetupCallback;
 import dan.dit.gameMemo.gameData.game.GameKey;
-import dan.dit.gameMemo.gameData.player.TeamSetupViewController.TeamSetupCallback;
+import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment;
+import dan.dit.gameMemo.gameData.player.DummyPlayer;
+import dan.dit.gameMemo.gameData.player.Player;
+import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.util.ColorPickerDialog;
 import dan.dit.gameMemo.util.ColorPickerView.OnColorChangedListener;
 import dan.dit.gameMemo.util.NotifyMajorChangeCallback;
@@ -32,7 +36,7 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
     public static final String EXTRA_PLAYER_NAMES = "dan.dit.gameMemo.EXTRA_PLAYER_NAMES"; // String[], changeable, contains null for not selected but allowed slots in a team
     
     private Map<Integer, TeamSetupViewController> mTeamControllers;
-    private LinearLayout mTeamsContainer;
+    private ViewGroup mTeamsContainer;
     private SortedSet<Integer> mHiddenTeams;
     private int mMaxTeamCount;
     private int mGameKey;
@@ -41,6 +45,7 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
     private NotifyMajorChangeCallback mCallback;
     private int mChoosingPlayerControllerIndex = -1;
     private int mChoosingColorControllerIndex = -1;
+    private boolean mPerformGapClosing = true;
 
     public static class Builder {
         private static final String PARAMETER_FLAG_USE_DUMMY_PLAYERS = "dan.dit.gameMemo.USE_DUMMY_PLAYERS"; // boolean
@@ -75,7 +80,7 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
             mMaxPlayers.add(maxPlayers);
             mIsOptional.add(isOptional);
             mTeamName.add(teamName);
-            mTeamColor.add(teamColor);
+            mTeamColor.add(teamColor == 0 ? TeamSetupViewController.DEFAULT_TEAM_COLOR : teamColor);
             mAllowTeamColorEditing.add(allowTeamColorEditing);
             mAllowTeamNameEditing.add(allowTeamNameEditing);
             int namesAdded = 0;
@@ -133,7 +138,7 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
     
     public TeamSetupTeamsController(int gameKey, FragmentActivity activity, NotifyMajorChangeCallback callback,
             Bundle parameters,
-            LinearLayout teamsContainer) {
+            ViewGroup teamsContainer) {
         mGameKey = gameKey;
         mTeamControllers = new TreeMap<Integer, TeamSetupViewController>();
         mParameters = parameters;
@@ -148,7 +153,10 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
         mTeamsContainer.removeAllViews();
         mChoosingColorControllerIndex = parameters.getInt(STORAGE_CHOOSING_COLOR_CONTROLLER_INDEX, -1);
         mChoosingPlayerControllerIndex = parameters.getInt(STORAGE_CHOOSING_PLAYER_CONTROLLER_INDEX, -1);
+        mPerformGapClosing = false;
         init();
+        mPerformGapClosing = true;
+        closeDummyNumberGaps();
     }
     
     private void init() {
@@ -179,13 +187,15 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
                     for (int j = index; j < index + maxTeamSize && j < playerNames.length; j++) {
                         if (playerNames[j] == null) {
                             range.add(null);
-                        } else {
+                        } else if (usesDummys()) {
                             int dummyNumber = DummyPlayer.extractNumber(playerNames[j]);
                             if (dummyNumber >= DummyPlayer.FIRST_NUMBER) {
                                 range.add(new DummyPlayer(dummyNumber));
                             } else {
                                 range.add(pool.populatePlayer(playerNames[j]));
                             }
+                        } else {
+                            range.add(pool.populatePlayer(playerNames[j]));                            
                         }
                     }
                 }
@@ -193,7 +203,6 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
             }
             index += maxTeamSize;
         }
-        assertNoGapContained();
     }
     
     public boolean hasRequiredPlayers() {
@@ -297,53 +306,41 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
         }
         return list;
     }
-
-    private void assertNoGapContained() {
-        SortedSet<Integer> usedDummyNumbers = getUsedDummyNumbers();
-        Log.d("GameMemo", "Used dummy numbers: " + usedDummyNumbers);
-        int last = DummyPlayer.FIRST_NUMBER - 1;
-        for (int n : usedDummyNumbers) {
-            if (n != last + 1) {
-                throw new IllegalStateException("Gap found of dummy numbers: " + usedDummyNumbers);
-            }
-            last = n;
-        }
-    }
         
     private void closeDummyNumberGaps() {
-        Log.d("GameMemo", "Used dummyNumbers before closing: " + getUsedDummyNumbers());
-        SortedSet<Integer> usedDummyNumbers = getUsedDummyNumbers();
-        SortedSet<Integer> correctNotTakenNumbers = new TreeSet<Integer>();
-        SparseIntArray map = new SparseIntArray(usedDummyNumbers.size());
-        // iterate through all correct numbers and find those that are not taken
-        for (int number = 0; number < usedDummyNumbers.size(); number++) {
-            Integer correctNumber = Integer.valueOf(number + DummyPlayer.FIRST_NUMBER);
-            if (!usedDummyNumbers.contains(correctNumber)) {
-                correctNotTakenNumbers.add(correctNumber);
+        if (mPerformGapClosing) {
+            SortedSet<Integer> usedDummyNumbers = getUsedDummyNumbers();
+            SortedSet<Integer> correctNotTakenNumbers = new TreeSet<Integer>();
+            SparseIntArray map = new SparseIntArray(usedDummyNumbers.size());
+            // iterate through all correct numbers and find those that are not taken
+            for (int number = 0; number < usedDummyNumbers.size(); number++) {
+                Integer correctNumber = Integer.valueOf(number + DummyPlayer.FIRST_NUMBER);
+                if (!usedDummyNumbers.contains(correctNumber)) {
+                    correctNotTakenNumbers.add(correctNumber);
+                }
             }
-        }
-        // map any wrong number to the correct number, if it is not wrong, then map it to itself
-        Iterator<Integer> correctNumbersIt = correctNotTakenNumbers.iterator();
-        for (int dummyNumber : usedDummyNumbers) {
-            if (dummyNumber - DummyPlayer.FIRST_NUMBER < usedDummyNumbers.size()) {
-                map.put(dummyNumber, dummyNumber); // map correct numbers to themselves
-            } else {
-                map.put(dummyNumber, correctNumbersIt.next());
+            // map any wrong number to the correct number, if it is not wrong, then map it to itself
+            Iterator<Integer> correctNumbersIt = correctNotTakenNumbers.iterator();
+            for (int dummyNumber : usedDummyNumbers) {
+                if (dummyNumber - DummyPlayer.FIRST_NUMBER < usedDummyNumbers.size()) {
+                    map.put(dummyNumber, dummyNumber); // map correct numbers to themselves
+                } else {
+                    map.put(dummyNumber, correctNumbersIt.next());
+                }
             }
-        }
-        for (TeamSetupViewController ctr : mTeamControllers.values()) {
-            for (int i = 0; i < ctr.getPlayerCount(); i++) {
-                Player curr = ctr.getPlayer(i);
-                if (curr != null && curr instanceof DummyPlayer) {
-                    int currNumber = ((DummyPlayer) curr).getNumber();
-                    int mapping = map.get(currNumber); 
-                    if (mapping != currNumber) {
-                        ctr.replacePlayer(i, new DummyPlayer(mapping));
+            for (TeamSetupViewController ctr : mTeamControllers.values()) {
+                for (int i = 0; i < ctr.getPlayerCount(); i++) {
+                    Player curr = ctr.getPlayer(i);
+                    if (curr != null && curr instanceof DummyPlayer) {
+                        int currNumber = ((DummyPlayer) curr).getNumber();
+                        int mapping = map.get(currNumber); 
+                        if (mapping != currNumber) {
+                            ctr.replacePlayer(i, new DummyPlayer(mapping));
+                        }
                     }
                 }
             }
         }
-        Log.d("GameMemo", "Used dummyNumbers after closing: " + getUsedDummyNumbers());
     }
     
     private SortedSet<Integer> getUsedDummyNumbers() {
@@ -417,13 +414,17 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
     }
     
     public void resetFields() {
-        for (Integer index : mTeamControllers.keySet()) {
+        Set<Integer> keys = new TreeSet<Integer>(mTeamControllers.keySet());
+        for (Integer index : keys) {
             TeamSetupViewController ctr = mTeamControllers.get(index);
             if (ctr.isDeletable()) {
                 removeTeam(index);
             } else {
-                ctr.reset();
+                ctr.clearPlayers();
             }
+        }
+        for (TeamSetupViewController ctr : mTeamControllers.values()) {
+            ctr.reset();
         }
     }
     
@@ -484,7 +485,6 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
         ctr.applyTheme();
         mTeamsContainer.addView(ctr.getView(), viewIndex);
         mCallback.onMajorChange();
-        assertNoGapContained();
     }
 
     public Bundle getParameters() {
@@ -532,7 +532,8 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
         return playerNames;
     }
     
-    public synchronized void performShuffle() {
+    public void performShuffle() {
+        mPerformGapClosing = false;
         List<Integer> playerCountForTeams = new ArrayList<Integer>(mTeamControllers.size());
         List<Player> allPlayers = new ArrayList<Player>();
         for (TeamSetupViewController ctr : mTeamControllers.values()) {
@@ -599,6 +600,7 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
                 ctr.setPlayers(playersForTeam.get(ctr.getTeamNumber()));
             }
         }
+        mPerformGapClosing = true;
         closeDummyNumberGaps();
     }
 }

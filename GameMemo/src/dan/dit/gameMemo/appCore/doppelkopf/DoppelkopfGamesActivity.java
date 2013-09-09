@@ -13,31 +13,29 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
 import dan.dit.gameMemo.R;
-import dan.dit.gameMemo.appCore.GameSetupActivity;
 import dan.dit.gameMemo.appCore.GamesActivity;
+import dan.dit.gameMemo.appCore.gameSetup.GameSetupActivity;
+import dan.dit.gameMemo.appCore.gameSetup.TeamSetupTeamsController;
+import dan.dit.gameMemo.appCore.doppelkopf.GameSetupOptions;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfGame;
 import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfRuleSystem;
 import dan.dit.gameMemo.gameData.player.Player;
-import dan.dit.gameMemo.gameData.player.TeamSetupTeamsController;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.ActivityUtil;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 public class DoppelkopfGamesActivity extends GamesActivity  {
-	private static final int[] DOPPELKOPF_OPTIONS_MIN_NUMBERS = new int[] {0, 0};
-	private static final int[] DOPPELKOPF_OPTIONS_MAX_NUMBERS = new int[] {Integer.MAX_VALUE, Integer.MAX_VALUE};
 	private static final String PREFERENCES_DEFAULT_RULE_SYSTEM = "dan.dit.gameMemo.PREF_DEF_RULE_SYSTEM";
  	
 	@Override
 	protected void startGameSetup(long id) {
+        // make options, in case there is a game to copy values from, change the option values
+        GameSetupOptions.Builder options = makeOptionsBuilder();
+        
 		Intent i = new Intent(this, GameSetupActivity.class);
 		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.DOPPELKOPF);
-		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_MAX_VALUES, DOPPELKOPF_OPTIONS_MAX_NUMBERS);
-		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_MIN_VALUES, DOPPELKOPF_OPTIONS_MIN_NUMBERS);
-		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES, makeOptionsNumbers());
-		i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_NAMES, new String[] {getResources().getString(R.string.doppelkopf_option_cycles), getString(R.string.doppelkopf_option_duty_soli)});
 		// priority to copy info from: parameter id, highlighted id, single checked id
 		long copyGameSetupId = Game.isValidId(id) ? id : getHighlightedGame();
 		if (!Game.isValidId(copyGameSetupId)) {
@@ -62,29 +60,26 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 					Player curr = players.get(index);
 					playerNames[index] = curr == null ? null : curr.getName();
 				}
-				i.putExtra(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES, new int[] {game.getLimit(), game.getDutySoliCountPerPlayer()});
+				options.setDurchlauefe(game.getLimit());
+				options.setDutySoli(game.getDutySoliCountPerPlayer());
 			}
 		}
 		
         // make teams
-        TeamSetupTeamsController.Builder teamsBuilder = new TeamSetupTeamsController.Builder(true, true);
-        //teamsBuilder.addTeam(4, 5, false, getResources().getString(R.string.doppelkopf_team_name), false, 0, false, playerNames); // correct team
-        //TODO for testing:
-        teamsBuilder.addTeam(4, 7, true, getResources().getString(R.string.doppelkopf_team_name), true, 0xFF123456, true, playerNames);
-        teamsBuilder.addTeam(1, 2, true, "Die coolen", false, 0xFFFF4321, true, null); 
+        TeamSetupTeamsController.Builder teamsBuilder = new TeamSetupTeamsController.Builder(false, false);
+        teamsBuilder.addTeam(4, 5, false, getResources().getString(R.string.doppelkopf_team_name), false, 0, false, playerNames); 
         
         i.putExtra(GameSetupActivity.EXTRA_TEAMS_PARAMETERS, teamsBuilder.build());
+
+        // set options
+        i.putExtra(GameSetupActivity.EXTRA_OPTIONS_PARAMETERS, options.build());
         
 		startActivityForResult(i, GAME_SETUP_ACTIVITY);
 	}
 	
-	private int[] makeOptionsNumbers() {
+	private GameSetupOptions.Builder makeOptionsBuilder() {
 		DoppelkopfRuleSystem ruleSys = DoppelkopfRuleSystem.getInstanceByName(getDefaultRuleSystem());
-		if (ruleSys == null) {
-			return new int[] {DoppelkopfGame.DEFAULT_DURCHLAEUFE, DoppelkopfGame.DEFAULT_DUTY_SOLI}; //{DURCHLAEUFE,DUTY_SOLI}
-		} else {
-			return new int[] {ruleSys.getDefaultDurchlaeufe(), ruleSys.getDefaultDutySoli()};
-		}
+		return new GameSetupOptions.Builder(ruleSys);
 	}
 	
 	@Override
@@ -93,14 +88,15 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 			if (extras.containsKey(GameStorageHelper.getCursorItemType(GameKey.DOPPELKOPF))) {
 				selectGame(extras.getLong(GameStorageHelper.getCursorItemType(GameKey.DOPPELKOPF)));
 			} else {
-			    Bundle parameters = extras.getBundle(GameSetupActivity.EXTRA_TEAMS_PARAMETERS);
-				String[] playerNames = parameters.getStringArray(TeamSetupTeamsController.EXTRA_PLAYER_NAMES);
-				int[] numberOptions = extras.getIntArray(GameSetupActivity.EXTRA_OPTIONS_NUMBER_VALUES);
+                Bundle options = extras.getBundle(GameSetupActivity.EXTRA_OPTIONS_PARAMETERS);
+                extras.putInt(DoppelkopfGameDetailFragment.EXTRA_NEW_GAME_ROUNDS_LIMIT, GameSetupOptions.extractDurchlaeufe(options));
+                extras.putInt(DoppelkopfGameDetailFragment.EXTRA_NEW_GAME_DUTY_SOLI_PER_PLAYER, GameSetupOptions.extractDutySoli(options));
+                
+			    Bundle teamParameters = extras.getBundle(GameSetupActivity.EXTRA_TEAMS_PARAMETERS);
+				String[] playerNames = teamParameters.getStringArray(TeamSetupTeamsController.EXTRA_PLAYER_NAMES);
 				if (playerNames != null && playerNames.length >= DoppelkopfGame.MIN_PLAYERS) {
 					extras.putStringArray(DoppelkopfGameDetailFragment.EXTRAS_NEW_GAME_PLAYERS, playerNames);
 					extras.putString(DoppelkopfGameDetailFragment.EXTRA_RULE_SYSTEM, getDefaultRuleSystem());
-					extras.putInt(DoppelkopfGameDetailFragment.EXTRA_NEW_GAME_ROUNDS_LIMIT, numberOptions[0]);
-					extras.putInt(DoppelkopfGameDetailFragment.EXTRA_NEW_GAME_DUTY_SOLI_PER_PLAYER, numberOptions[1]);
 					loadGameDetails(extras);
 				}
 			}

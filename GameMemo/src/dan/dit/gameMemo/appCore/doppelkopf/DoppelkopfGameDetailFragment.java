@@ -389,6 +389,9 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 	}
 	   
     private void applyLock() {
+        if (mLockItem == null) {
+            return;
+        }
         if (mGame.isLocked()) {
             mLockItem.setVisible(true);
             mLockItem.setTitle(R.string.unlock_game);

@@ -36,6 +36,8 @@ public class DoppelkopfGame extends Game {
 	public static final PlayerPool PLAYERS = new PlayerPool();
 	public static final int DEFAULT_DURCHLAEUFE = 2;
 	public static final int DEFAULT_DUTY_SOLI = 0;
+    public static final int MAX_DURCHLAEUFE = 10;
+    public static final int MAX_DUTY_SOLI = 20;
 	
 	private List<Player> mPlayers = new ArrayList<Player>(MAX_PLAYERS);
 	private int[] mScores;

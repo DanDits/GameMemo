@@ -26,7 +26,7 @@ import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
 public class TichuGame extends Game {
-	public static final int MIN_SCORE_LIMIT = 5;
+	public static final int MIN_SCORE_LIMIT = 100;
 	public static final int MAX_SCORE_LIMIT = 10000;
 	public static final int DEFAULT_SCORE_LIMIT = 1000;
 	public static boolean DEFAULT_USE_MERCY_RULE = false;
@@ -351,7 +351,7 @@ public class TichuGame extends Game {
 			builder.append(res.getString(R.string.tichu_game_mery_rule)).append(' ');
 		}
 		if (getScoreLimit() != TichuGame.DEFAULT_SCORE_LIMIT) {
-			builder.append(res.getString(R.string.tichu_game_score_limit)).append(": ").append(getScoreLimit()).append('\n');
+			builder.append(res.getString(R.string.tichu_game_score_limit_with_value, getScoreLimit())).append('\n');
 		}
 		String originFormatted = getFormattedOrigin();
 		if (originFormatted.length() > 0) {

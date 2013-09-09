@@ -1,4 +1,4 @@
-package dan.dit.gameMemo.appCore;
+package dan.dit.gameMemo.appCore.gameSetup;
 
 import java.util.Collections;
 import java.util.List;
@@ -13,9 +13,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -23,13 +20,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.TextView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
@@ -37,7 +29,6 @@ import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerD
 import dan.dit.gameMemo.gameData.player.DummyPlayer;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
-import dan.dit.gameMemo.gameData.player.TeamSetupTeamsController;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.ColorPickerView.OnColorChangedListener;
 import dan.dit.gameMemo.util.NotifyMajorChangeCallback;
@@ -46,7 +37,8 @@ import dan.dit.gameMemo.util.NotifyMajorChangeCallback;
  * This activity is used to select teams for a new Game and setup game options. Players
  * can be chosen from a pool of already existing players or newly created by entering a valid name.
  * If the user selected the necessary amount of players and wants to start the game, this activity finishes successfully
- * and returns the player names in the EXTRA_PLAYER_NAMES in the order defined by the minimum player amounts, not required
+ * and returns a bundle in the EXTRA_TEAMS_PARAMETER containing player names, team names and colors selected by the user.
+ * The order is defined by the minimum player amounts, not required
  * slots can have <code>null</code> players.
  * If the user wants to continue an unfinished game with the selected players, the id of this unfinished game
  * is returned in the intent data by the key <code>GameStorageHelper.getCursorItemType(GameKey)</code>.
@@ -55,33 +47,16 @@ import dan.dit.gameMemo.util.NotifyMajorChangeCallback;
  *
  */
 public class GameSetupActivity extends FragmentActivity implements ChoosePlayerDialogListener, OnColorChangedListener {
-    public static final String EXTRA_TEAMS_PARAMETERS = "dan.dit.gameMemo.TEAMS_PARAMETERS";
-	public static final String EXTRA_FLAG_SUGGEST_UNFINISHED_GAME = "dan.dit.gameMemo.SUGGEST_UNFINISHED"; // boolean, default false
-	public static final String EXTRA_OPTIONS_BOOLEAN_VALUES = "dan.dit.gameMemo.EXTRA_OPTIONS_BOOLEAN_VALUES"; // optional boolean[]
-	public static final String EXTRA_OPTIONS_BOOLEAN_NAMES = "dan.dit.gameMemo.EXTRA_OPTIONS_BOOLEAN_NAMES"; // optional String[], comes with OPTIONS_BOOLEAN_VALUES
-	public static final String EXTRA_OPTIONS_NUMBER_VALUES = "dan.dit.gameMemo.EXTRA_OPTIONS_INT_VALUES"; // optinal int[]
-	public static final String EXTRA_OPTIONS_NUMBER_NAMES = "dan.dit.gameMemo.EXTRA_OPTIONS_INT_NAMES"; // optional String[], comes with OPTIONS_INT_VALUES
-	public static final String EXTRA_OPTIONS_NUMBER_MIN_VALUES = "dan.dit.gameMemo.EXTRA_OPTIONS_NUMBER_MIN_VALUES"; // optional int[], comes with OPTIONS_INT_VALUES
-	public static final String EXTRA_OPTIONS_NUMBER_MAX_VALUES = "dan.dit.gameMemo.EXTRA_OPTIONS_NUMBER_MAX_VALUES"; // optional int[], comes with OPTIONS_INT_VALUES
-	private static final String STORAGE_OPTIONS_NUMBER_VALUES_DEFAULT = "STORAGE_OPTIONS_INT_VALUES_DEFAULT"; // int[] for current values of OPTIONS_INT_VALUES
-	private static final String STORAGE_OPTIONS_BOOLEAN_VALUES_DEFAULT = "STORAGE_OPTIONS_BOOLEAN_VALUES_DEFAULT"; // boolean[] for current values of OPTIONS_BOOLEAN_VALUES
-	private static final long SHUFFLE_PERIOD = 150; // in ms
-	protected static final long SHUFFLE_DURATION = 900; // in ms
+    public static final String EXTRA_TEAMS_PARAMETERS = "dan.dit.gameMemo.TEAMS_PARAMETERS"; // see TeamSetupTeamsController for more information
+	public static final String EXTRA_OPTIONS_PARAMETERS = "dan.dit.gameMemo.OPTIONS_PARAMETERS"; // see TeamSetupOptionsController for more information
+    public static final String EXTRA_FLAG_SUGGEST_UNFINISHED_GAME = "dan.dit.gameMemo.SUGGEST_UNFINISHED"; // boolean, default false
+    private static final long SHUFFLE_PERIOD = 150; // in ms
+	private static final long SHUFFLE_DURATION = 900; // in ms
 	
 	private int mGameKey;
-	private TeamSetupTeamsController mController;
+	private TeamSetupTeamsController mTeamsController;
+	private GameSetupOptionsController mOptionsController;
 	private boolean mSuggestUnfinished;
-
-	private boolean[] mOptionsBoolean;
-	private boolean[] mOptionsBooleanDefault;
-	private CheckBox[] mOptionBooleanCheckers;
-	private String[] mOptionsBooleanNames;
-	private EditText[] mOptionNumberFields;
-	private int[] mOptionsNumbers;
-	private int[] mOptionsNumbersDefault;
-	private String[] mOptionsNumberNames;
-	private int[] mOptionsNumberMaxValues;
-	private int[] mOptionsNumberMinValues;
 	
 	private ScrollView mScrollView;
 	private LinearLayout mOptionsContainer;
@@ -93,8 +68,6 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	private MenuItem mAddTeam;
 	private MenuItem mShuffle;
 
-	//TODO make a builder class for all the extras and then hide them, make an option to hide options container by default and show options
-	//TODO let each game have a controller and a view for options
 	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -201,17 +174,8 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	}
 	
 	private void resetFields() {
-	    mController.resetFields();
-		if (mOptionBooleanCheckers != null) {
-			for (int i = 0; i < mOptionBooleanCheckers.length; i++) {
-				mOptionBooleanCheckers[i].setChecked(mOptionsBooleanDefault[i]);
-			}
-		}
-		if (mOptionNumberFields != null) {
-			for (int i = 0; i < mOptionNumberFields.length; i++) {
-				mOptionNumberFields[i].setText(String.valueOf(mOptionsNumbersDefault[i]));
-			}
-		}
+	    mTeamsController.resetFields();
+	    mOptionsController.reset();
 		applyButtonsState();		
 		mScrollView.fullScroll(View.FOCUS_UP);
 	}
@@ -221,15 +185,15 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		if (mShuffle != null) {
 			mShuffle.setEnabled(shuffleButtonCondition());
 		}
-		if (mAddTeam != null && mController != null) {
-			boolean enableNewTeam = mController.hasMissingTeam();
+		if (mAddTeam != null && mTeamsController != null) {
+			boolean enableNewTeam = mTeamsController.hasMissingTeam();
 			mAddTeam.setEnabled(enableNewTeam);
 			mAddTeam.setVisible(enableNewTeam);
 		}
 	}
 	
 	private boolean startGameButtonCondition() {
-		return mController == null ? false : mController.hasRequiredPlayers();
+		return mTeamsController == null ? false : mTeamsController.hasRequiredPlayers();
 	}
 	
 	private void onGameStart() {
@@ -239,7 +203,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	}
 	
 	private boolean searchAndSuggestUnfinished() {
-		List<Player> team = mController.getAllPlayers(false);
+		List<Player> team = mTeamsController.getAllPlayers(false);
 		if (team.size() == 0) {
 			return false;
 		}
@@ -277,15 +241,14 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		Intent returnIntent = new Intent();
 		PlayerPool pool = getPool();
 		// for all used dummys we need to populate a real player (with the same color) since dummys are only used by the setup activity
-		for (Player p : mController.getAllPlayers(true)) {
+		for (Player p : mTeamsController.getAllPlayers(true)) {
 			if (p instanceof DummyPlayer) {
 				Player dedummiedPlayer = pool.populatePlayer(p.getName());
 				dedummiedPlayer.setColor(p.getColor());
 			}
 		}
-		returnIntent.putExtra(EXTRA_TEAMS_PARAMETERS, mController.getParameters());
-		returnIntent.putExtra(EXTRA_OPTIONS_NUMBER_VALUES, mOptionsNumbers);
-		returnIntent.putExtra(EXTRA_OPTIONS_BOOLEAN_VALUES, mOptionsBoolean);
+		returnIntent.putExtra(EXTRA_TEAMS_PARAMETERS, mTeamsController.getParameters());
+		returnIntent.putExtra(EXTRA_OPTIONS_PARAMETERS, mOptionsController.getParameters());
 		setResult(RESULT_OK, returnIntent);
 		finish();
 	}
@@ -340,7 +303,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 		} else {
 			getWindow().setFeatureInt(Window.FEATURE_PROGRESS, 10000);
 		}
-		mController.performShuffle();
+		mTeamsController.performShuffle();
 	}
 	
 	@Override
@@ -353,30 +316,25 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putInt(GameKey.EXTRA_GAMEKEY, mGameKey);
-		outState.putIntArray(EXTRA_OPTIONS_NUMBER_MAX_VALUES, mOptionsNumberMaxValues);
-		outState.putIntArray(EXTRA_OPTIONS_NUMBER_MIN_VALUES, mOptionsNumberMinValues);
-		outState.putIntArray(EXTRA_OPTIONS_NUMBER_VALUES, mOptionsNumbers);
-		outState.putBooleanArray(EXTRA_OPTIONS_BOOLEAN_VALUES, mOptionsBoolean);
-		outState.putBooleanArray(STORAGE_OPTIONS_BOOLEAN_VALUES_DEFAULT, mOptionsBooleanDefault);
-		outState.putStringArray(EXTRA_OPTIONS_NUMBER_NAMES, mOptionsNumberNames);
-		outState.putStringArray(EXTRA_OPTIONS_BOOLEAN_NAMES, mOptionsBooleanNames);
-		outState.putIntArray(STORAGE_OPTIONS_NUMBER_VALUES_DEFAULT, mOptionsNumbersDefault);
-		if (mController != null) {
-		    outState.putBundle(EXTRA_TEAMS_PARAMETERS, mController.getParameters());
+		if (mOptionsController != null) {
+		    outState.putBundle(EXTRA_OPTIONS_PARAMETERS, mOptionsController.getParameters());
+		}
+		if (mTeamsController != null) {
+		    outState.putBundle(EXTRA_TEAMS_PARAMETERS, mTeamsController.getParameters());
 		}
 	}
 	
 	private void buildUIFromBundle(Bundle in) {
 		initTitle();
 		initTeamsUI(in.getBundle(EXTRA_TEAMS_PARAMETERS));
-		initOptionsUI(in);
+		initOptionsUI(in.getBundle(EXTRA_OPTIONS_PARAMETERS));
 		applyBackgroundTheme();
 	}
 	
 	private void applyBackgroundTheme() {
 	    applyTheme(mStartGame);
 	    applyTheme(mShowOptions);
-	    mController.applyTheme();
+	    mTeamsController.applyTheme();
 	}
 	
 	private void applyTheme(View view) {
@@ -396,110 +354,19 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
                 applyButtonsState();
             }
         };
-	    mController = new TeamSetupTeamsController(mGameKey, this, cb, parameters, (LinearLayout) findViewById(R.id.teams_container));
+	    mTeamsController = new TeamSetupTeamsController(mGameKey, this, cb, parameters, (LinearLayout) findViewById(R.id.teams_container));
 		applyButtonsState();
 	}
 	
 	private void onNewTeamClicked() {
-		if (mController.hasMissingTeam()) {
-			mController.addMissingTeam();
+		if (mTeamsController.hasMissingTeam()) {
+			mTeamsController.addMissingTeam();
 		}
 		applyButtonsState();
 	}
 	
 	private void initOptionsUI(Bundle args) {
-		mOptionsBooleanDefault = args.getBooleanArray(STORAGE_OPTIONS_BOOLEAN_VALUES_DEFAULT);
-		mOptionsBoolean = args.getBooleanArray(EXTRA_OPTIONS_BOOLEAN_VALUES);
-		mOptionsBooleanNames = args.getStringArray(EXTRA_OPTIONS_BOOLEAN_NAMES);
-		mOptionsNumbersDefault = args.getIntArray(STORAGE_OPTIONS_NUMBER_VALUES_DEFAULT);
-		mOptionsNumbers = args.getIntArray(EXTRA_OPTIONS_NUMBER_VALUES);
-		mOptionsNumberNames = args.getStringArray(EXTRA_OPTIONS_NUMBER_NAMES);
-		mOptionsNumberMinValues = args.getIntArray(EXTRA_OPTIONS_NUMBER_MIN_VALUES);
-		mOptionsNumberMaxValues = args.getIntArray(EXTRA_OPTIONS_NUMBER_MAX_VALUES);
-		mOptionsContainer.removeAllViews();
-		boolean atLeastOneOptionAdded = false;
-		if (mOptionsBoolean != null && mOptionsBooleanNames != null) {
-			if (mOptionsBooleanDefault == null) {
-				mOptionsBooleanDefault = new boolean[mOptionsBoolean.length];
-				System.arraycopy(mOptionsBoolean, 0, mOptionsBooleanDefault, 0, mOptionsBoolean.length);
-			}
-			int boolOptions = Math.min(mOptionsBoolean.length, mOptionsBooleanNames.length);
-			mOptionBooleanCheckers = new CheckBox[boolOptions];
-			for (int i = 0; i < boolOptions; i++) {
-				atLeastOneOptionAdded = true;
-				CheckBox checker = new CheckBox(this);
-				final int index = i;
-				checker.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-					
-					@Override
-					public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-						mOptionsBoolean[index] = isChecked;
-					}
-				});
-				checker.setChecked(mOptionsBoolean[i]);
-				checker.setText(mOptionsBooleanNames[i]);
-				mOptionsContainer.addView(checker);
-				mOptionBooleanCheckers[i] = checker;
-			}
-		}
-		if (mOptionsNumbers != null && mOptionsNumberNames != null && mOptionsNumberMinValues != null & mOptionsNumberMaxValues != null) {
-			if (mOptionsNumbersDefault == null) {
-				mOptionsNumbersDefault = new int[mOptionsNumbers.length];
-				System.arraycopy(mOptionsNumbers, 0, mOptionsNumbersDefault, 0, mOptionsNumbers.length);
-			}
-			int numberOptionsCount = Math.min(mOptionsNumbers.length, Math.min(mOptionsNumberNames.length, Math.min(mOptionsNumberMinValues.length, mOptionsNumberMaxValues.length)));
-			mOptionNumberFields = new EditText[numberOptionsCount];
-			for (int i = 0; i < numberOptionsCount; i++) {
-				atLeastOneOptionAdded = true;
-				View numberOptions = getLayoutInflater().inflate(R.layout.game_options_number, null);
-				TextView description = ((TextView) numberOptions.findViewById(R.id.description));
-				description.setText(mOptionsNumberNames[i]);
-				View numberInputRaw = numberOptions.findViewById(R.id.number_input);
-				mOptionsNumberMinValues[i] = Math.min(mOptionsNumberMinValues[i], mOptionsNumbers[i]);
-				mOptionsNumberMaxValues[i] = Math.max(mOptionsNumbers[i], mOptionsNumberMaxValues[i]);
-				final int index = i;
-				final TextView currValue = (TextView) numberOptions.findViewById(R.id.curr_number);
-				EditText numberInput = (EditText) numberInputRaw;
-				mOptionNumberFields[i] = numberInput;
-				if (mOptionsNumberMinValues[i] >= 0) {
-					numberInput.setInputType(InputType.TYPE_CLASS_NUMBER);
-				} else {
-					numberInput.setInputType(InputType.TYPE_NUMBER_FLAG_SIGNED);
-				}
-				numberInput.addTextChangedListener(new TextWatcher() {
-
-					@Override
-					public void afterTextChanged(Editable e) {
-						int number = 0;
-						try {
-							number = Integer.parseInt(e.toString());
-						} catch (NumberFormatException nfe) {
-							return;
-						}
-						if (number >= mOptionsNumberMinValues[index] && number <= mOptionsNumberMaxValues[index]) {
-							mOptionsNumbers[index] = number;
-							currValue.setText("= " + mOptionsNumbers[index]);
-						}
-					}
-
-					@Override
-					public void beforeTextChanged(CharSequence arg0,
-							int arg1, int arg2, int arg3) {}
-
-					@Override
-					public void onTextChanged(CharSequence arg0, int arg1,
-							int arg2, int arg3) {}
-					
-				});
-				numberInput.setText(String.valueOf(mOptionsNumbers[i]));
-				mOptionsContainer.addView(numberOptions);
-			}
-		}
-		if (atLeastOneOptionAdded) {
-			TextView optionsTitle = new TextView(this);
-			optionsTitle.setText(getResources().getString(R.string.game_setup_options));
-			mOptionsContainer.addView(optionsTitle, 0);
-		}
+	    mOptionsController = GameKey.makeGameSetupOptionsController(mGameKey, this, mOptionsContainer, args);
 	}
 
 	@Override
@@ -509,8 +376,8 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 
 	@Override
 	public List<Player> toFilter() {
-		if (mController != null) {
-		    return mController.toFilter();
+		if (mTeamsController != null) {
+		    return mTeamsController.toFilter();
 		} else {
 		    return Collections.emptyList();
 		}
@@ -518,17 +385,17 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 
 	@Override
 	public void onColorChanged(int color) {
-		mController.onColorChanged(color);
+		mTeamsController.onColorChanged(color);
 	}
 
     @Override
     public void playerChosen(int arg, Player chosen) {
-        mController.playerChosen(arg, chosen);
+        mTeamsController.playerChosen(arg, chosen);
     }
 
     @Override
     public void onPlayerColorChanged(int arg, Player concernedPlayer) {
-        mController.onPlayerColorChanged(arg, concernedPlayer);
+        mTeamsController.onPlayerColorChanged(arg, concernedPlayer);
     }
 
 }

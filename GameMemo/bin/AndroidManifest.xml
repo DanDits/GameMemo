@@ -52,7 +52,7 @@
             android:windowSoftInputMode="stateAlwaysHidden|adjustPan" >
         </activity>
         <activity
-            android:name=".appCore.GameSetupActivity"
+            android:name="dan.dit.gameMemo.appCore.gameSetup.GameSetupActivity"
             android:windowSoftInputMode="stateAlwaysHidden|adjustPan" >
         </activity>
         <activity
