@@ -398,6 +398,9 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
             mLockItem.setIcon(R.drawable.ic_menu_locked);
             mLockItem.setEnabled(mGame.getRuleSystem().isLockStateAcceptable(mGame, false));
         } else if (mGame.getRuleSystem().isLockStateAcceptable(mGame, true)) {
+            if (mLastRunningTimeUpdate == null) {
+                mLastRunningTimeUpdate = new Date(); // if the game is unlocked, we start counting the run time again
+            }
             mLockItem.setVisible(true);
             mLockItem.setEnabled(true);
             mLockItem.setTitle(R.string.lock_game);
@@ -585,7 +588,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		List<Player> players = mGame.getPlayers();
 		int index = 0;
 		for (Player p : players) {
-			mPlayer[index++].setText(p.getName());
+			mPlayer[index++].setText(p.getShortenedName(Player.SHORT_NAME_LENGTH));
 		}
 	}
 	

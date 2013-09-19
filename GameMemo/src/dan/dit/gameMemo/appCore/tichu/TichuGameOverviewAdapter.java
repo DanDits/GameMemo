@@ -16,6 +16,7 @@ import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameOverviewAdapter;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
+import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
@@ -109,11 +110,15 @@ public class TichuGameOverviewAdapter extends GameOverviewAdapter {
         	applyDate(holder.date, startDate);
         }
         
-        // show players names
-        holder.team1_1.setText(playerOne);
-        holder.team1_2.setText(playerTwo);
-        holder.team2_1.setText(playerThree);
-        holder.team2_2.setText(playerFour);
+        // show players names               
+        Player p = TichuGame.PLAYERS.populatePlayer(playerOne);
+        holder.team1_1.setText(p.getShortenedName(Player.SHORT_NAME_LENGTH));
+        p = TichuGame.PLAYERS.populatePlayer(playerTwo);
+        holder.team1_2.setText(p.getShortenedName(Player.SHORT_NAME_LENGTH));
+        p = TichuGame.PLAYERS.populatePlayer(playerThree);
+        holder.team2_1.setText(p.getShortenedName(Player.SHORT_NAME_LENGTH));
+        p = TichuGame.PLAYERS.populatePlayer(playerFour);
+        holder.team2_2.setText(p.getShortenedName(Player.SHORT_NAME_LENGTH));
         
         // show images giving an indication of the game, like the score leader or winner
         int team1Image = 0;

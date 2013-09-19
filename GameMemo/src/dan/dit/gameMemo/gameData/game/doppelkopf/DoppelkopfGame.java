@@ -13,6 +13,7 @@ import android.content.ContentResolver;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.SparseArray;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameBuilder;
@@ -40,7 +41,7 @@ public class DoppelkopfGame extends Game {
     public static final int MAX_DUTY_SOLI = 20;
 	
 	private List<Player> mPlayers = new ArrayList<Player>(MAX_PLAYERS);
-	private int[] mScores;
+	private SparseArray<int[]> mScoresToRound;
 	protected int mRoundLimit;
 	protected DoppelkopfRuleSystem mRuleSystem;
 	protected int mDutySoliCountPerPlayer;
@@ -55,6 +56,7 @@ public class DoppelkopfGame extends Game {
 		if (mRoundLimit < 0) {
 			mRoundLimit = NO_LIMIT;
 		}
+		mScoresToRound = new SparseArray<int[]>();
 		mDutySoliCountPerPlayer = dutySoliCountPerPlayer;
 		if (mDutySoliCountPerPlayer < 0) {
 			mDutySoliCountPerPlayer = 0;
@@ -66,17 +68,21 @@ public class DoppelkopfGame extends Game {
 	}
 	
 	private List<Integer> getMaxScoreIndices() {
-		List<Integer> maxIndices = new ArrayList<Integer>(mScores.length);
+		List<Integer> maxIndices = new ArrayList<Integer>(mPlayers.size());
 		int max = Integer.MIN_VALUE;
-		for (int i = 0; i < mScores.length; i++) {
-			if (mScores[i] > max) {
-				max = mScores[i];
-				maxIndices.clear();
-				maxIndices.add(Integer.valueOf(i));
-			} else if (mScores[i] == max) {
-				maxIndices.add(Integer.valueOf(i));
-			}
+		if (mScoresToRound.size() > 0) {
+		   int[] mScores = mScoresToRound.get(rounds.size() - 1);
+	       for (int i = 0; i < mScores.length; i++) {
+	            if (mScores[i] > max) {
+	                max = mScores[i];
+	                maxIndices.clear();
+	                maxIndices.add(Integer.valueOf(i));
+	            } else if (mScores[i] == max) {
+	                maxIndices.add(Integer.valueOf(i));
+	            }
+	        } 
 		}
+
 		return maxIndices;
 	}
 	
@@ -111,7 +117,7 @@ public class DoppelkopfGame extends Game {
 	@Override
 	public void reset() {
 		rounds.clear();
-		mScores = new int[mPlayers.size()];
+		mScoresToRound.clear();
 	}
 	
 	public int getLimit() {
@@ -151,7 +157,7 @@ public class DoppelkopfGame extends Game {
 		for (Player p : players) {
 			mPlayers.add(p);
 		}
-		mScores = new int[mPlayers.size()];
+		mScoresToRound.clear();
 		synch();
 	}
 
@@ -210,6 +216,7 @@ public class DoppelkopfGame extends Game {
 	@Override
 	public void synch() {
 		int roundIndex = 0;
+		mScoresToRound.clear();
 		for (GameRound r : rounds) {
 			addRoundToScores((DoppelkopfRound) r, roundIndex++);
 		}
@@ -218,9 +225,13 @@ public class DoppelkopfGame extends Game {
 	private void addRoundToScores(DoppelkopfRound round, int roundIndex) {
 		int reScore = mRuleSystem.getTotalScore(true, round);
 		int contraScore = mRuleSystem.getTotalScore(false, round);
-		for (int i = 0; i < mPlayers.size(); i++) {
-			mScores[i] += isPlayerActive(i, rounds.size() - 1) ? (isPlayerRe(i, rounds.size() - 1) ? reScore : contraScore) : 0;
+		int[] mScores = new int[mPlayers.size()];
+		int[] lastScores = roundIndex > 0 ? mScoresToRound.get(roundIndex - 1) : null;
+		for (int i = 0; i < mScores.length; i++) {
+		    mScores[i] = lastScores == null ? 0 : lastScores[i];
+			mScores[i] += isPlayerActive(i, roundIndex) ? (isPlayerRe(i, roundIndex) ? reScore : contraScore) : 0;
 		}
+		mScoresToRound.put(roundIndex, mScores);
 	}
 
 	public DoppelkopfRuleSystem getRuleSystem() {
@@ -240,8 +251,11 @@ public class DoppelkopfGame extends Game {
 		StringBuilder builder = new StringBuilder();
 		builder.append(res.getString(R.string.game_starttime)).append(": ").append(dateFormat.format(new Date(getStartTime()))).append('\n')
 		.append(res.getString(R.string.game_runtime)).append(": ").append(timeFormat.format(new Date(getRunningTime()))).append("\n\n");
-		for (int i = 0; i < mPlayers.size(); i++) {
-			builder.append(mPlayers.get(i).getName()).append(" (").append(mScores[i]).append(" )\n");
+		if (mScoresToRound.size() > 0) {
+		    int[] mScores = mScoresToRound.get(rounds.size() - 1);
+    		for (int i = 0; i < mPlayers.size(); i++) {
+    			builder.append(mPlayers.get(i).getName()).append(" (").append(mScores[i]).append(" )\n");
+    		}
 		}
 		builder.append("\n");
 		builder.append(res.getString(R.string.doppelkopf_rule_system_info, mRuleSystem.getName()));
@@ -395,14 +409,7 @@ public class DoppelkopfGame extends Game {
 	}
 
 	public int getPlayerScoreUpToRound(int index, int round) {
-		int sum = 0;
-		for (int i = 0; i <= round && i < rounds.size(); i++) {
-			DoppelkopfRound r = (DoppelkopfRound) rounds.get(i);
-			if (isPlayerActive(index, i)) {
-				sum += mRuleSystem.getTotalScore(isPlayerRe(index, i), r);
-			}
-		}
-		return sum;
+		return mScoresToRound.size() >= round + 1 ? mScoresToRound.get(round)[index] : 0;
 	}
 	
 	public boolean isPlayerRe(int index, int round) {

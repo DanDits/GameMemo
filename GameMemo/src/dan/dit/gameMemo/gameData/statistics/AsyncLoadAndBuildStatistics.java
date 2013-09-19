@@ -49,7 +49,7 @@ public class AsyncLoadAndBuildStatistics extends
 			games = GameKey.loadGames(gameKey, resolver, uri[0]);
 		} catch(CompactedDataCorruptException e) {
 		}
-		publishProgress(70);
+		publishProgress(75);
 		if (games == null || games.size() == 0 || isCancelled()) {
 			return null;
 		}

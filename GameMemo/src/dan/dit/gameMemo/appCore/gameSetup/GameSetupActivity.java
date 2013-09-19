@@ -182,6 +182,11 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	
 	private void applyButtonsState() {
 		mStartGame.setEnabled(startGameButtonCondition());
+		if (hasDummy()) {
+		    mStartGame.setCompoundDrawablesWithIntrinsicBounds(GameKey.getGameIconId(mGameKey), 0, R.drawable.warning_icon, 0);
+		} else {
+            mStartGame.setCompoundDrawablesWithIntrinsicBounds(GameKey.getGameIconId(mGameKey), 0, 0, 0);
+		}
 		if (mShuffle != null) {
 			mShuffle.setEnabled(shuffleButtonCondition());
 		}
@@ -190,6 +195,18 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 			mAddTeam.setEnabled(enableNewTeam);
 			mAddTeam.setVisible(enableNewTeam);
 		}
+	}
+	
+	private boolean hasDummy() {
+	    if (mTeamsController != null) {
+	        List<Player> players = mTeamsController.getAllPlayers(true);
+	        for (Player p : players) {
+	            if (p instanceof DummyPlayer) {
+	                return true;
+	            }
+	        }
+	    }
+	    return false;
 	}
 	
 	private boolean startGameButtonCondition() {

@@ -5,6 +5,7 @@ import java.util.List;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -27,6 +28,7 @@ public class GamesExchangeView extends LinearLayout {
 	private ProgressBar mProgress;
 	private Button mShowGames;
 	private Drawable mDefaultShowGamesBackground;
+    private ColorStateList mDefaultShowGamesTextColor;
 	
 	public GamesExchangeView(Context context) {
 		super(context);
@@ -81,26 +83,32 @@ public class GamesExchangeView extends LinearLayout {
 			if (mDefaultShowGamesBackground == null) {
 				mDefaultShowGamesBackground = mShowGames.getBackground();
 			}
+			if (mDefaultShowGamesTextColor == null) {
+			    mDefaultShowGamesTextColor = mShowGames.getTextColors();
+			}
 			GameKey.applyTheme(key, getResources(), mShowGames);
 			mShowGames.setText(res.getString(R.string.games_selected_single, GameKey.getGameName(selectedGames.get(0))));
 		} else if (selectedGames.size() < GameKey.ALL_GAMES.length) {
 			mShowGames.setText(res.getString(R.string.games_selected, selectedGames.size(), GameKey.ALL_GAMES.length));
-			resetBackground();
+			resetShowGamesButton();
 		} else if (selectedGames.size() == GameKey.ALL_GAMES.length) {
 			mShowGames.setText(res.getString(R.string.games_selected_all));
-			resetBackground();
+			resetShowGamesButton();
 		}
 	}
 	
 	@SuppressWarnings("deprecation")
 	@SuppressLint("NewApi")
-	private void resetBackground() {
+	private void resetShowGamesButton() {
 	    if (mDefaultShowGamesBackground != null) {
     		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
     			mShowGames.setBackgroundDrawable(mDefaultShowGamesBackground);
     		} else {
     			mShowGames.setBackground(mDefaultShowGamesBackground);
     		}
+	    }
+	    if (mDefaultShowGamesTextColor != null) {
+	        mShowGames.setTextColor(mDefaultShowGamesTextColor);
 	    }
 	}
 }

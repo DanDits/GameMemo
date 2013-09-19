@@ -111,7 +111,8 @@ public class DoppelkopfOverviewAdapter extends GameOverviewAdapter {
         	holder.player[index].setPaintFlags(holder.player[index].getPaintFlags() & (~Paint.FAKE_BOLD_TEXT_FLAG));	
     		holder.player[index].setTextColor(COLOR_PLAYER_IS_NO_WINNER);
         	if (index < playerName.length && Player.isValidPlayerName(playerName[index])) {
-        		holder.player[index].setText(playerName[index]);
+        	    Player p = DoppelkopfGame.PLAYERS.populatePlayer(playerName[index]);
+        		holder.player[index].setText(p.getShortenedName(Player.SHORT_NAME_LENGTH));
             	holder.player[index].setVisibility(View.VISIBLE);
             	if (DoppelkopfGame.isPlayerWinner(winner, index)) {
             		holder.player[index].setPaintFlags(holder.player[index].getPaintFlags() | Paint.FAKE_BOLD_TEXT_FLAG);

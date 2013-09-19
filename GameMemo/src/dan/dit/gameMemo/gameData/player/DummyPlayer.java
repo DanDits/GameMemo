@@ -20,6 +20,15 @@ public class DummyPlayer extends Player {
 	    return mNumber;
 	}
 	
+	@Override
+	public String getShortenedName(int maxLength) {
+	    String usualShortened = super.getShortenedName(maxLength);
+	    if (!usualShortened.equals(getName())) {
+	        return "#" + String.valueOf(mNumber);
+	    }
+	    return usualShortened;
+	}
+	
     private static String mDummyBaseName = "Player %1$d";
     private static Pattern mDummyNamePattern = Pattern.compile("Player ([0-9]+)");
     

@@ -209,10 +209,10 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 	
 	private void updatePlayerNames() {
 		// invoked at start from fillData and when a new player is chosen to replace an old one
-		mPlayer[0].setText(mGame.getTeam1().getFirst().getName());
-		mPlayer[1].setText(mGame.getTeam1().getSecond().getName());
-		mPlayer[2].setText(mGame.getTeam2().getFirst().getName());
-		mPlayer[3].setText(mGame.getTeam2().getSecond().getName());
+		mPlayer[0].setText(mGame.getTeam1().getFirst().getShortenedName(Player.SHORT_NAME_LENGTH));
+		mPlayer[1].setText(mGame.getTeam1().getSecond().getShortenedName(Player.SHORT_NAME_LENGTH));
+		mPlayer[2].setText(mGame.getTeam2().getFirst().getShortenedName(Player.SHORT_NAME_LENGTH));
+		mPlayer[3].setText(mGame.getTeam2().getSecond().getShortenedName(Player.SHORT_NAME_LENGTH));
 	}
 	
 	@Override

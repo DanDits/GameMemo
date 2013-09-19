@@ -28,6 +28,30 @@ public class Player extends AbstractPlayerTeam implements Comparable<Player> {
 	public String getName() {
 		return name;
 	}
+
+    public static final int SHORT_NAME_LENGTH = 7;
+    public static final int VERY_SHORT_NAME_LENGTH = 3;
+    /**
+     * Returns a String based on the player name in a shorter version.
+     * @param maxLength The maximum length of the returned string.
+     * @return A short version of the player name.
+     */
+	public String getShortenedName(int maxLength) {
+	    if (name.length() <= maxLength) {
+	        return name;
+	    } else {
+	        String[] parts = name.split("\\s");
+	        if (parts[0].length() <= maxLength) {
+	            return parts[0];
+	        } else {
+	            return parts[0].substring(0, maxLength);
+	        }
+	    }
+	}
+	
+	public String getFirstName() {
+	    return name.split("\\s")[0];
+	}
 	
 	@Override
 	public int hashCode() {
