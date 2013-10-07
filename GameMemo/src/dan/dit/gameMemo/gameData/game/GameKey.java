@@ -33,10 +33,10 @@ import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfGame;
 import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfGameBuilder;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGameBuilder;
+import dan.dit.gameMemo.gameData.game.tichu.TichuGameStatisticAttributeManager;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
-import dan.dit.gameMemo.gameData.statistics.GameStatisticBuilder;
-import dan.dit.gameMemo.gameData.statistics.tichu.TichuGameStatisticBuilder;
+import dan.dit.gameMemo.gameData.statistics.GameStatisticAttributeManager;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.storage.database.CardGameTable;
 import dan.dit.gameMemo.storage.database.GamesDBContentProvider;
@@ -118,15 +118,6 @@ public final class GameKey {
 			allPlayers.addAll(getPool(key).getAll());
 		}
 		return allPlayers;
-	}
-	
-	public static GameStatisticBuilder getStatisticBuilder(int gameKey, List<Player> players) {
-		switch(gameKey) {
-		case GameKey.TICHU:
-			return new TichuGameStatisticBuilder(players);
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);	
-		}
 	}
 	
 	public static int getGameIconId(int gameKey) {
@@ -454,4 +445,13 @@ public final class GameKey {
         return false;
     }
 
+    public static GameStatisticAttributeManager getGameStatisticAttributeManager(
+            int gameKey) {
+        switch (gameKey) {
+        case TICHU:
+            return TichuGameStatisticAttributeManager.INSTANCE;
+        default:
+            throw new IllegalArgumentException("Game not supported: " + gameKey);
+        }
+    }
 }

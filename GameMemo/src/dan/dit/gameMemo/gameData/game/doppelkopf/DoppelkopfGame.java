@@ -446,5 +446,5 @@ public class DoppelkopfGame extends Game {
 			}
 		}
 		return count;
-	}	
+	}
 }

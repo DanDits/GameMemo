@@ -9,6 +9,7 @@ import dan.dit.gameMemo.appCore.GamesActivity;
 import dan.dit.gameMemo.appCore.gameSetup.GameSetupActivity;
 import dan.dit.gameMemo.appCore.gameSetup.TeamSetupTeamsController;
 import dan.dit.gameMemo.appCore.gameSetup.TeamSetupViewController;
+import dan.dit.gameMemo.appCore.statistics.StatisticsActivity;
 import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothDataExchangeActivity;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
@@ -106,7 +107,8 @@ public class TichuGamesActivity extends GamesActivity  {
 	
 	@Override
 	protected void showStatistics() {
-		Intent i = new Intent(this, TichuGamesStatisticsActivity.class);
-		startActivity(i);
+	    Collection<Long> checked = mOverviewFragment.getCheckedGamesStarttimes();
+        Intent i = StatisticsActivity.getIntent(this, GameKey.TICHU, checked.isEmpty() ? null : checked);
+        startActivity(i);
 	}
 }

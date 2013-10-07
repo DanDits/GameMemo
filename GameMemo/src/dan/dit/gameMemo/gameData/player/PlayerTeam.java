@@ -1,6 +1,7 @@
 package dan.dit.gameMemo.gameData.player;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,5 +33,18 @@ public class PlayerTeam extends AbstractPlayerTeam {
 			mPlayers.add(player);
 		}
 	}
+
+    @Override
+    public String getShortenedName(int maxPlayerNameLength) {
+        Iterator<Player> it = mPlayers.iterator();
+        StringBuilder builder = new StringBuilder();
+        while (it.hasNext()) {
+            builder.append(it.next().getShortenedName(maxPlayerNameLength));
+            if (it.hasNext()) {
+                builder.append(" & ");
+            }
+        }
+        return builder.toString();
+    }
 
 }

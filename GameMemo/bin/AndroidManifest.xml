@@ -34,6 +34,10 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".appCore.statistics.StatisticsActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize">
+        </activity>
+        <activity
             android:name=".appCore.tichu.TichuGamesActivity" >
         </activity>
         <activity

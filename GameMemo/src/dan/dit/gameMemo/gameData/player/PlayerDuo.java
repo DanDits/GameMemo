@@ -69,4 +69,9 @@ public class PlayerDuo extends AbstractPlayerTeam {
 	public boolean contains(String playerName) {
 		return first.getName().equalsIgnoreCase(playerName) || second.getName().equalsIgnoreCase(playerName);
 	}
+
+    @Override
+    public String getShortenedName(int maxPlayerNameLength) {
+        return first.getShortenedName(maxPlayerNameLength) + " & " + second.getShortenedName(maxPlayerNameLength);
+    }
 }

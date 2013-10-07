@@ -110,6 +110,20 @@ public class TichuRound extends GameRound {
 		return calculateScore(false, useMercyRule);
 	}
 	
+    public int getStatisticPersonalTichuScore(boolean usesMercyRule, int playerId) {
+        if (!usesMercyRule) {
+            return tichus[playerId - TichuGame.PLAYER_ONE_ID].getScore();
+        } else {
+            // with mercy rule one does not lose points for a lost tichu
+            int tichuPoints = Math.max(0, tichus[playerId - TichuGame.PLAYER_ONE_ID].getScore());
+            // one gains points for lost tichu bids of the enemy
+            int enemyIndex1 = playerId < TichuGame.PLAYER_THREE_ID ? TichuGame.PLAYER_THREE_ID : TichuGame.PLAYER_ONE_ID;
+            int enemyIndex2 = playerId < TichuGame.PLAYER_THREE_ID ? TichuGame.PLAYER_FOUR_ID : TichuGame.PLAYER_TWO_ID;
+            tichuPoints += -Math.min(0, tichus[enemyIndex1 - TichuGame.PLAYER_ONE_ID].getScore()) - Math.min(0, tichus[enemyIndex2 - TichuGame.PLAYER_ONE_ID].getScore());
+            return tichuPoints;
+        }
+    }
+    
 	private int calculateScore(boolean team1, boolean useMercyRule) {
 		int friendIndex1, friendIndex2, enemyIndex1, enemyIndex2;
 		int rawScore;

@@ -386,4 +386,8 @@ public class TeamSetupViewController implements ChoosePlayerDialogListener {
     public boolean isDeletable() {
         return mIsDeletable;
     }
+
+    public boolean allowsTeamNameEditing() {
+        return mTeamName.isEnabled();
+    }
 }

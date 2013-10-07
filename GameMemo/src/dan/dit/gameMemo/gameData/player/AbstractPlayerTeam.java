@@ -47,13 +47,28 @@ public abstract class AbstractPlayerTeam implements Iterable<Player> {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append('(');
-		for (Player p : getPlayers()) {
+		List<Player> players = getPlayers();
+		for (Player p : players) {
 			builder.append(p.toString());
 			builder.append(", ");
 		}
-		builder.deleteCharAt(builder.length() - 1);
-		builder.deleteCharAt(builder.length() - 1);
+		if (builder.length() > 1) {
+		    builder.deleteCharAt(builder.length() - 1);
+		    builder.deleteCharAt(builder.length() - 1);
+		}
 		builder.append(')');
 		return builder.toString();
 	}
+	
+    public boolean containsTeam(AbstractPlayerTeam toCheck) {
+        if (toCheck != null) {
+            for (Player p : toCheck) {
+                if (!contains(p)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public abstract String getShortenedName(int maxPlayerNameLength);
 }

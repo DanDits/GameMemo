@@ -16,10 +16,10 @@ import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameBuilder;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.GameRound;
+import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerDuo;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
-import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.storage.database.CardGameTable;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
@@ -359,4 +359,18 @@ public class TichuGame extends Game {
 		}
 		return builder.toString();
 	}
+
+    public static int getPartnerId(int playerId) {
+        if (playerId == PLAYER_ONE_ID) {
+            return PLAYER_TWO_ID;
+        } else if (playerId == PLAYER_TWO_ID) {
+            return PLAYER_ONE_ID;
+        } else if (playerId == PLAYER_THREE_ID) {
+            return PLAYER_FOUR_ID;
+        } else if (playerId == PLAYER_FOUR_ID) {
+            return PLAYER_THREE_ID;
+        } else {
+            return INVALID_PLAYER_ID;
+        }
+    }
 }

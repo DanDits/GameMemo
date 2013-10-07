@@ -20,10 +20,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import dan.dit.gameMemo.appCore.gameSetup.TeamSetupViewController.TeamSetupCallback;
 import dan.dit.gameMemo.gameData.game.GameKey;
+import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment;
 import dan.dit.gameMemo.gameData.player.DummyPlayer;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
+import dan.dit.gameMemo.gameData.player.PlayerTeam;
 import dan.dit.gameMemo.util.ColorPickerDialog;
 import dan.dit.gameMemo.util.ColorPickerView.OnColorChangedListener;
 import dan.dit.gameMemo.util.NotifyMajorChangeCallback;
@@ -222,6 +224,19 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
         return team;
     }
     
+    public List<AbstractPlayerTeam> getAllTeams(boolean includeDummys) {
+        List<AbstractPlayerTeam> teams = new ArrayList<AbstractPlayerTeam>();
+        for (TeamSetupViewController ctr : mTeamControllers.values()) {
+            PlayerTeam t = new PlayerTeam();
+            for (Player p : ctr.getPlayers(includeDummys)) {
+                t.addPlayer(p);
+            }
+            t.setColor(ctr.getTeamColor());
+            teams.add(t);
+        }
+        return teams;
+    }
+    
     @Override
     public PlayerPool getPool() {
         return GameKey.getPool(mGameKey);
@@ -392,7 +407,7 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
     @Override
     public void notifyPlayerCountChanged() {
         closeDummyNumberGaps();
-        mCallback.onMajorChange();
+        performCallback();
     }
 
     @Override
@@ -435,7 +450,7 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
         }
         mHiddenTeams.add(teamIndex);
         closeDummyNumberGaps();
-        mCallback.onMajorChange();
+        performCallback();
     }
 
     public boolean hasMissingTeam() {
@@ -484,9 +499,14 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
         ctr.setTeamColor(mParameters.getIntArray(EXTRA_TEAM_COLORS)[teamIndex]);
         ctr.applyTheme();
         mTeamsContainer.addView(ctr.getView(), viewIndex);
-        mCallback.onMajorChange();
     }
 
+    private void performCallback() {
+        if (mCallback != null) {
+            mCallback.onMajorChange();
+        }
+    }
+    
     public Bundle getParameters() {
         mParameters.putInt(STORAGE_CHOOSING_COLOR_CONTROLLER_INDEX, mChoosingColorControllerIndex);
         mParameters.putInt(STORAGE_CHOOSING_PLAYER_CONTROLLER_INDEX, mChoosingPlayerControllerIndex);
@@ -502,6 +522,11 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
         // store players
         mParameters.putStringArray(EXTRA_PLAYER_NAMES, allPlayersToArray());
         return mParameters;
+    }
+    
+    public void setTeamName(int teamKey, String teamName) {
+        TeamSetupViewController ctr = mTeamControllers.get(teamKey);
+        ctr.setTeamName(teamName, ctr.allowsTeamNameEditing());
     }
     
     private String[] allPlayersToArray() {

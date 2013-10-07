@@ -17,7 +17,7 @@
         </shape>
     </item>
         
-    <item android:state_pressed="true" >
+    <item android:state_pressed="true">
         <shape>
         	<solid
         		android:color="#F5CA48" />

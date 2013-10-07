@@ -147,6 +147,24 @@ public class ColorPickerView extends View {
         super(context, attrs, defStyle);
         init();
     }
+    
+    /**
+     * Tints the given color, making it brighter. Does not affect the alpha level.
+     * @param color The color to alter.
+     * @param factor The factor, a value between 0 and 1, where 1 means white
+     * and 0 doesnt change the color
+     * @return The altered color.
+     */
+    public static final int tintColor(int color, double factor) {
+        int red = (color >> 4) & 0xFF;
+        int green = (color >> 2) & 0xFF;
+        int blue = color & 0xFF;
+        int alpha = (color >> 6) & 0xFF;
+        red += (255 - red) * factor;
+        green += (255 - green) * factor;
+        blue += (255 - blue) * factor;
+        return (alpha << 6) + (red << 4) + (green << 2) + blue;
+    }
 
     private void init() {
         mDensity = getContext().getResources().getDisplayMetrics().density;

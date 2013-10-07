@@ -16,6 +16,7 @@ import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GamesActivity;
 import dan.dit.gameMemo.appCore.gameSetup.GameSetupActivity;
 import dan.dit.gameMemo.appCore.gameSetup.TeamSetupTeamsController;
+import dan.dit.gameMemo.appCore.gameSetup.TeamSetupViewController;
 import dan.dit.gameMemo.appCore.doppelkopf.GameSetupOptions;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
@@ -67,7 +68,8 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 		
         // make teams
         TeamSetupTeamsController.Builder teamsBuilder = new TeamSetupTeamsController.Builder(false, false);
-        teamsBuilder.addTeam(4, 5, false, getResources().getString(R.string.doppelkopf_team_name), false, 0, false, playerNames); 
+        teamsBuilder.addTeam(4, 5, false, getResources().getString(R.string.doppelkopf_team_name), false, 
+                TeamSetupViewController.DEFAULT_TEAM_COLOR, false, playerNames); 
         
         i.putExtra(GameSetupActivity.EXTRA_TEAMS_PARAMETERS, teamsBuilder.build());
 
