@@ -29,6 +29,7 @@ public class Player extends AbstractPlayerTeam implements Comparable<Player> {
 		return name;
 	}
 
+    public static final int LONG_NAME_LENGTH = 15;
     public static final int SHORT_NAME_LENGTH = 7;
     public static final int VERY_SHORT_NAME_LENGTH = 3;
     /**

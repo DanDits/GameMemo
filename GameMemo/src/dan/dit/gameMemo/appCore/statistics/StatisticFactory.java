@@ -1,5 +1,8 @@
 package dan.dit.gameMemo.appCore.statistics;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.achartengine.chart.PointStyle;
 import org.achartengine.renderer.SimpleSeriesRenderer;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
@@ -9,6 +12,7 @@ import android.content.Context;
 import android.view.View;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameRound;
+import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.statistics.AcceptorIterator;
 import dan.dit.gameMemo.gameData.statistics.GameStatistic;
 
@@ -16,15 +20,17 @@ public abstract class StatisticFactory {
     protected GameStatistic mStat;
     protected GameStatistic mRefStat;
     
-    public StatisticFactory(GameStatistic stat) {
+    public StatisticFactory() {}
+    
+    public StatisticFactory(GameStatistic stat, GameStatistic refStat) {
+        setStatistic(stat, refStat);
+    }
+    
+    protected void setStatistic(GameStatistic stat, GameStatistic refStat) {
         mStat = stat;
         if (mStat == null) {
             throw new IllegalArgumentException("Given statistic is null for DatasetBuilder.");
         }
-    }
-    
-    public StatisticFactory(GameStatistic stat, GameStatistic refStat) {
-        this(stat);
         mRefStat = refStat;
     }
     
@@ -114,4 +120,36 @@ public abstract class StatisticFactory {
         }
     }
 
+    protected double getTeamValueForCurrentStatistic(AbstractPlayerTeam team) {
+        if (team != null) {
+            List<AbstractPlayerTeam> teamList = new ArrayList<AbstractPlayerTeam>(1);
+            teamList.add(team);
+            mStat.setTeams(teamList);
+        }
+        
+        AcceptorIterator it = mStat.iterator();
+        boolean useReference = useReference();
+        AcceptorIterator refIt = useReference && mRefStat != null ? mRefStat.iterator() : null;
+
+        mStat.initCalculation();
+        double totalSum = 0;
+        double totalRefSum = 0;
+        double nextSum;
+        double nextRefSum = Double.NaN;
+        while (it.hasNextGame() && (refIt == null || refIt.hasNextGame())) {
+            nextSum = nextGameSum(it);
+            totalSum += nextSum;
+            if (useReference) {
+                if (refIt != null) {
+                    nextRefSum = nextGameSum(refIt);
+                    totalRefSum += nextRefSum;
+                }
+            }
+        }
+        if (useReference && refIt == null) {
+            totalRefSum = it.getAcceptedRoundsCount() > 0 ? it.getAcceptedRoundsCount() : it.getAcceptedGamesCount();
+        }
+        double result = nextValue(totalSum, totalRefSum);
+        return result;
+    }
 }

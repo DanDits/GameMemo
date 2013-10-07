@@ -22,4 +22,8 @@ public class AttributeData {
     public String toString() {
         return "AttributeData: " + mAttributes + "; cv=" + mCustomValue + "; teams=" + mTeams;
     }
+
+    public AbstractPlayerTeam getTeam(int index) {
+        return index >= 0 && index < mTeams.size() ? mTeams.get(index) : null;
+    }
 }

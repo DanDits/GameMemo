@@ -195,7 +195,7 @@
 	<string name="statistics_menu_pres_type_percentual">%</string>
 	<string name="statistics_menu_pres_type_proportional">proportional</string>
 	<string name="statistic_general_longest_time_between_games_name">Greatest game pause (in hours)</string>
-	<string name="statistic_general_longest_time_between_games_descr">The maximum amount of time passed during the start of two consecutive games. Ignores teams.</string>
+	<string name="statistic_general_longest_time_between_games_descr">The maximum amount of time passed during the start of two consecutive games.</string>
 	<string name="attribute_general_invert_name">Invert</string>
 	<string name="attribute_general_invert_descr">Invert the evaluation of the subattributes.</string>
 	<string name="attribute_tichu_flag_enemy_name">Enemy</string>
@@ -224,4 +224,7 @@
 	<string name="attribute_tichu_flag_partner_descr">Flag to invert or alter the evaluation of some attributes.</string>
 	<string name="attribute_tichu_flag_self_name">Self</string>
 	<string name="attribute_tichu_flag_self_descr">Flag to invert or alter the evaluation of some attributes.</string>
+	<string name="statistics_x_axis_label">Game</string>
+	<string name="statistics_mode_chrono_no_team">General</string>
+	<string name="statistics_mode_all_no_team">General</string>
 </resources>

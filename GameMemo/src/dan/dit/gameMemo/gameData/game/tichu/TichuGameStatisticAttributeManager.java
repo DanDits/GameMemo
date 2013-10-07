@@ -35,23 +35,17 @@ public class TichuGameStatisticAttributeManager extends
         super(GameKey.TICHU);
     }
     
-    /**
-     * This should always be invoked by a GameStatistic's acceptGame method to check if all teams are contained
-     * in the given game. The teams are set to filter games with these combinations. StatisticAttributes can but are not required
-     * to check this as they only filter out statistics more.
-     * @param game The game to check.
-     * @param attr The attribute which's teams must be contained in the given game. An empty or non existing team is considered to be contained.
-     * @return <code>true</code> if all teams are completely or partly contained in the teams of the given game.
-     */
-    private static boolean containsAllTeams(TichuGame game, StatisticAttribute attr) {
-        if (game == null) {
-            throw new IllegalArgumentException("Null game to check for " + attr);
+    protected boolean containsAllTeams(Game pGame, AttributeData data) {
+        if (pGame == null) {
+            throw new IllegalArgumentException("Null game to check for " + data);
         }
-        AbstractPlayerTeam first = attr.getTeam(0);
-        AbstractPlayerTeam second = attr.getTeam(1);
+        AbstractPlayerTeam first = data.getTeam(0);
+        AbstractPlayerTeam second = data.getTeam(1);
+        TichuGame game = (TichuGame) pGame;
         return (game.getTeam1().containsTeam(first) && game.getTeam2().containsTeam(second))
                 || (game.getTeam1().containsTeam(second) && game.getTeam2().containsTeam(first));
     }
+    
     public static final String IDENTIFIER_ATT_ENEMY = "enemy";
     public static final String IDENTIFIER_ATT_SELF = "self";
     public static final String IDENTIFIER_ATT_PARTNER = "partner";
@@ -127,7 +121,7 @@ public class TichuGameStatisticAttributeManager extends
                     return false;
                 }
                 TichuGame g = ((TichuGame) game);
-                if (g.isFinished() && containsAllTeams(g, this)) {
+                if (g.isFinished() && containsAllTeams(g, data)) {
                     if (getTeamsCount() == 0) {
                         return true; // no team given, that means we do not care about who actually won, just if anyone won
                     }
@@ -158,7 +152,7 @@ public class TichuGameStatisticAttributeManager extends
         att = new UserStatisticAttribute() {
             @Override
             public boolean acceptGame(Game game, AttributeData data) {
-                return super.acceptGame(game, data) && containsAllTeams((TichuGame) game, this);
+                return super.acceptGame(game, data) && containsAllTeams((TichuGame) game, data);
             }
             @Override
             public boolean acceptRound(Game game, GameRound round, AttributeData data) {
@@ -195,7 +189,7 @@ public class TichuGameStatisticAttributeManager extends
         GameStatistic stat = new GameStatistic() {
             @Override public double calculateValue(Game gamee, AttributeData data) { return 1.0;}
             @Override public double calculateValue(Game game, GameRound rounde, AttributeData data) {return Double.NaN;}
-            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game) && containsAllTeams((TichuGame) game, this);}
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game) && containsAllTeams((TichuGame) game, data);}
             @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) {return false;}
         };
         statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_GAMES_PLAYED, GameKey.TICHU);
@@ -208,7 +202,7 @@ public class TichuGameStatisticAttributeManager extends
         stat = new GameStatistic() {
             @Override public double calculateValue(Game gamee, AttributeData data) { return Double.NaN;}
             @Override public double calculateValue(Game game, GameRound rounde, AttributeData data) {return 1.0;}
-            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game) && containsAllTeams((TichuGame) game, this);}
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game) && containsAllTeams((TichuGame) game, data);}
             @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) {return acceptRoundAllSubattributes(game, round);}
         };
         statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_ROUNDS_PLAYED, GameKey.TICHU);
@@ -246,7 +240,7 @@ public class TichuGameStatisticAttributeManager extends
                     }
                 }
             }
-            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game) && containsAllTeams((TichuGame) game, this);}
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game) && containsAllTeams((TichuGame) game, data);}
             @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) {return acceptRoundAllSubattributes(game, round);}
         };
         statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_TICHU_SCORE, GameKey.TICHU);

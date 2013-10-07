@@ -392,6 +392,10 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
         return mNameResId != 0 ? res.getString(mNameResId) : mName;
     }
     
+    public CharSequence getDescription(Resources res) {
+        return mDescriptionResId != 0 ? res.getString(mDescriptionResId) : mDescription;
+    }
+    
     @Override
     public int compareTo(StatisticAttribute other) {
         if (isUserAttribute() && !other.isUserAttribute()) {
@@ -406,6 +410,10 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
 
     public void setPriority(int prio) {
         mPriority = prio;
+    }
+    
+    public static final double makeShorter(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 
 }

@@ -197,4 +197,8 @@ public abstract class GameStatistic extends StatisticAttribute {
     public void initCalculation() {
     }
 
+    public String getReference() {
+        return mReferenceStatisticIdentifier;
+    }
+
 }

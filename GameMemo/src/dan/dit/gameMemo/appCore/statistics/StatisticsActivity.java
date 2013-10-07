@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 
 import android.annotation.SuppressLint;
@@ -27,12 +28,15 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.ViewSwitcher;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.gameSetup.TeamSetupTeamsController;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
+import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
@@ -44,6 +48,7 @@ import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.ColorPickerView.OnColorChangedListener;
 import dan.dit.gameMemo.util.NotifyMajorChangeCallback;
 
+@SuppressLint("NewApi")
 public class StatisticsActivity extends FragmentActivity implements OnColorChangedListener, ChoosePlayerDialogListener {
     private static final String PREFERENCES_MODE = "dan.dit.gameMemo.PREF_STATISTIC_MODE";
     private static final String EXTRA_ALLOWED_STARTTIMES = "dan.dit.gameMemo.EXTRA_ALLOWED_STARTTIMES";
@@ -280,32 +285,54 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
                 mModeAllContainer.setVisibility(View.VISIBLE);
                 mModeChartContainer.setVisibility(View.GONE);
                 mDisplayedStatistic = null;
-                //TODO produce the adapter and data for all statistics 
+                StatisticsFactoryAll factory = new StatisticsFactoryAll(mGameKey, getUserTeams(), mGames, (ListView) mModeAllContainer.findViewById(R.id.statistic_mode_all_list), (TextView) mModeAllContainer.findViewById(R.id.statistic_mode_all_header));
+                factory.build(StatisticsActivity.this);
+                factory.notifyDataSetChanged();
                 break;
             case STATISTICS_MODE_CHRONO:
                 mModeAllContainer.setVisibility(View.GONE);
                 mModeChartContainer.setVisibility(View.VISIBLE);
                 mModeChartContainer.removeAllViews();
                 mDisplayedStatistic = getSelectedStatistic();
-                mModeChartContainer.addView(new StatisticFactoryChrono(mDisplayedStatistic).build(StatisticsActivity.this));
+                mModeChartContainer.addView(new StatisticFactoryChrono(mDisplayedStatistic, mAttributeManager.getStatistic(mDisplayedStatistic.getReference())).build(StatisticsActivity.this));
                 break;
             case STATISTICS_MODE_OVERVIEW:
                 mModeAllContainer.setVisibility(View.GONE);
                 mModeChartContainer.setVisibility(View.VISIBLE);
                 mModeChartContainer.removeAllViews();
                 mDisplayedStatistic = getSelectedStatistic();
-                mModeChartContainer.addView(new StatisticFactoryOverview(mDisplayedStatistic).build(StatisticsActivity.this));
+                mModeChartContainer.addView(new StatisticFactoryOverview(mDisplayedStatistic, mAttributeManager.getStatistic(mDisplayedStatistic.getReference())).build(StatisticsActivity.this));
                 break;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                if (getActionBar() != null && mDisplayedStatistic != null) {
+                    getActionBar().setTitle(mDisplayedStatistic.getName(getResources()));
+                }
             }
             applyMenuButtonsState();
         }
+    }
+    
+    private List<AbstractPlayerTeam> getUserTeams() {
+        List<AbstractPlayerTeam> teams = mTeamsController.getAllTeams(false);
+        // remove appended empty teams
+        ListIterator<AbstractPlayerTeam> it = teams.listIterator(teams.size());
+        while (it.hasPrevious()) {
+            AbstractPlayerTeam team = it.previous();
+            if (team == null || team.getPlayerCount() == 0) {
+                it.remove();
+            } else {
+                break;
+            }
+        }
+        return teams;
     }
     
     private GameStatistic getSelectedStatistic() {
         GameStatistic stat = (GameStatistic) mStatisticsSelect.getSelectedItem();
         if (stat != null) {
             stat.setGameList(mGames);
-            stat.setTeams(mTeamsController.getAllTeams(false));
+            stat.setTeams(getUserTeams());
         }
         return stat;
     }
@@ -327,8 +354,12 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
             if (mSwitcher.getDisplayedChild() == 1) {
                 mSwitcher.showPrevious();
             }
-            mModeAllContainer.removeAllViews();
             mModeChartContainer.removeAllViews();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                if (getActionBar() != null) {
+                    getActionBar().setTitle(getResources().getString(R.string.statistics_activity_header));
+                }
+            }
             applyMenuButtonsState();
         }
     }

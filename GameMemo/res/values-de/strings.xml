@@ -218,7 +218,7 @@
 	<string name="statistics_menu_pres_type_percentual">%</string>
 	<string name="statistics_menu_pres_type_proportional">Teil</string>
 	<string name="statistic_general_longest_time_between_games_name">Größte Spielpause (in Stunden)</string>
-	<string name="statistic_general_longest_time_between_games_descr">Der größte Zeitraum zwischen dem Start von zwei Spielen. Ignoriert Teams.</string>
+	<string name="statistic_general_longest_time_between_games_descr">Der größte Zeitraum zwischen dem Start von zwei Spielen.</string>
 	<string name="attribute_general_invert_name">Invertieren</string>
 	<string name="attribute_general_invert_descr">Invertiert das Ergebnis der Unterattribute.</string>
 	<string name="attribute_tichu_flag_enemy_name">Gegner</string>
@@ -247,4 +247,7 @@
 	<string name="attribute_tichu_flag_partner_descr">Zeichen um das Ergebnis mancher Attribute zu invertieren oder ändern.</string>
 	<string name="attribute_tichu_flag_self_name">Selbst</string>
 	<string name="attribute_tichu_flag_self_descr">Zeichen um das Ergebnis mancher Attribute zu invertieren oder ändern.</string>
+	<string name="statistics_x_axis_label">Spiel</string>
+	<string name="statistics_mode_chrono_no_team">Allgemein</string>
+	<string name="statistics_mode_all_no_team">Allgemein</string>
 </resources>

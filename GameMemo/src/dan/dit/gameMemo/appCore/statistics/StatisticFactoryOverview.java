@@ -2,6 +2,7 @@ package dan.dit.gameMemo.appCore.statistics;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.achartengine.chart.BarChart.Type;
@@ -15,26 +16,22 @@ import android.view.View;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
-import dan.dit.gameMemo.gameData.statistics.AcceptorIterator;
 import dan.dit.gameMemo.gameData.statistics.AdvancedRangeBarChart;
 import dan.dit.gameMemo.gameData.statistics.GameStatistic;
+import dan.dit.gameMemo.gameData.statistics.StatisticAttribute;
 
 public class StatisticFactoryOverview extends StatisticFactory {
-
-    public StatisticFactoryOverview(GameStatistic stat) {
-        super(stat);
-    }
 
     public StatisticFactoryOverview(GameStatistic stat, GameStatistic refStat) {
         super(stat, refStat);
     }
     
-    private XYMultipleSeriesDataset buildDataset(List<Double> values) {
+    private XYMultipleSeriesDataset buildDataset(List<Double> values, Context context) {
         XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-        XYSeries series = new XYSeries(mStat.getIdentifier());
+        XYSeries series = new XYSeries(mStat.getName(context.getResources()).toString());
         int index = 0;
         for (Double val : values) {
-            series.add(++index, val);
+            series.add(++index, StatisticAttribute.makeShorter(val)); 
         }
         dataset.addSeries(series);
         return dataset;
@@ -42,9 +39,15 @@ public class StatisticFactoryOverview extends StatisticFactory {
     
     private List<Double> calculateValues(List<AbstractPlayerTeam> allTeams) {
         List<Double> list = new ArrayList<Double>(allTeams.size());
-        for (AbstractPlayerTeam team : allTeams) {
-            double value = getTeamValue(team);
-            list.add(value);
+        Iterator<AbstractPlayerTeam> it = allTeams.iterator();
+        while (it.hasNext()) {
+            AbstractPlayerTeam team = it.next();
+            double value = getTeamValueForCurrentStatistic(team);
+            if (!Double.isNaN(value)) {
+                list.add(value);                
+            } else {
+                it.remove();
+            }
         }
         return list;
     }
@@ -82,10 +85,18 @@ public class StatisticFactoryOverview extends StatisticFactory {
         renderer.setShowGridX(true);
         renderer.setXLabelsAlign(Align.CENTER);
         renderer.setXLabels(0);
-        renderer.setXAxisMax(10);
+        renderer.setXAxisMin(-1);
+        renderer.setXAxisMax(15);
+        renderer.setXLabelsAngle(290);
+        renderer.setXLabelsAlign(Align.RIGHT);
+        final int COLOR = 0xFF4CEB20;
+        renderer.setLabelsColor(COLOR);
+        renderer.setXLabelsColor(COLOR);
+        renderer.setYLabelsColor(0, COLOR);
+        renderer.setYLabelsAlign(Align.RIGHT);
         int index = 0;
         for (AbstractPlayerTeam team : allTeams) {
-            renderer.addXTextLabel(++index, team.getShortenedName(Player.SHORT_NAME_LENGTH));
+            renderer.addXTextLabel(++index, team.getShortenedName(Player.LONG_NAME_LENGTH));
         }
         return renderer;
     }
@@ -94,7 +105,7 @@ public class StatisticFactoryOverview extends StatisticFactory {
         List<AbstractPlayerTeam> allTeams = getAllTeams();
         List<Double> values = calculateValues(allTeams);
         sortParallel(allTeams, values);
-        return AdvancedRangeBarChart.getBarChartView(context, buildDataset(values), buildRenderer(context, allTeams, values),
+        return AdvancedRangeBarChart.getBarChartView(context, buildDataset(values, context), buildRenderer(context, allTeams, values),
                 Type.DEFAULT, getColors(allTeams));
     }
     
@@ -122,36 +133,5 @@ public class StatisticFactoryOverview extends StatisticFactory {
             allTeams.add(p);
         }
         return allTeams;
-    }
-    
-    private double getTeamValue(AbstractPlayerTeam team) {
-        List<AbstractPlayerTeam> teamList = new ArrayList<AbstractPlayerTeam>(1);
-        teamList.add(team);
-        mStat.setTeams(teamList);
-        
-        AcceptorIterator it = mStat.iterator();
-        boolean useReference = useReference();
-        AcceptorIterator refIt = useReference && mRefStat != null ? mRefStat.iterator() : null;
-
-        mStat.initCalculation();
-        double totalSum = 0;
-        double totalRefSum = 0;
-        double nextSum;
-        double nextRefSum = Double.NaN;
-        while (it.hasNextGame() && (refIt == null || refIt.hasNextGame())) {
-            nextSum = nextGameSum(it);
-            totalSum += nextSum;
-            if (useReference) {
-                if (refIt != null) {
-                    nextRefSum = nextGameSum(refIt);
-                    totalRefSum += nextRefSum;
-                }
-            }
-        }
-        if (refIt == null) {
-            totalRefSum = it.getAcceptedRoundsCount() > 0 ? it.getAcceptedRoundsCount() : it.getAcceptedGamesCount();
-        }
-        double result = nextValue(totalSum, totalRefSum);
-        return result;
     }
 }

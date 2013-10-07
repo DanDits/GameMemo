@@ -29,6 +29,16 @@ public abstract class GameStatisticAttributeManager {
         mGameKey = gameKey;
     }
     
+    /**
+     * This should always be invoked by a GameStatistic's acceptGame method to check if all teams are contained
+     * in the given game. The teams are set to filter games with these combinations. StatisticAttributes can but are not required
+     * to check this as they only filter out statistics more.
+     * @param pGame The game to check.
+     * @param data The attribute which's teams must be contained in the given game. An empty or non existing team is considered to be contained.
+     * @return <code>true</code> if all teams are completely or partly contained in the teams of the given game.
+     */
+    protected abstract boolean containsAllTeams(Game pGame, AttributeData data);
+    
     protected static final boolean hasAttribute(AttributeData data, String identifier) {
         for (StatisticAttribute attr : data.mAttributes) {
             if (attr.getIdentifier().equals(identifier)) {
@@ -154,6 +164,9 @@ public abstract class GameStatisticAttributeManager {
     }
     
     public StatisticAttribute getAttribute(String identifier) {
+        if (identifier == null) {
+            return null;
+        }
         StatisticAttribute attr = mAttrs.get(identifier);
         if (attr == null) {
             return mStats.get(identifier);
@@ -162,6 +175,9 @@ public abstract class GameStatisticAttributeManager {
     }
     
     public GameStatistic getStatistic(String identifier) {
+        if (identifier == null) {
+            return null;
+        }
         return mStats.get(identifier);
     }
 
@@ -205,7 +221,7 @@ public abstract class GameStatisticAttributeManager {
             private long mLastGameStarttime;
             private double mLastGameValue;
             @Override public void initCalculation() {mLastGameStarttime = -1; mLastGameValue = 0;}
-            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game);}
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game) && containsAllTeams(game, data);}
             @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) { return false;}
 
             @Override
