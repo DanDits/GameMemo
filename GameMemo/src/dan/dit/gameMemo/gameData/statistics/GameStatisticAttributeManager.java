@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public abstract class GameStatisticAttributeManager {
         // do not check for id here, this is only required for database deletion
         if (toDelete != null && toDelete.isUserAttribute()) { 
             List<StatisticAttribute> deletionList = new LinkedList<StatisticAttribute>();
-            for (StatisticAttribute attr : getAllAttributes()) {
+            for (StatisticAttribute attr : getAllAttributes(true)) {
                 attr.removeAttribute(toDelete);
                 StatisticAttribute baseAttr = null;
                 if (attr instanceof StatisticAttribute.WrappedStatisticAttribute) {
@@ -79,7 +80,7 @@ public abstract class GameStatisticAttributeManager {
     }
     
     public void saveUserAttributes(SQLiteDatabase db) {
-        for (StatisticAttribute attr : getAllAttributes()) {
+        for (StatisticAttribute attr : getAllAttributes(true)) {
             if (attr.isUserAttribute()) {
                 attr.save(db);
             }
@@ -149,17 +150,33 @@ public abstract class GameStatisticAttributeManager {
         }
     }
     
-    public List<StatisticAttribute> getAllAttributes() {
+    public List<StatisticAttribute> getAllAttributes(boolean includeHidden) {
         ArrayList<StatisticAttribute> all = new ArrayList<StatisticAttribute>(mStats.size() + mAttrs.size());
         all.addAll(mStats.values());
         all.addAll(mAttrs.values());
+        if (!includeHidden) {
+            Iterator<StatisticAttribute> it = all.iterator();
+            while (it.hasNext()) {
+                if (it.next().getPriority() == StatisticAttribute.PRIORITY_HIDDEN) {
+                    it.remove();
+                }
+            }
+        }
         Collections.sort(all);
         return all;
     }
     
-    public List<GameStatistic> getStatistics() {
+    public List<GameStatistic> getStatistics(boolean includeHidden) {
         ArrayList<GameStatistic> all = new ArrayList<GameStatistic>(mStats.values());
         Collections.sort(all);
+        if (!includeHidden) {
+            Iterator<GameStatistic> it = all.iterator();
+            while (it.hasNext()) {
+                if (it.next().getPriority() == StatisticAttribute.PRIORITY_HIDDEN) {
+                    it.remove();
+                }
+            }
+        }
         return all;
     }
     
@@ -211,6 +228,11 @@ public abstract class GameStatisticAttributeManager {
 
     public static final String IDENTIFIER_ATT_INVERT_RESULT = "invert_result";
     public static final String IDENTIFIER_STAT_LONGEST_TIME_BETWEEN_GAMES = "longest_time_between_games";
+    public static final String IDENTIFIER_STAT_GAME_LENGTH = "game_length";
+    public static final String IDENTIFIER_STAT_AND_SUMMER = "stat_and_summer";
+    public static final String IDENTIFIER_STAT_OR_SUMMER = "stat_or_summer";
+    public static final String IDENTIFIER_ATT_OR = "or";
+    public static final String IDENTIFIER_ATT_GAME_FINISHED = "game_finished";
     
     protected Collection<StatisticAttribute> getGeneralPredefinedAttributes() {
         Map<String, StatisticAttribute> attrs = new HashMap<String, StatisticAttribute>();
@@ -221,11 +243,11 @@ public abstract class GameStatisticAttributeManager {
             private long mLastGameStarttime;
             private double mLastGameValue;
             @Override public void initCalculation() {mLastGameStarttime = -1; mLastGameValue = 0;}
-            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game) && containsAllTeams(game, data);}
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game, data) && containsAllTeams(game, data);}
             @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) { return false;}
 
             @Override
-            public double calculateValue(Game game, GameRound rounde, AttributeData data) {return Double.NaN;}
+            public double calculateValue(Game game, GameRound round, AttributeData data) {return Double.NaN;}
             
             @Override
             public double calculateValue(Game game, AttributeData data) {
@@ -248,8 +270,28 @@ public abstract class GameStatisticAttributeManager {
         };
         statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_LONGEST_TIME_BETWEEN_GAMES, mGameKey);
         statBuilder.setNameAndDescriptionResId(R.string.statistic_general_longest_time_between_games_name, R.string.statistic_general_longest_time_between_games_descr);
-        statBuilder.setPriority(10);
+        statBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
+        addAndCheck(statBuilder.getAttribute(), attrs);
+        
+        // game length
+        stat = new GameStatistic() {
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game, data) && containsAllTeams(game, data);}
+            @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) { return false;}
+
+            @Override
+            public double calculateValue(Game game, GameRound round, AttributeData data) {return Double.NaN;}
+            
+            @Override
+            public double calculateValue(Game game, AttributeData data) {
+                return game.getRunningTime() / (1000 * 60);
+            }
+
+        };
+        statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_GAME_LENGTH, mGameKey);
+        statBuilder.setNameAndDescriptionResId(R.string.statistic_general_game_runtime_name, R.string.statistic_general_game_runtime_descr);
+        statBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
+        statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_PROPORTION);
         addAndCheck(statBuilder.getAttribute(), attrs);
         
         // invert result
@@ -265,30 +307,131 @@ public abstract class GameStatisticAttributeManager {
             }
         };
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_INVERT_RESULT, mGameKey);
-        attBuilder.setPriority(100);
+        attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_general_invert_name, R.string.attribute_general_invert_descr);
         addAndCheck(attBuilder.getAttribute(), attrs);
+       
+        // logical or
+        att = new UserStatisticAttribute() {
+            @Override
+            public boolean acceptGame(Game game, AttributeData data) {
+               return acceptGameOneSubattributes(game, data);
+            }
+            
+            @Override
+            public boolean acceptRound(Game game, GameRound round, AttributeData data) {
+                return acceptRoundOneSubattributes(game, round, data);
+            }
+        };
+        attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_OR, mGameKey);
+        attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
+        attBuilder.setNameAndDescriptionResId(R.string.attribute_general_or_name, R.string.attribute_general_or_descr);
+        addAndCheck(attBuilder.getAttribute(), attrs);
+       
+        // game finished
+        att = new UserStatisticAttribute() {
+            @Override
+            public boolean acceptGame(Game game, AttributeData data) {
+               return super.acceptGame(game, data) && containsAllTeams(game, data) && game.isFinished();
+            }
+        };
+        attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_GAME_FINISHED, mGameKey);
+        attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
+        attBuilder.setNameAndDescriptionResId(R.string.attribute_general_game_finished_name, R.string.attribute_general_game_finished_descr);
+        addAndCheck(attBuilder.getAttribute(), attrs);
+        
+        // stat and summer
+        stat = new GameStatistic() {
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game, data) && containsAllTeams(game, data);}
+            @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) { return acceptRoundAllSubattributes(game, round, data);}
+
+            @Override
+            public double calculateValue(Game game, GameRound round, AttributeData data) {
+                double sum = 0;
+                for (StatisticAttribute attr : data.mAttributes) {
+                    if (attr instanceof GameStatistic) {
+                        sum += ((GameStatistic) attr).calculateValue(game, round, attr.getData());
+                    }
+                }
+                return sum;
+            }
+            
+            @Override
+            public double calculateValue(Game game, AttributeData data) {
+                double sum = 0;
+                for (StatisticAttribute attr : data.mAttributes) {
+                    if (attr instanceof GameStatistic) {
+                        sum += ((GameStatistic) attr).calculateValue(game, attr.getData());
+                    }
+                }
+                return sum;
+            }
+
+        };
+        statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_AND_SUMMER, mGameKey);
+        statBuilder.setNameAndDescriptionResId(R.string.statistic_general_summer_and_name, R.string.statistic_general_summer_and_descr);
+        statBuilder.setPriority(StatisticAttribute.PRIORITY_HIDDEN);
+        statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
+        addAndCheck(statBuilder.getAttribute(), attrs);
+        
+        // stat or summer
+        stat = new GameStatistic() {
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameOneSubattributes(game, data) && containsAllTeams(game, data);}
+            @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) { return acceptRoundOneSubattributes(game, round, data);}
+
+            @Override
+            public double calculateValue(Game game, GameRound round, AttributeData data) {
+                double sum = 0;
+                for (StatisticAttribute attr : data.mAttributes) {
+                    AttributeData ownData = attr.getData();
+                    if (attr instanceof GameStatistic && attr.acceptRound(game, round, ownData)) {
+                        sum += ((GameStatistic) attr).calculateValue(game, round, ownData);
+                    }
+                }
+                return sum;
+            }
+            
+            @Override
+            public double calculateValue(Game game, AttributeData data) {
+                double sum = 0;
+                for (StatisticAttribute attr : data.mAttributes) {
+                    AttributeData ownData = attr.getData();
+                    if (attr instanceof GameStatistic && attr.acceptGame(game, ownData)) {
+                        sum += ((GameStatistic) attr).calculateValue(game, ownData);
+                    }
+                }
+                return sum;
+            }
+
+        };
+        statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_OR_SUMMER, mGameKey);
+        statBuilder.setNameAndDescriptionResId(R.string.statistic_general_summer_or_name, R.string.statistic_general_summer_or_descr);
+        statBuilder.setPriority(StatisticAttribute.PRIORITY_HIDDEN);
+        statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
+        addAndCheck(statBuilder.getAttribute(), attrs);
         return attrs.values();
     }
 
     public abstract Bundle applyMode(int mode, TeamSetupTeamsController ctr, Resources res);
 
-    public void setHighestPriority(String identifier) {
-        StatisticAttribute att = getAttribute(identifier);
-        if (att != null) {
-            int currPrio = 1;
-            List<StatisticAttribute> all = getAllAttributes();
-            Collections.sort(all);
-            for (StatisticAttribute sa : all) {
-                if (sa.isUserAttribute()) {
-                    if (sa.equals(att)) {
-                        sa.setPriority(0); // 0 is highest priority
-                    } else {
-                        sa.setPriority(currPrio++);
-                    }
-                }
+    public String getUnusedIdentifier(StatisticAttribute baseAttr) {
+        int index = 0;
+        String base = baseAttr.mIdentifier;
+        boolean notContained = false;
+        while (!notContained) {
+            String curr = base + index;
+            if (!mStats.containsKey(curr) && !mAttrs.containsKey(curr)) {
+                notContained = true;
+                return curr;
             }
+            index++;
         }
+        // cannot happen
+        return null; 
+    }
+
+    public boolean isInitialized() {
+        return !mStats.isEmpty() || !mAttrs.isEmpty();
     }
     
 }

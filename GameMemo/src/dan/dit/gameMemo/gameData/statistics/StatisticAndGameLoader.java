@@ -141,7 +141,9 @@ public class StatisticAndGameLoader extends
 	
 	private void loadStatistics() {
 	    GameStatisticAttributeManager manager = GameKey.getGameStatisticAttributeManager(mGameKey);
-	    manager.init(mApplicationContext);
+	    if (!manager.isInitialized()) {
+	        manager.init(mApplicationContext);
+	    }
 	}
 	
 	@Override

@@ -17,6 +17,9 @@ import dan.dit.gameMemo.gameData.statistics.AcceptorIterator;
 import dan.dit.gameMemo.gameData.statistics.GameStatistic;
 
 public abstract class StatisticFactory {
+    public static final int LABEL_COLOR = 0xFFFFFFFF;// light green: 0xFF90F490;
+    public static final int SERIES_COLOR = 0xFFFFFFFF;
+    public static final int BACKGROUND_COLOR = 0xFF000000;
     protected GameStatistic mStat;
     protected GameStatistic mRefStat;
     
@@ -52,6 +55,7 @@ public abstract class StatisticFactory {
       for (int i = 0; i < length; i++) {
         SimpleSeriesRenderer r = new SimpleSeriesRenderer();
         r.setColor(colors[i]);
+        r.setChartValuesFormat(mStat.getFormat());
         renderer.addSeriesRenderer(r);
       }
       return renderer;
@@ -71,6 +75,7 @@ public abstract class StatisticFactory {
           XYSeriesRenderer r = new XYSeriesRenderer();
           r.setColor(colors[i]);
           r.setPointStyle(styles[i]);
+          r.setChartValuesFormat(mStat.getFormat());
           renderer.addSeriesRenderer(r);
         }
         return renderer;
@@ -80,22 +85,22 @@ public abstract class StatisticFactory {
         return mStat.getPresentationType() == GameStatistic.PRESENTATION_TYPE_PERCENTAGE || mStat.getPresentationType() == GameStatistic.PRESENTATION_TYPE_PROPORTION;
     }
     
-    protected double nextGameSum(AcceptorIterator it) {
+    protected static double nextGameSum(GameStatistic stat, AcceptorIterator it) {
         Game game;
         GameRound round;
         double gameValue;
         double roundValue;
         double sum = 0;
         game = it.nextGame();
-        gameValue = mStat.calculateValue(game);
+        gameValue = stat.calculateValue(game);
         if (!Double.isNaN(gameValue)) {
             sum += gameValue;
         }
         while (it.hasNextRound()) {
             round = it.nextRound();
-            roundValue = mStat.calculateValue(game, round);
+            roundValue = stat.calculateValue(game, round);
             if (Double.isNaN(roundValue)) {
-                throw new IllegalStateException("Calculated NaN for an accepted round for game " + game + " and round " + round + " and stat " + mStat);
+                throw new IllegalStateException("Calculated NaN for an accepted round for game " + game + " and round " + round + " and stat " + stat);
             }
             sum += roundValue;
         }
@@ -111,7 +116,7 @@ public abstract class StatisticFactory {
             factor = 100;
             /* fall through */
         case GameStatistic.PRESENTATION_TYPE_PROPORTION:
-            if (sum == Double.NaN || refSum == Double.NaN || refSum == 0) {
+            if (Double.isNaN(sum) || Double.isNaN(refSum) || refSum == 0) {
                 return Double.NaN;
             }
             return factor * sum / refSum;
@@ -121,32 +126,34 @@ public abstract class StatisticFactory {
     }
 
     protected double getTeamValueForCurrentStatistic(AbstractPlayerTeam team) {
+        boolean useReference = useReference();
         if (team != null) {
             List<AbstractPlayerTeam> teamList = new ArrayList<AbstractPlayerTeam>(1);
             teamList.add(team);
             mStat.setTeams(teamList);
+            if (mRefStat != null && useReference) {
+                mRefStat.setTeams(teamList);
+                mRefStat.initCalculation();
+            }
         }
         
         AcceptorIterator it = mStat.iterator();
-        boolean useReference = useReference();
-        AcceptorIterator refIt = useReference && mRefStat != null ? mRefStat.iterator() : null;
-
         mStat.initCalculation();
         double totalSum = 0;
-        double totalRefSum = 0;
         double nextSum;
-        double nextRefSum = Double.NaN;
-        while (it.hasNextGame() && (refIt == null || refIt.hasNextGame())) {
-            nextSum = nextGameSum(it);
+        while (it.hasNextGame()) {
+            nextSum = nextGameSum(mStat, it);
             totalSum += nextSum;
-            if (useReference) {
-                if (refIt != null) {
-                    nextRefSum = nextGameSum(refIt);
-                    totalRefSum += nextRefSum;
-                }
-            }
         }
-        if (useReference && refIt == null) {
+        AcceptorIterator refIt = useReference && mRefStat != null ? mRefStat.iterator() : null;
+        double totalRefSum = 0;
+        if (refIt != null) {
+            double nextRefSum = Double.NaN;
+            while (refIt.hasNextGame()) {
+                nextRefSum = nextGameSum(mRefStat, refIt);
+                totalRefSum += nextRefSum;
+            }
+        } else if (useReference) {
             totalRefSum = it.getAcceptedRoundsCount() > 0 ? it.getAcceptedRoundsCount() : it.getAcceptedGamesCount();
         }
         double result = nextValue(totalSum, totalRefSum);

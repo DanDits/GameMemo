@@ -1,12 +1,16 @@
 package dan.dit.gameMemo.gameData.statistics;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import android.content.ContentValues;
 import android.text.TextUtils;
+import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
+import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.GameRound;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 
@@ -14,9 +18,10 @@ public abstract class GameStatistic extends StatisticAttribute {
     public static final int PRESENTATION_TYPE_ABSOLUTE = 0;
     public static final int PRESENTATION_TYPE_PERCENTAGE = 1;
     public static final int PRESENTATION_TYPE_PROPORTION = 2;
-    public static final int PRESENTATION_TYPE_COUNT = 3;
+    public static final int PRESENTATION_TYPES_COUNT = 3;
     
     protected int mPresentationType = PRESENTATION_TYPE_ABSOLUTE;
+    protected int mIsPercentual = 0; // 0 not set, 1 set to percentage type, 2 set to proportion type
     protected String mReferenceStatisticIdentifier;
     protected List<Game> mAllGames;
     
@@ -34,6 +39,20 @@ public abstract class GameStatistic extends StatisticAttribute {
         protected GameStatistic mBaseStat;
         private WrappedGameStatistic(GameStatistic baseStat) {
             mBaseStat = baseStat;
+        }
+        
+        @Override
+        public boolean isPercentual() {
+            if (mBaseStat.mIsPercentual == 0) {
+                return mBaseStat.isPercentual();
+            } else {
+                return super.isPercentual();
+            }
+        }
+        
+        @Override
+        public boolean requiresCustomValue() {
+            return mBaseStat.requiresCustomValue();
         }
         @Override
         protected void addSaveData(ContentValues val) {
@@ -69,7 +88,13 @@ public abstract class GameStatistic extends StatisticAttribute {
             data.mCustomValue = mData.mCustomValue;
             data.mTeams = mData.mTeams;
             return data;
+        }       
+        
+        @Override
+        public StatisticAttribute getBaseAttribute() {
+            return mBaseStat;
         }
+        
         
         @Override
         public Set<StatisticAttribute> getAttributes() {
@@ -108,15 +133,22 @@ public abstract class GameStatistic extends StatisticAttribute {
         public Builder(String identifier, GameStatistic baseStat) {
             mStat = new WrappedGameStatistic(baseStat);
             super.mAttr = mStat;
+            if (TextUtils.isEmpty(identifier)) {
+                identifier = GameKey.getGameStatisticAttributeManager(baseStat.mGameKey).getUnusedIdentifier(baseStat);
+            }
             mStat.mIdentifier = identifier;
             if (TextUtils.isEmpty(identifier) || baseStat == null) {
                 throw new IllegalArgumentException("Identifier or base statistic invalid: " + identifier + " / " + baseStat);
             }
-            setPresentationType(baseStat.mPresentationType);
             mStat.mGameKey = baseStat.mGameKey;
+            setPresentationType(baseStat.mPresentationType);
+            setReferenceStatisticIdentifier(baseStat.mReferenceStatisticIdentifier);
+            setNameAndDescription(baseStat.mName, baseStat.mDescription);
+            setNameAndDescriptionResId(baseStat.mNameResId, baseStat.mDescriptionResId);
+            setPriority(baseStat.mPriority);
         }
         public void setPresentationType(int presType) {
-            mStat.mPresentationType = presType;
+            mStat.setPresentationType(presType);
         }
         
         public GameStatistic getStatistic() {
@@ -165,6 +197,31 @@ public abstract class GameStatistic extends StatisticAttribute {
     
     public void setPresentationType(int type) {
         mPresentationType = type;
+        if (mPresentationType == PRESENTATION_TYPE_PERCENTAGE) {
+            mIsPercentual = PRESENTATION_TYPE_PERCENTAGE;
+        } else if (mPresentationType == PRESENTATION_TYPE_PROPORTION) {
+            mIsPercentual = PRESENTATION_TYPE_PROPORTION;
+        }
+    }
+    
+    public int nextPresentationType() {
+        switch (mPresentationType) {
+        case PRESENTATION_TYPE_ABSOLUTE:
+            if (mIsPercentual == PRESENTATION_TYPE_PERCENTAGE) {
+                return PRESENTATION_TYPE_PERCENTAGE;
+            } else {
+                return PRESENTATION_TYPE_PROPORTION;
+            }
+        case PRESENTATION_TYPE_PROPORTION:
+        case PRESENTATION_TYPE_PERCENTAGE:
+            return PRESENTATION_TYPE_ABSOLUTE;
+        default:
+            throw new IllegalStateException("Illegal presentation type: " + mPresentationType);
+        }
+    }
+    
+    public boolean isPercentual() {
+        return mIsPercentual == PRESENTATION_TYPE_PERCENTAGE;
     }
     
     public int getPresentationType() {
@@ -200,5 +257,52 @@ public abstract class GameStatistic extends StatisticAttribute {
     public String getReference() {
         return mReferenceStatisticIdentifier;
     }
+    
+    private static final NumberFormat FORMAT_ABS = new DecimalFormat("#.##");
+    private static final NumberFormat FORMAT_PERC = new DecimalFormat("#.##'%'");
 
+    public final NumberFormat getFormat() {
+        switch (mPresentationType) {
+        case PRESENTATION_TYPE_ABSOLUTE:
+            return FORMAT_ABS;
+        case PRESENTATION_TYPE_PROPORTION:
+            return FORMAT_ABS;
+        case PRESENTATION_TYPE_PERCENTAGE:
+            return FORMAT_PERC;
+        default:
+            throw new IllegalStateException("Illegal presentation type " + mPresentationType);
+        }
+    }
+
+    public static int getPresTypeTextResId(int presentationType) {
+        switch (presentationType) {
+        case GameStatistic.PRESENTATION_TYPE_ABSOLUTE:
+            return R.string.statistics_menu_pres_type_absolute;
+        case GameStatistic.PRESENTATION_TYPE_PERCENTAGE:
+            return R.string.statistics_menu_pres_type_percentual;
+        case GameStatistic.PRESENTATION_TYPE_PROPORTION:
+            return R.string.statistics_menu_pres_type_proportional;
+        }
+        return 0;
+    }
+    
+    public static int getPresTypeDrawableResId(int presentationType) {
+        switch (presentationType) {
+        case GameStatistic.PRESENTATION_TYPE_ABSOLUTE:
+            return R.drawable.stat_pres_type_abs;
+        case GameStatistic.PRESENTATION_TYPE_PERCENTAGE:
+            return R.drawable.stat_pres_type_perc;
+        case GameStatistic.PRESENTATION_TYPE_PROPORTION:
+            return R.drawable.stat_pres_type_prop;
+        }
+        return 0;
+    }
+
+    public void setReferenceStatistic(GameStatistic referenceStat) {
+        if (referenceStat == null) {
+            mReferenceStatisticIdentifier = null;
+        } else {
+            mReferenceStatisticIdentifier = referenceStat.getIdentifier();
+        }
+    }
 }

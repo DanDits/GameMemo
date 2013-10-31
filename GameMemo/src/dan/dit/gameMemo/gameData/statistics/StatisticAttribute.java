@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Log;
 import dan.dit.gameMemo.gameData.game.Game;
+import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.GameRound;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.util.compaction.Compacter;
@@ -21,14 +22,17 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
     protected int mNameResId;
     protected int mDescriptionResId;
     protected int mGameKey;
-    protected int mPriority;
-    public String mIdentifier; // must be made unique for a gamekey
+    protected int mPriority; // negative means hidden, 0 means not set, a higher value means a lower position in the list
+    protected String mIdentifier; // must be made unique for a gamekey
     
     // data required for calculations
     protected AttributeData mData = new AttributeData();
     
     // fields required for user made statistics
     public static final int ATTRIBUTE_TYPE_USER_BASIC = 0;
+    public static final int PRIORITY_NONE = 0;
+    public static final int PRIORITY_HIDDEN = -1;
+    
     protected String mName;
     protected String mDescription;
     private boolean mUserCreated;
@@ -41,6 +45,12 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
         private WrappedStatisticAttribute(StatisticAttribute baseAttr) {
             mBaseAttr = baseAttr;
         }
+        
+        @Override
+        public boolean requiresCustomValue() {
+            return mBaseAttr.requiresCustomValue();
+        }
+        
         @Override
         protected void addSaveData(ContentValues val) {
             val.put(StatisticsContract.Attribute.COLUMN_NAME_BASE_ATTRIBUTE, mBaseAttr.mIdentifier);
@@ -89,6 +99,11 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
         }
         
         @Override
+        public StatisticAttribute getBaseAttribute() {
+            return mBaseAttr;
+        }
+        
+        @Override
         public String toString() {
             return super.toString() + " wrapping " + mBaseAttr.mIdentifier;
         }
@@ -111,11 +126,15 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
         }
         /**
          * Constructer building an attribute out of an existing one.
-         * @param identifier A String that can be based on the name which must be unique within all attributes' identifier for a gamekey
+         * @param identifier The identifier that needs to be unique within the attributes for a gamekey or an empty String if a new identifier
+         * should be created.
          * @param baseAttr The basic attribute which's logic is simply copied
          */
         public Builder(String identifier, StatisticAttribute baseAttr) {
             WrappedStatisticAttribute attr = new WrappedStatisticAttribute(baseAttr);
+            if (TextUtils.isEmpty(identifier)) {
+                identifier = GameKey.getGameStatisticAttributeManager(baseAttr.mGameKey).getUnusedIdentifier(baseAttr);
+            }
             attr.mIdentifier = identifier;
             if (TextUtils.isEmpty(identifier) || baseAttr == null) {
                 throw new IllegalArgumentException("Identifier or base attribute invalid: " + identifier + " / " + baseAttr);
@@ -165,6 +184,10 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
         private void setId(long id) {
             mAttr.mId = id;
         }
+
+        public void setCustomValue(String customValue) {
+            mAttr.mData.mCustomValue = customValue;
+        }
     }        
  
     public boolean canBeAdded(StatisticAttribute attr) {
@@ -176,7 +199,7 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
     public boolean addAttribute(StatisticAttribute attr) {
         // to prevent infinite loops the attribute - subattribute tree may not contain any cycles
         if (canBeAdded(attr)) {
-            mData.mAttributes.add(attr);
+            return mData.mAttributes.add(attr);
         }
         return false;
     }
@@ -223,6 +246,7 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
             cmp.appendData(attr.mIdentifier);
         }
         val.put(StatisticsContract.Attribute.COLUMN_NAME_SUB_ATTRIBUTES, cmp.compact());
+        val.put(StatisticsContract.Attribute.COLUMN_NAME_CUSTOM_VALUE, mData.mCustomValue);
         addSaveData(val);
         handleDatabaseOperation(db, val);
     }
@@ -273,7 +297,9 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
         int prio = cursor.getInt(cursor.getColumnIndexOrThrow(StatisticsContract.Attribute.COLUMN_NAME_PRIORITY));
         builder.setPriority(prio);
         builder.setNameAndDescription(name, descr);
+        builder.setNameAndDescriptionResId(TextUtils.isEmpty(name) ? builder.getAttribute().mNameResId : 0, TextUtils.isEmpty(descr) ? builder.getAttribute().mDescriptionResId : 0);
         builder.setId(cursor.getLong(cursor.getColumnIndexOrThrow(StatisticsContract.Attribute._ID)));
+        builder.setCustomValue(cursor.getString(cursor.getColumnIndexOrThrow(StatisticsContract.Attribute.COLUMN_NAME_CUSTOM_VALUE)));
         builder.setUserCreated();
         return builder.getAttribute();
     }
@@ -319,6 +345,15 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
         return mData.mAttributes;
     }
     
+    /**
+     * Returns all own sub attributes of this attribute, excluding those
+     * inherited from the base attribute if existant.
+     * @return All own subattributes.
+     */
+    public final Set<StatisticAttribute> getOwnAttributes() {
+        return mData.mAttributes;
+    }
+    
     public void setTeams(List<AbstractPlayerTeam> teams) {
         mData.mTeams = teams;
         for (StatisticAttribute attr : mData.mAttributes) {
@@ -341,19 +376,15 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
     }
 
     public AbstractPlayerTeam getTeam(int index) {
-        if (index >= 0 && index < mData.mTeams.size()) {
-            return mData.mTeams.get(index);
-        } else {
-            return null;
-        }
+        return mData.getTeam(index);
     }
 
     public int getTeamsCount() {
-        return mData.mTeams.size();
+        return mData.getTeamsCount();
     }
     
-    public boolean acceptGameAllSubattributes(Game game) {
-        for (StatisticAttribute attr : getAttributes()) {
+    public boolean acceptGameAllSubattributes(Game game, AttributeData data) {
+        for (StatisticAttribute attr : data.mAttributes) {
             if (!attr.acceptGame(game, attr.getData())) {
                 return false;
             }
@@ -361,13 +392,31 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
         return true;
     }
     
-    public boolean acceptRoundAllSubattributes(Game game, GameRound round) {
-        for (StatisticAttribute attr : getAttributes()) {
+    public boolean acceptRoundAllSubattributes(Game game, GameRound round, AttributeData data) {
+        for (StatisticAttribute attr : data.mAttributes) {
             if (!attr.acceptRound(game, round, attr.getData())) {
                 return false;
             }
         }
         return true;
+    }
+    
+    public boolean acceptGameOneSubattributes(Game game, AttributeData data) {
+        for (StatisticAttribute attr : data.mAttributes) {
+            if (attr.acceptGame(game, attr.getData())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean acceptRoundOneSubattributes(Game game, GameRound round, AttributeData data) {
+        for (StatisticAttribute attr : data.mAttributes) {
+            if (attr.acceptRound(game, round, attr.getData())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     @Override
@@ -389,7 +438,7 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
     }
 
     public CharSequence getName(Resources res) {
-        return mNameResId != 0 ? res.getString(mNameResId) : mName;
+        return mNameResId != 0 ? res.getString(mNameResId) : (TextUtils.isEmpty(mName) ? mIdentifier : mName);
     }
     
     public CharSequence getDescription(Resources res) {
@@ -398,12 +447,12 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
     
     @Override
     public int compareTo(StatisticAttribute other) {
-        if (isUserAttribute() && !other.isUserAttribute()) {
+        if (mPriority > other.mPriority) {
             return -1;
-        } else if (!isUserAttribute() && other.isUserAttribute()) {
+        } else if (other.mPriority > mPriority) {
             return 1;
         } else {
-            return mPriority - other.mPriority;
+            return mIdentifier.compareToIgnoreCase(other.mIdentifier);
         }
     }
 
@@ -412,8 +461,44 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
         mPriority = prio;
     }
     
-    public static final double makeShorter(double value) {
-        return Math.round(value * 100.0) / 100.0;
+    /**
+     * If the attribute requires a custom value. This signals the UI to allow
+     * the user to enter a custom value. Overwrite and return true if required. 
+     * @return Defaults to false.
+     */
+    public boolean requiresCustomValue() {
+        return false; 
     }
 
+    public void setName(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException();
+        }
+        mName = name;
+        mNameResId = 0;
+    }
+    
+    public void setDescription(String descr) {
+        if (descr == null) {
+            throw new IllegalArgumentException();
+        }
+        mDescription = descr;
+        mDescriptionResId = 0;
+    }
+
+    public void setCustomValue(String value) {
+        mData.mCustomValue = value;
+    }
+
+    public String getCustomValue() {
+        return mData.mCustomValue;
+    }
+
+    public StatisticAttribute getBaseAttribute() {
+        return null;
+    }
+
+    public int getPriority() {
+        return mPriority;
+    }
 }

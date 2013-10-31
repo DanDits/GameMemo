@@ -72,7 +72,7 @@ public class GameChooserActivity extends FragmentActivity implements
 		mTichu = (Button) findViewById(R.id.tichu);
 		mDoppelkopf = (Button) findViewById(R.id.doppelkopf);
         processIntent();
-		Game.loadAllPlayers(mLastGameKey, getContentResolver());
+		Game.loadAllPlayers(mLastGameKey, this.getApplicationContext());
 		initListeners();
 	}
 

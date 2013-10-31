@@ -156,14 +156,15 @@ public class ColorPickerView extends View {
      * @return The altered color.
      */
     public static final int tintColor(int color, double factor) {
-        int red = (color >> 4) & 0xFF;
-        int green = (color >> 2) & 0xFF;
+        int red = (color >> 16) & 0xFF;
+        int green = (color >> 8) & 0xFF;
         int blue = color & 0xFF;
-        int alpha = (color >> 6) & 0xFF;
-        red += (255 - red) * factor;
-        green += (255 - green) * factor;
-        blue += (255 - blue) * factor;
-        return (alpha << 6) + (red << 4) + (green << 2) + blue;
+        int alpha = (color >> 24) & 0xFF;
+        red += (int) ((double) (255 - red) * factor);
+        green += (int)((double) (255 - green) * factor);
+        blue += (int) ((double) (255 - blue) * factor);
+        color = (alpha << 24) + (red << 16) + (green << 8) + blue;
+        return color;
     }
 
     private void init() {

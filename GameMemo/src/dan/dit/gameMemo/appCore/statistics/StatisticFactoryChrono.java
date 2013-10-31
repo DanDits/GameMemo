@@ -21,18 +21,20 @@ public class StatisticFactoryChrono extends StatisticFactory {
     }
     
     public View build(Context context) {
-        return ChartFactory.getLineChartView(context, buildDataset(context), buildRenderer(context));
+        View v = ChartFactory.getLineChartView(context, buildDataset(context), buildRenderer(context));
+        return v;
     }
     
     private XYMultipleSeriesRenderer buildRenderer(Context context) {
-        XYMultipleSeriesRenderer renderer = super.buildLineRenderer(new int[] {0xFF08088A}, new PointStyle[] {PointStyle.POINT});
+        XYMultipleSeriesRenderer renderer = super.buildLineRenderer(new int[] {SERIES_COLOR}, new PointStyle[] {PointStyle.POINT});
         renderer.setZoomButtonsVisible(true);
         renderer.setPanEnabled(true, true);
+        renderer.setBackgroundColor(BACKGROUND_COLOR);
+        renderer.setApplyBackgroundColor(true);
         renderer.setShowLegend(true);
-        final int COLOR = 0xFF4CEB20;
-        renderer.setLabelsColor(COLOR);
-        renderer.setXLabelsColor(COLOR);
-        renderer.setYLabelsColor(0, COLOR);
+        renderer.setLabelsColor(LABEL_COLOR);
+        renderer.setXLabelsColor(LABEL_COLOR);
+        renderer.setYLabelsColor(0, LABEL_COLOR);
         renderer.setYLabelsAlign(Align.RIGHT);
         renderer.setXTitle(context.getResources().getString(R.string.statistics_x_axis_label));
         renderer.setChartTitle(mStat.getName(context.getResources()).toString());
@@ -61,10 +63,10 @@ public class StatisticFactoryChrono extends StatisticFactory {
         double nextRefSum = 0;
         double nextValue = 0;
         while (it.hasNextGame() && (refIt == null || refIt.hasNextGame())) {
-            nextSum += nextGameSum(it);
+            nextSum += nextGameSum(mStat, it);
             if (useReference) {
                 if (refIt != null) {
-                    nextRefSum += nextGameSum(refIt);
+                    nextRefSum += nextGameSum(mRefStat, refIt);
                 } else {
                     nextRefSum = it.getAcceptedRoundsCount() > 0 ? it.getAcceptedRoundsCount() : it.getAcceptedGamesCount();
                 }

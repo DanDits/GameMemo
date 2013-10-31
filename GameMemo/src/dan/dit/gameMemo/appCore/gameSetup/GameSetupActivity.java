@@ -25,6 +25,7 @@ import android.widget.ScrollView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
+import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
 import dan.dit.gameMemo.gameData.player.DummyPlayer;
 import dan.dit.gameMemo.gameData.player.Player;
@@ -264,6 +265,11 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 				dedummiedPlayer.setColor(p.getColor());
 			}
 		}
+		for (AbstractPlayerTeam team : mTeamsController.getAllTeams(false)) {
+		    if (team.getPlayerCount() > 0) {
+		        team.saveColor(this);
+		    }
+		}
 		returnIntent.putExtra(EXTRA_TEAMS_PARAMETERS, mTeamsController.getParameters());
 		returnIntent.putExtra(EXTRA_OPTIONS_PARAMETERS, mOptionsController.getParameters());
 		setResult(RESULT_OK, returnIntent);
@@ -413,6 +419,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
     @Override
     public void onPlayerColorChanged(int arg, Player concernedPlayer) {
         mTeamsController.onPlayerColorChanged(arg, concernedPlayer);
+        concernedPlayer.saveColor(this);
     }
 
 }

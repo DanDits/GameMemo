@@ -2,6 +2,7 @@ package dan.dit.gameMemo.gameData.game.tichu;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import android.content.res.Resources;
@@ -14,6 +15,7 @@ import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.GameRound;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
+import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.statistics.AttributeData;
 import dan.dit.gameMemo.gameData.statistics.GameStatistic;
 import dan.dit.gameMemo.gameData.statistics.GameStatisticAttributeManager;
@@ -59,6 +61,12 @@ public class TichuGameStatisticAttributeManager extends
     public static final String IDENTIFIER_ATT_NON_DEFAULT_LIMIT = "non_default_limit";
     public static final String IDENTIFIER_STAT_TICHU_SCORE = "tichu_score";
     public static final String IDENTIFIER_STAT_TICHU_SCORE_SELF = "tichu_score_self";
+    public static final String IDENTIFIER_STAT_CARD_SCORE = "card_score";
+    public static final String IDENTIFIER_STAT_SMALL_TICHU = "small_tichu";
+    public static final String IDENTIFIER_STAT_BIG_TICHU = "big_tichu";
+    public static final String IDENTIFIER_ATT_SMALL_TICHU_WON = "small_tichu_won";
+    public static final String IDENTIFIER_ATT_BIG_TICHU_WON = "big_tichu_won";
+    public static final String IDENTIFIER_ATT_FINISHER_POS = "finisher_pos";
     
     @Override
     protected Collection<StatisticAttribute> createPredefinedAttributes() {
@@ -72,19 +80,19 @@ public class TichuGameStatisticAttributeManager extends
         
         // enemy
         attBuilder = new StatisticAttribute.Builder(IDENTIFIER_ATT_ENEMY, GameKey.TICHU);
-        attBuilder.setPriority(100);
+        attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_flag_enemy_name, R.string.attribute_tichu_flag_enemy_descr);
         addAndCheck(attBuilder.getAttribute(), attrs);   
         
         // self
         attBuilder = new StatisticAttribute.Builder(IDENTIFIER_ATT_SELF, GameKey.TICHU);
-        attBuilder.setPriority(100);
+        attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_flag_self_name, R.string.attribute_tichu_flag_self_descr);
         addAndCheck(attBuilder.getAttribute(), attrs);   
         
         // partner
         attBuilder = new StatisticAttribute.Builder(IDENTIFIER_ATT_PARTNER, GameKey.TICHU);
-        attBuilder.setPriority(100);
+        attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_flag_partner_name, R.string.attribute_tichu_flag_partner_descr);
         addAndCheck(attBuilder.getAttribute(), attrs);  
         
@@ -97,7 +105,7 @@ public class TichuGameStatisticAttributeManager extends
         };
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_MERCY_RULE, GameKey.TICHU);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_mercy_rule_name, R.string.attribute_tichu_mercy_rule_descr);
-        attBuilder.setPriority(100);
+        attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         addAndCheck(attBuilder.getAttribute(), attrs);
         
         // non default limit
@@ -108,7 +116,7 @@ public class TichuGameStatisticAttributeManager extends
             }
         };
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_NON_DEFAULT_LIMIT, GameKey.TICHU);
-        attBuilder.setPriority(100);
+        attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_non_default_limit_name, R.string.attribute_tichu_non_default_limit_descr);
         addAndCheck(attBuilder.getAttribute(), attrs);
         
@@ -137,7 +145,7 @@ public class TichuGameStatisticAttributeManager extends
             }
         };
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_GAME_WON, GameKey.TICHU);
-        attBuilder.setPriority(10);
+        attBuilder.setPriority(1);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_game_won_name, R.string.attribute_tichu_game_won_descr);
         addAndCheck(attBuilder.getAttribute(), attrs);
         
@@ -174,7 +182,7 @@ public class TichuGameStatisticAttributeManager extends
             }
         };
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_ROUND_WON, GameKey.TICHU);
-        attBuilder.setPriority(10);
+        attBuilder.setPriority(1);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_round_won_name, R.string.attribute_tichu_round_won_descr);
         addAndCheck(attBuilder.getAttribute(), attrs);
         
@@ -189,11 +197,11 @@ public class TichuGameStatisticAttributeManager extends
         GameStatistic stat = new GameStatistic() {
             @Override public double calculateValue(Game gamee, AttributeData data) { return 1.0;}
             @Override public double calculateValue(Game game, GameRound rounde, AttributeData data) {return Double.NaN;}
-            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game) && containsAllTeams((TichuGame) game, data);}
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game, data) && containsAllTeams((TichuGame) game, data);}
             @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) {return false;}
         };
         statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_GAMES_PLAYED, GameKey.TICHU);
-        statBuilder.setPriority(0);
+        statBuilder.setPriority(2);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
         statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_games_played_name, R.string.statistic_tichu_games_played_descr);
         addAndCheck(statBuilder.getAttribute(), attrs);
@@ -202,11 +210,11 @@ public class TichuGameStatisticAttributeManager extends
         stat = new GameStatistic() {
             @Override public double calculateValue(Game gamee, AttributeData data) { return Double.NaN;}
             @Override public double calculateValue(Game game, GameRound rounde, AttributeData data) {return 1.0;}
-            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game) && containsAllTeams((TichuGame) game, data);}
-            @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) {return acceptRoundAllSubattributes(game, round);}
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game, data) && containsAllTeams((TichuGame) game, data);}
+            @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) {return acceptRoundAllSubattributes(game, round, data);}
         };
         statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_ROUNDS_PLAYED, GameKey.TICHU);
-        statBuilder.setPriority(0);
+        statBuilder.setPriority(2);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
         statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_rounds_played_name, R.string.statistic_tichu_rounds_played_descr);
         addAndCheck(statBuilder.getAttribute(), attrs);
@@ -219,7 +227,8 @@ public class TichuGameStatisticAttributeManager extends
                 TichuRound r = (TichuRound) round;
                 int tichuScoreTeam1 = r.getScoreTeam1(g.usesMercyRule()) - r.getRawScoreTeam1();
                 int tichuScoreTeam2 = r.getScoreTeam2(g.usesMercyRule()) - r.getRawScoreTeam2();
-                if (getTeamsCount() == 0) {
+                if (getTeamsCount() == 0 || (hasAttribute(data, IDENTIFIER_ATT_ENEMY) && hasAttribute(data, IDENTIFIER_ATT_SELF) &&
+                         hasAttribute(data, IDENTIFIER_ATT_PARTNER))) {
                     return  tichuScoreTeam1 + tichuScoreTeam2;
                 } else {
                     boolean firstTeamOfInterest = ((TichuGame) game).getTeam1().containsTeam(getTeam(0)) && ((TichuGame) game).getTeam2().containsTeam(getTeam(1));
@@ -240,11 +249,11 @@ public class TichuGameStatisticAttributeManager extends
                     }
                 }
             }
-            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game) && containsAllTeams((TichuGame) game, data);}
-            @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) {return acceptRoundAllSubattributes(game, round);}
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game, data) && containsAllTeams((TichuGame) game, data);}
+            @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) {return acceptRoundAllSubattributes(game, round, data);}
         };
         statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_TICHU_SCORE, GameKey.TICHU);
-        statBuilder.setPriority(0);
+        statBuilder.setPriority(2);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_PROPORTION);
         statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_tichu_score_name, R.string.statistic_tichu_tichu_score_descr);
         addAndCheck(statBuilder.getAttribute(), attrs);
@@ -254,7 +263,182 @@ public class TichuGameStatisticAttributeManager extends
         statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_tichu_score_self_name, R.string.statistic_tichu_tichu_score_self_descr);
         statBuilder.getStatistic().addAttribute(attrs.get(IDENTIFIER_ATT_SELF));
         addAndCheck(statBuilder.getAttribute(), attrs);
+        
+        // card score
+        stat = new GameStatistic() {
+            @Override public double calculateValue(Game game, AttributeData data) { return Double.NaN;}
+            @Override public double calculateValue(Game game, GameRound round, AttributeData data) {
+                TichuRound r = (TichuRound) round;
+                int scoreTeam1 = r.getRawScoreTeam1();
+                int scoreTeam2 = r.getRawScoreTeam2();
+                if (getTeamsCount() == 0 || (hasAttribute(data, IDENTIFIER_ATT_ENEMY) && (hasAttribute(data, IDENTIFIER_ATT_SELF) ||
+                        hasAttribute(data, IDENTIFIER_ATT_PARTNER)))) {
+                    return  scoreTeam1 + scoreTeam2;
+                } else {
+                    boolean firstTeamOfInterest = ((TichuGame) game).getTeam1().containsTeam(getTeam(0)) && ((TichuGame) game).getTeam2().containsTeam(getTeam(1));
+                    if (hasAttribute(data, IDENTIFIER_ATT_ENEMY)) {
+                        firstTeamOfInterest = !firstTeamOfInterest; // other team is of interest
+                        return firstTeamOfInterest ? scoreTeam1 : scoreTeam2;
+                    } else {
+                        return firstTeamOfInterest ? scoreTeam1 : scoreTeam2;
+                    }
+                }
+            }
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game, data) && containsAllTeams((TichuGame) game, data);}
+            @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) {return acceptRoundAllSubattributes(game, round, data);}
+        };
+        statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_CARD_SCORE, GameKey.TICHU);
+        statBuilder.setPriority(2);
+        statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_PROPORTION);
+        statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_card_score_name, R.string.statistic_tichu_card_score_descr);
+        addAndCheck(statBuilder.getAttribute(), attrs);
+        
+        // small tichu bid
+        stat = new GameStatistic() {
+            @Override public double calculateValue(Game game, AttributeData data) { return Double.NaN;}
+            
+            @Override public double calculateValue(Game game, GameRound round, AttributeData data) {
+                return getTichuCount(game, round, data, TichuBidType.SMALL, false);
+            }
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game, data) && containsAllTeams((TichuGame) game, data);}
+            @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) {return acceptRoundAllSubattributes(game, round, data) && getTichuCount(game, round, data, TichuBidType.SMALL, false) > 0;}
+        };
+        statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_SMALL_TICHU, GameKey.TICHU);
+        statBuilder.setPriority(3);
+        statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
+        statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_small_tichu_name, R.string.statistic_tichu_small_tichu_descr);
+        addAndCheck(statBuilder.getAttribute(), attrs);
+        
+        // big tichu bid
+        stat = new GameStatistic() {
+            @Override public double calculateValue(Game game, AttributeData data) { return Double.NaN;}
+            
+            @Override public double calculateValue(Game game, GameRound round, AttributeData data) {
+                return getTichuCount(game, round, data, TichuBidType.BIG, false);
+            }
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game, data) && containsAllTeams((TichuGame) game, data);}
+            @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) {return acceptRoundAllSubattributes(game, round, data) && getTichuCount(game, round, data, TichuBidType.BIG, false) > 0;}
+        };
+        statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_BIG_TICHU, GameKey.TICHU);
+        statBuilder.setPriority(3);
+        statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
+        statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_big_tichu_name, R.string.statistic_tichu_big_tichu_descr);
+        addAndCheck(statBuilder.getAttribute(), attrs);
+        
+        // small tichu won
+        att = new UserStatisticAttribute() {
+            @Override
+            public boolean acceptRound(Game game, GameRound round, AttributeData data) {
+                return super.acceptRound(game, round, data) && getTichuCount(game, round, data, TichuBidType.SMALL, true) > 0;
+            }
+        };
+        attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_SMALL_TICHU_WON, GameKey.TICHU);
+        attBuilder.setPriority(3);
+        attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_small_tichu_won_name, R.string.attribute_tichu_small_tichu_won_descr);
+        addAndCheck(attBuilder.getAttribute(), attrs);
+        
+        // big tichu won
+        att = new UserStatisticAttribute() {
+            @Override
+            public boolean acceptRound(Game game, GameRound round, AttributeData data) {
+                return super.acceptRound(game, round, data) && getTichuCount(game, round, data, TichuBidType.BIG, true) > 0;
+            }
+        };
+        attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_BIG_TICHU_WON, GameKey.TICHU);
+        attBuilder.setPriority(3);
+        attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_big_tichu_won_name, R.string.attribute_tichu_big_tichu_won_descr);
+        addAndCheck(attBuilder.getAttribute(), attrs);
+        
+        // finisher pos
+        att = new UserStatisticAttribute() {
+            @Override public boolean requiresCustomValue() {return true;}
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game, data);}
+            @Override 
+            public boolean acceptRound(Game game, GameRound round, AttributeData data) {
+                if (!acceptRoundAllSubattributes(game, round, data)) {
+                    return false;
+                }
+                boolean[] relevant = getDefaultRelevantPlayers(game, round, data);
+                for (int i = 0; i < relevant.length; i++) {
+                    if (relevant[i] && String.valueOf(((TichuRound) round).getFinisherPos(i + TichuGame.PLAYER_ONE_ID)).equals(data.getCustomValue())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+        attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_FINISHER_POS, GameKey.TICHU);
+        attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
+        attBuilder.setCustomValue(String.valueOf(1));
+        attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_finisher_pos_name, R.string.attribute_tichu_finisher_pos_descr);
+        addAndCheck(attBuilder.getAttribute(), attrs);
+        
         return attrs.values();
+    }
+   
+    private static boolean[] getDefaultRelevantPlayers(Game game, GameRound round, AttributeData data) {
+        TichuGame g = (TichuGame) game;
+        boolean[] relevant = new boolean[TichuGame.TOTAL_PLAYERS];
+        if (data.getTeamsCount() == 0 || (hasAttribute(data, IDENTIFIER_ATT_ENEMY) && hasAttribute(data, IDENTIFIER_ATT_SELF) &&
+                hasAttribute(data, IDENTIFIER_ATT_PARTNER))) {
+            // if there is no team or all attributes are set, all players are relevant since we cannot tell friend from foe
+             for (int i = 0; i < relevant.length; i++) {
+                 relevant[i] = true;
+             }
+        } else {
+            boolean firstTeamOfInterest = g.getTeam1().containsTeam(data.getTeam(0)) && g.getTeam2().containsTeam(data.getTeam(1));
+            List<Player> teamOfInterest = data.getTeam(0).getPlayers();
+            int playerId = TichuGame.INVALID_PLAYER_ID;
+            if (teamOfInterest != null && teamOfInterest.size() == 1) {
+                playerId = g.getPlayerId(teamOfInterest.get(0));
+            }
+            boolean noFlag = !hasAttribute(data, IDENTIFIER_ATT_ENEMY) && !hasAttribute(data, IDENTIFIER_ATT_SELF) && !hasAttribute(data, IDENTIFIER_ATT_PARTNER);
+            if (playerId != TichuGame.INVALID_PLAYER_ID) {
+                relevant[0] = (!firstTeamOfInterest && hasAttribute(data, IDENTIFIER_ATT_ENEMY)) || 
+                        (playerId == TichuGame.PLAYER_ONE_ID && (noFlag || hasAttribute(data, IDENTIFIER_ATT_SELF))) ||
+                        (playerId == TichuGame.PLAYER_TWO_ID && hasAttribute(data, IDENTIFIER_ATT_PARTNER));
+                relevant[1]  = (!firstTeamOfInterest && hasAttribute(data, IDENTIFIER_ATT_ENEMY)) || 
+                        (playerId == TichuGame.PLAYER_ONE_ID && hasAttribute(data, IDENTIFIER_ATT_PARTNER)) ||
+                        (playerId == TichuGame.PLAYER_TWO_ID && (noFlag || hasAttribute(data, IDENTIFIER_ATT_SELF)));
+                relevant[2]  = (firstTeamOfInterest && hasAttribute(data, IDENTIFIER_ATT_ENEMY)) || 
+                        (playerId == TichuGame.PLAYER_THREE_ID && (noFlag || hasAttribute(data, IDENTIFIER_ATT_SELF))) ||
+                        (playerId == TichuGame.PLAYER_FOUR_ID && hasAttribute(data, IDENTIFIER_ATT_PARTNER));
+                relevant[3]  = (firstTeamOfInterest && hasAttribute(data, IDENTIFIER_ATT_ENEMY)) || 
+                        (playerId == TichuGame.PLAYER_THREE_ID && hasAttribute(data, IDENTIFIER_ATT_PARTNER)) ||
+                        (playerId == TichuGame.PLAYER_FOUR_ID && (noFlag || hasAttribute(data, IDENTIFIER_ATT_SELF)));
+            } else {
+                if (hasAttribute(data, IDENTIFIER_ATT_ENEMY)) {
+                    if (firstTeamOfInterest) {
+                        relevant[2]  = relevant[3]  = true;
+                    } else {
+                        relevant[0]  = relevant[1]  = true;
+                    }
+                } else {
+                    if (firstTeamOfInterest) {
+                        relevant[0]  = relevant[1]  = true;
+                    } else {
+                        relevant[2]  = relevant[3]  = true;
+                    }
+                }
+            }
+        }                    
+        return relevant;
+    }
+    
+    private static final int getTichuCount(Game game, GameRound round, AttributeData data, TichuBidType type, boolean wonTichuOnly) {
+        TichuRound r = (TichuRound) round;
+        int sum = 0;
+        boolean[] relevant = getDefaultRelevantPlayers(game, round, data);
+        for (int i = 0; i < relevant.length; i++) {
+            if (relevant[i] && isValidTichu(r, TichuGame.PLAYER_ONE_ID + i, type, wonTichuOnly)) {
+                sum++;
+            }
+        }
+        return sum;
+    }
+    
+    private static boolean isValidTichu(TichuRound round, int playerId, TichuBidType type, boolean wonOnly) {
+        return round.getTichuBid(playerId).getType() == type && (!wonOnly || round.getTichuBid(playerId).isWon());
     }
 
     @Override

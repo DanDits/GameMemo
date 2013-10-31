@@ -9,14 +9,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import dan.dit.gameMemo.gameData.statistics.GameStatistic;
+import dan.dit.gameMemo.gameData.statistics.StatisticAttribute;
 
-public class SimpleStatisticsAdapter extends ArrayAdapter<GameStatistic> {
-    private List<GameStatistic> mAll;
+public class SimpleStatisticsAdapter extends ArrayAdapter<StatisticAttribute> {
+    private List<StatisticAttribute> mAll;
     private Context mContext;
     
-    public SimpleStatisticsAdapter(Context context, List<GameStatistic> attrs) {
-        super(context, android.R.layout.simple_dropdown_item_1line, 
+    public SimpleStatisticsAdapter(Context context, List<StatisticAttribute> attrs) {
+        super(context, android.R.layout.simple_spinner_dropdown_item,
                 android.R.id.text1, attrs);
         mAll = attrs;
         mContext = context;
@@ -27,17 +27,19 @@ public class SimpleStatisticsAdapter extends ArrayAdapter<GameStatistic> {
         View view = super.getView(position, convertView, parent);
         TextView text = (TextView)view.findViewById(android.R.id.text1);
         text.setTextColor(Color.BLACK);
-        CharSequence name = mAll.get(position).getName(mContext.getResources());
-        text.setText(name);
+        StatisticAttribute attr = mAll.get(position);
+        if (attr == null) {
+            text.setText("");
+        } else {
+            CharSequence name = attr.getName(mContext.getResources());
+            text.setText(name);
+        }
         return view;
-
     }
     
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        View view = getView(position, convertView, parent);
-        return view;
-
+        return getView(position, convertView, parent);
     }
 
     public void sort() {

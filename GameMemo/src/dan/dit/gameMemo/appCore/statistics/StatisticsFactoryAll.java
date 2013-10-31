@@ -6,10 +6,11 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -20,7 +21,6 @@ import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.statistics.GameStatistic;
 import dan.dit.gameMemo.gameData.statistics.GameStatisticAttributeManager;
-import dan.dit.gameMemo.gameData.statistics.StatisticAttribute;
 
 public class StatisticsFactoryAll extends StatisticFactory {
     private GameStatisticAttributeManager mManager;
@@ -45,19 +45,39 @@ public class StatisticsFactoryAll extends StatisticFactory {
         calculateValues(context);
         mAdapter = new AllStatisticsAdapter(context);
         mListView.setAdapter(mAdapter);
+        mListView.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> adapter, View view, int position,
+                    long id) {
+                GameStatistic stat = mAdapter.getItem(position);
+                stat.setPresentationType(stat.nextPresentationType());
+                mValues.set(position, initAndCalculateForStatistic(stat));
+                mAdapter.notifyDataSetChanged();
+            }
+        });
         mAdapter.notifyDataSetChanged();
         return mListView;
     }
     
+    private double initAndCalculateForStatistic(GameStatistic stat) {
+        stat.setTeams(mTeams);
+        stat.setGameList(mGames);
+        GameStatistic refStat = mManager.getStatistic(stat.getReference());
+        if (refStat != null) {
+            refStat.setTeams(mTeams);
+            refStat.setGameList(mGames);
+        }
+        setStatistic(stat, refStat);
+        double value = getTeamValueForCurrentStatistic(null);
+        return value;
+    }
+    
     private void calculateValues(Context context) {
-        mStatistics = mManager.getStatistics();
+        mStatistics = mManager.getStatistics(false);
         mValues = new ArrayList<Double>(mStatistics.size());
         for (GameStatistic stat : mStatistics) {
-            stat.setTeams(mTeams);
-            stat.setGameList(mGames);
-            setStatistic(stat, mManager.getStatistic(stat.getReference()));
-            double value = getTeamValueForCurrentStatistic(null);
-            mValues.add(value);                
+            mValues.add(initAndCalculateForStatistic(stat));                
         }
         if (mTeams == null || mTeams.size() == 0) {
             mHeader.setText(context.getResources().getString(R.string.statistics_mode_all_no_team));
@@ -100,9 +120,8 @@ public class StatisticsFactoryAll extends StatisticFactory {
             case GameStatistic.PRESENTATION_TYPE_PROPORTION:
                 presTypeTitleResId = R.string.statistics_menu_pres_type_proportional; break;
             }
-            ((TextView) row.findViewById(R.id.statistic_value)).setText(Double.toString(StatisticAttribute.makeShorter(mValues.get(position))) +
+            ((TextView) row.findViewById(R.id.statistic_value)).setText(mStatistics.get(position).getFormat().format(mValues.get(position)) +
                     "\n(" + res.getString(presTypeTitleResId) + ")");
-            Log.d("GameMemo", "GetView for position " + position);
             return row;
         }
     }

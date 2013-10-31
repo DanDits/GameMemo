@@ -18,7 +18,7 @@ import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.statistics.AdvancedRangeBarChart;
 import dan.dit.gameMemo.gameData.statistics.GameStatistic;
-import dan.dit.gameMemo.gameData.statistics.StatisticAttribute;
+import dan.dit.gameMemo.util.ColorPickerView;
 
 public class StatisticFactoryOverview extends StatisticFactory {
 
@@ -31,7 +31,7 @@ public class StatisticFactoryOverview extends StatisticFactory {
         XYSeries series = new XYSeries(mStat.getName(context.getResources()).toString());
         int index = 0;
         for (Double val : values) {
-            series.add(++index, StatisticAttribute.makeShorter(val)); 
+            series.add(++index, val); 
         }
         dataset.addSeries(series);
         return dataset;
@@ -75,9 +75,13 @@ public class StatisticFactoryOverview extends StatisticFactory {
     }
     
     private XYMultipleSeriesRenderer buildRenderer(Context context, List<AbstractPlayerTeam> allTeams, List<Double> values) {
-        XYMultipleSeriesRenderer renderer = super.buildBarRenderer(new int[] {0xFF000000});
+        XYMultipleSeriesRenderer renderer = super.buildBarRenderer(new int[] {SERIES_COLOR});
         renderer.getSeriesRendererAt(0).setDisplayChartValues(true);
+        renderer.getSeriesRendererAt(0).setChartValuesTextSize(16);
         renderer.setPanEnabled(true, true);
+        renderer.setShowLegend(false);
+        renderer.setBackgroundColor(BACKGROUND_COLOR);
+        renderer.setApplyBackgroundColor(true);
         renderer.setZoomRate(1.1f);
         renderer.setBarSpacing(0.1f);
         renderer.setZoomButtonsVisible(true);
@@ -87,12 +91,12 @@ public class StatisticFactoryOverview extends StatisticFactory {
         renderer.setXLabels(0);
         renderer.setXAxisMin(-1);
         renderer.setXAxisMax(15);
+        renderer.setMargins(new int[] {0,0,75,0}); // to avoid player names being cut off because of the rotation, there is no space reserved if legend is hidden
         renderer.setXLabelsAngle(290);
-        renderer.setXLabelsAlign(Align.RIGHT);
-        final int COLOR = 0xFF4CEB20;
-        renderer.setLabelsColor(COLOR);
-        renderer.setXLabelsColor(COLOR);
-        renderer.setYLabelsColor(0, COLOR);
+        renderer.setXLabelsAlign(Align.CENTER);
+        renderer.setLabelsColor(LABEL_COLOR);
+        renderer.setXLabelsColor(LABEL_COLOR);
+        renderer.setYLabelsColor(0, LABEL_COLOR);
         renderer.setYLabelsAlign(Align.RIGHT);
         int index = 0;
         for (AbstractPlayerTeam team : allTeams) {
@@ -105,15 +109,16 @@ public class StatisticFactoryOverview extends StatisticFactory {
         List<AbstractPlayerTeam> allTeams = getAllTeams();
         List<Double> values = calculateValues(allTeams);
         sortParallel(allTeams, values);
-        return AdvancedRangeBarChart.getBarChartView(context, buildDataset(values, context), buildRenderer(context, allTeams, values),
+        View v = AdvancedRangeBarChart.getBarChartView(context, buildDataset(values, context), buildRenderer(context, allTeams, values),
                 Type.DEFAULT, getColors(allTeams));
+        return v;
     }
     
     private int[] getColors(List<AbstractPlayerTeam> allTeams) {
         int[] colors = new int[allTeams.size()];
         int index = 0;
         for (AbstractPlayerTeam team : allTeams) {
-            colors[index] = team.getColor();
+            colors[index] = ColorPickerView.tintColor(team.getColor(), 0.5);
             index++;
         }
         return colors;

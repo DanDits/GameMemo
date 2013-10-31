@@ -67,7 +67,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentRight="true"
             android:layout_below="@+id/statistic_select"
-            android:text="@string/statistics_show_chart" />
+            android:text="@string/statistics_show_chart_all_games" />
 
         <ScrollView
             android:id="@+id/teams_container_scroll"

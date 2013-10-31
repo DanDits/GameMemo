@@ -389,7 +389,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 	}
 	   
     private void applyLock() {
-        if (mLockItem == null) {
+        if (mLockItem == null || mGame == null) {
             return;
         }
         if (mGame.isLocked()) {
@@ -454,7 +454,6 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 			mPlayerInfo[4].setVisibility(View.VISIBLE);
 		}
 		applyGiverAndInactive();
-        applyLock();
 	}
 	
 	@Override
@@ -581,6 +580,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		updatePlayerNames();
 		fillRoundData();
 		deselectRound();
+		applyLock();
 	}
 	
 	private void updatePlayerNames() {

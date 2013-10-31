@@ -242,8 +242,17 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
         return GameKey.getPool(mGameKey);
     }
 
+    private boolean mNoFilter = false;
+    
+    public void setNoFilter(boolean noFilter) {
+        mNoFilter = noFilter;
+    }
+    
     @Override
     public List<Player> toFilter() {
+        if (mNoFilter) {
+            return Collections.emptyList();
+        }
         List<Player> filter = new LinkedList<Player>();
         if (mTeamControllers != null) {
             for (TeamSetupViewController ctr : mTeamControllers.values()) {

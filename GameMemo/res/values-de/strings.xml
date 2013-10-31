@@ -13,7 +13,7 @@
     <string name="game_starttime">Startzeit</string>
     <string name="game_runtime">Dauer</string>
     <string name="game_team_X">Team %1$d</string>
-    <string name="tichu_no_rounds">Klicke auf den ersten und gib Punkte ein!</string>
+    <string name="tichu_no_rounds">1. Drücke die Sprechblasen für Tichuansagen.\n2. Wähle den Spieler, der erster wurde.\n3. Gebe die Kartenpunkte ein.</string>
     <string name="doppelkopf_no_rounds">Klick auf die Re Spieler!</string>
     <string name="default_tichu_round_score"> </string><string name="default_player_name">Spieler</string>
     <string name="tichu_team_select_team1">Team 1</string>
@@ -210,7 +210,12 @@
 	<string name="doppelkopf_rule_system_descr_ka1">Modifiziert tournament1: Re/Contra +1, Pflichtsoli am Ende, endet nach x Runden statt Spielen.</string>
 	<string name="lock_game">Spiel sperren</string>
 	<string name="unlock_game">Spiel entsperren</string>
-	<string name="statistics_show_chart">Berechnen</string>
+	<string name="statistics_show_chart_all_games">Für alle Spiele berechnen</string>	
+	<plurals
+	     name="statistics_show_chart_x_games">
+        <item quantity="one">Für einzelnes Spiel berechnen</item>
+        <item quantity="other">Für %1$d Spiele berechnen</item>
+    </plurals>
 	<string name="statistics_team_name_player">Spieler</string>
 	<string name="statistics_team_name_enemy">Gegner</string>
 	<string name="statistics_activity_header">Statistiken</string>
@@ -221,6 +226,16 @@
 	<string name="statistic_general_longest_time_between_games_descr">Der größte Zeitraum zwischen dem Start von zwei Spielen.</string>
 	<string name="attribute_general_invert_name">Invertieren</string>
 	<string name="attribute_general_invert_descr">Invertiert das Ergebnis der Unterattribute.</string>
+	<string name="attribute_general_or_name">Oder</string>
+	<string name="attribute_general_or_descr">Akzeptiert, falls eine Unterattribut akzeptiert wird.</string>
+	<string name="statistic_general_game_runtime_name">Spiel Laufzeit (in Minuten)</string>
+	<string name="statistic_general_game_runtime_descr">Die Laufzeit des Spieles in Minuten.</string>
+	<string name="attribute_general_game_finished_name">Spiel beendet</string>
+	<string name="attribute_general_game_finished_descr">Akzeptiert das Spiel, falls es beendet wurde.</string>
+	<string name="statistic_general_summer_and_name">Summierer (und)</string>
+	<string name="statistic_general_summer_and_descr">Akzeptiert, falls alle Unterattribute akzeptiert werden und summiert die Werte aller Unterstatistiken.</string>
+	<string name="statistic_general_summer_or_name">Summierer (oder)</string>
+	<string name="statistic_general_summer_or_descr">Akzeptiert, falls mindestens ein Unterattribut akzeptiert wird und summiert die Werte aller akzeptierten Unterstatistiken.</string>
 	<string name="attribute_tichu_flag_enemy_name">Gegner</string>
 	<string name="attribute_tichu_flag_enemy_descr">Zeichen um das Ergebnis mancher Attribute zu invertieren oder ändern.</string>
 	<string name="attribute_tichu_mercy_rule_name">Mercy Regel</string>
@@ -240,14 +255,36 @@
 	<string name="statistic_tichu_rounds_played_name">Gespielte Runden</string>
 	<string name="statistic_tichu_rounds_played_descr">Die Anzahl der gespielten Runden.</string>
 	<string name="statistic_tichu_tichu_score_name">Tichu Punkte</string>
-	<string name="statistic_tichu_tichu_score_descr">Punkte, die durch Tichuansagen gewonnen oder verloren wurden. Unterstützt die Zeichen Gegner| Selbst, Partner. Standard: Selbst + Partner</string>
+	<string name="statistic_tichu_tichu_score_descr">Punkte, die durch Tichuansagen gewonnen oder verloren wurden. Unterstützt Selbst+Partner (Standard); Gegner; Selbst; Partner; Gegner+Selbst+Partner</string>
 	<string name="statistic_tichu_tichu_score_self_name">Eigene Tichu Punkte</string>
 	<string name="statistic_tichu_tichu_score_self_descr">Eigene Punkte, die durch Tichuansagen gewonnen oder verloren wurden. (Tichu Punkte mit Selbst Zeichen.)</string>
+	<string name="statistic_tichu_small_tichu_name">Kleine Tichus</string>
+	<string name="statistic_tichu_small_tichu_descr">Akzeptiert eine Runde, falls die berechnete Anzahl kleiner Tichuansagen größer 0 ist. Unterstützt alle Kombinationen von Selbst (Standard), Partner, Gegner.</string>
+	<string name="statistic_tichu_big_tichu_name">Große Tichus</string>
+	<string name="statistic_tichu_big_tichu_descr">Akzeptiert eine Runde, falls die berechnete Anzahl großer Tichuansagen größer 0 ist. Unterstützt alle Kombinationen von Selbst (Standard), Partner, Gegner.</string>
+	<string name="attribute_tichu_small_tichu_won_name">Kleines Tichu gewonnen</string>
+	<string name="attribute_tichu_small_tichu_won_descr">Akzeptiert eine Runde, falls die berechnete Anzahl kleiner gewonnener Tichuansagen größer 0 ist. Unterstützt alle Kombinationen von Selbst (Standard), Partner, Gegner.</string>
+	<string name="attribute_tichu_big_tichu_won_name">Großes Tichu gewonnen</string>
+	<string name="attribute_tichu_big_tichu_won_descr">Akzeptiert eine Runde, falls die berechnete Anzahl großer gewonnener Tichuansagen größer 0 ist. Unterstützt alle Kombinationen von Selbst (Standard), Partner, Gegner.</string>
+	<string name="statistic_tichu_card_score_name">Karten Punkte</string>
+	<string name="statistic_tichu_card_score_descr">Punkte, die durch Kartenwerte gewonnen oder verloren wurden. Unterstützt Selbst+Partner (Standard); Selbst+Gegner; Partner+Gegner; Gegner.</string>
 	<string name="attribute_tichu_flag_partner_name">Partner</string>
 	<string name="attribute_tichu_flag_partner_descr">Zeichen um das Ergebnis mancher Attribute zu invertieren oder ändern.</string>
 	<string name="attribute_tichu_flag_self_name">Selbst</string>
 	<string name="attribute_tichu_flag_self_descr">Zeichen um das Ergebnis mancher Attribute zu invertieren oder ändern.</string>
+	<string name="attribute_tichu_finisher_pos_name">Zieleinlauf</string>
+	<string name="attribute_tichu_finisher_pos_descr">Akzeptiert, falls der Spieler (Selbst oder Selbst+Partner) oder der Partner (Partner oder Selbst+Partner) oder der Gegner (Gegner) in der Runde den gegebenen Platz erreicht haben.</string>
 	<string name="statistics_x_axis_label">Spiel</string>
 	<string name="statistics_mode_chrono_no_team">Allgemein</string>
 	<string name="statistics_mode_all_no_team">Allgemein</string>
+	<string name="attribute_extend">Ausbauen</string>
+	<string name="attribute_name">Name</string>
+	<string name="attribute_description">Beschreibung</string>
+	<string name="attribute_custom_value">Wert</string>
+	<string name="statistic_reference_statistic">Bezug:</string>
+	<string name="attribute_sub_attrs">Unterattribute</string>
+	<string name="attribute_sub_attrs_all">Mögliche Attribute</string>
+	<string name="statistics_edit_activity_header">Editor</string>
+	<string name="statistics_edit_sub_attribute_cannot_remove">Kann geerbtes Unterattribut nicht entfernen.</string>
+	<string name="statistic_based_on">Basiert auf: </string>
 </resources>

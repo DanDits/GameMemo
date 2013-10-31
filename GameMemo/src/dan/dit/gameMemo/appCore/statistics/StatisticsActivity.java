@@ -1,7 +1,7 @@
 package dan.dit.gameMemo.appCore.statistics;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -16,7 +16,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -39,11 +38,13 @@ import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerDialogListener;
 import dan.dit.gameMemo.gameData.player.Player;
+import dan.dit.gameMemo.gameData.player.PlayerColors;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.statistics.GameStatistic;
 import dan.dit.gameMemo.gameData.statistics.GameStatisticAttributeManager;
 import dan.dit.gameMemo.gameData.statistics.StatisticAndGameLoader;
 import dan.dit.gameMemo.gameData.statistics.StatisticAndGameLoader.LoadingListener;
+import dan.dit.gameMemo.gameData.statistics.StatisticAttribute;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.ColorPickerView.OnColorChangedListener;
 import dan.dit.gameMemo.util.NotifyMajorChangeCallback;
@@ -136,6 +137,13 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         return true;
     }
     
+    public void onStart() {
+        super.onStart();
+        if (mStatisticAdapter != null) {
+            refreshStatisticsAdapter();
+        }
+    }
+    
     private void applyMenuButtonsState() {
         if (mPresType == null || mReset == null  || mAddTeam == null) {
             return; // not yet initialized
@@ -148,25 +156,11 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
                 mAddTeam.setEnabled(mTeamsController.hasMissingTeam());
             }
         } else {
-            Log.d("GameMemo", "apply button state blub " + mDisplayedStatistic);
             mPresType.setVisible(mDisplayedStatistic != null);
             if (mDisplayedStatistic != null) {
-                int presTypeTitleResId = 0;
-                int presTypeIconResId = 0;
-                switch (mDisplayedStatistic.getPresentationType()) {
-                case GameStatistic.PRESENTATION_TYPE_ABSOLUTE:
-                    presTypeTitleResId = R.string.statistics_menu_pres_type_absolute;
-                    presTypeIconResId = R.drawable.stat_pres_type_abs;
-                    break;
-                case GameStatistic.PRESENTATION_TYPE_PERCENTAGE:
-                    presTypeTitleResId = R.string.statistics_menu_pres_type_percentual;
-                    presTypeIconResId = R.drawable.stat_pres_type_perc;
-                    break;
-                case GameStatistic.PRESENTATION_TYPE_PROPORTION:
-                    presTypeTitleResId = R.string.statistics_menu_pres_type_proportional;
-                    presTypeIconResId = R.drawable.stat_pres_type_prop;
-                    break;
-                }
+                int presTypeTitleResId = GameStatistic.getPresTypeTextResId(mDisplayedStatistic.getPresentationType());
+                int presTypeIconResId = GameStatistic.getPresTypeDrawableResId(mDisplayedStatistic.getPresentationType());
+                
                 mPresType.setTitle(presTypeTitleResId);
                 mPresType.setIcon(presTypeIconResId);
             }
@@ -194,6 +188,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         case R.id.add_team:
             if (mTeamsController != null) {
                 mTeamsController.addMissingTeam();
+                applyMenuButtonsState();
             }
             return true;
         case R.id.pres_type:
@@ -207,7 +202,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
     private void nextPresType() {
         if (mDisplayedStatistic != null) {
             // change and force refresh
-            mDisplayedStatistic.setPresentationType((mDisplayedStatistic.getPresentationType() + 1) % GameStatistic.PRESENTATION_TYPE_COUNT);
+            mDisplayedStatistic.setPresentationType(mDisplayedStatistic.nextPresentationType());
             if (!mStateSpecification) {
                 mStateSpecification = true;
                 onShowStatistic();
@@ -224,19 +219,30 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         switchToSpecification();
     }
     
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mLoader != null) {
+            mLoader.cancel(true);
+        }
+    }
+    
+    private StatisticAndGameLoader mLoader;
     private void loadStatisticsAndGame() {
         mAttributeManager = GameKey.getGameStatisticAttributeManager(mGameKey);
         mStatisticsShow.setEnabled(false);
         long[] allowed = getIntent().getExtras().getLongArray(EXTRA_ALLOWED_STARTTIMES);
+        mStatisticsShow.setText(allowed == null ? getResources().getString(R.string.statistics_show_chart_all_games) :
+            getResources().getQuantityString(R.plurals.statistics_show_chart_x_games, allowed.length, allowed.length));
         if (allowed != null) {
             mAllowedStarttimes = new HashSet<Long>();
             for (long st : allowed) {
                 mAllowedStarttimes.add(st);
             }
         }
-        StatisticAndGameLoader loader = new StatisticAndGameLoader(getApplicationContext(), mGameKey, mAllowedStarttimes);
+        mLoader = new StatisticAndGameLoader(getApplicationContext(), mGameKey, mAllowedStarttimes);
         Uri[] uris = new Uri[] {GameStorageHelper.getUriAllItems(mGameKey)};
-        loader.addListener(new LoadingListener() {
+        mLoader.addListener(new LoadingListener() {
             
             @Override
             public void loadingComplete(List<Game> games, int gameKey) {
@@ -244,6 +250,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
                     mGames = games;
                     mStatisticsShow.setEnabled(true);
                 }
+                mLoader = null;
                 initStatisticSelectUI();
                 getWindow().setFeatureInt(Window.FEATURE_PROGRESS, 10000);
             }
@@ -253,16 +260,12 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
                 getWindow().setFeatureInt(Window.FEATURE_PROGRESS, 100 * percentage);
             }
         });
-        loader.execute(uris);
+        mLoader.execute(uris);
     }
     
     private void initStatisticSelectUI() {
-        List<GameStatistic> attrs = mAttributeManager.getStatistics();
-        Log.d("GameMemo", "Loaded attributes: " + attrs);
-        mStatisticAdapter = new SimpleStatisticsAdapter(this, attrs);
-        mStatisticsSelect.setAdapter(mStatisticAdapter);
+        refreshStatisticsAdapter();
         mStatisticsEdit.setEnabled(true);
-        mStatisticsSelect.setEnabled(true);
         mStatisticsShow.setOnClickListener(new OnClickListener() {
 
             @Override
@@ -273,9 +276,15 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         });
     }
     
+    private void refreshStatisticsAdapter() {
+        List<GameStatistic> stats = mAttributeManager.getStatistics(false);
+        List<StatisticAttribute> attrs = new ArrayList<StatisticAttribute>(stats);
+        mStatisticAdapter = new SimpleStatisticsAdapter(this, attrs);
+        mStatisticsSelect.setAdapter(mStatisticAdapter);
+    }
+    
     private void onShowStatistic() {
         if (mStateSpecification) {
-            Log.d("GameMemo", "Switching to showing statistic state");
             mStateSpecification = false;
             if (mSwitcher.getDisplayedChild() == 0) {
                 mSwitcher.showNext();
@@ -325,14 +334,35 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
                 break;
             }
         }
+        for (AbstractPlayerTeam team : teams) {
+            if (team.getPlayerCount() > 0) {
+                int currColor = team.getColor();
+                if (!team.loadCachedColor(this)) {
+                    // no color saved yet so save current
+                    team.saveColor(this);
+                } else if (team.getColor() != currColor) {
+                    // there is a different color saved and loaded
+                    if (currColor != PlayerColors.DEFAULT_COLOR) {
+                        team.setColor(currColor); // if the team has a non default color, use this color, else the loaded color
+                    }
+                    team.saveColor(this);
+                }
+            }
+        }
         return teams;
     }
     
     private GameStatistic getSelectedStatistic() {
         GameStatistic stat = (GameStatistic) mStatisticsSelect.getSelectedItem();
         if (stat != null) {
+            List<AbstractPlayerTeam> userTeams = getUserTeams();
             stat.setGameList(mGames);
-            stat.setTeams(getUserTeams());
+            stat.setTeams(userTeams);
+            GameStatistic ref = mAttributeManager.getStatistic(stat.getReference());
+            if (ref != null) {
+                ref.setGameList(mGames);
+                ref.setTeams(userTeams);
+            }
         }
         return stat;
     }
@@ -340,16 +370,15 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
     private void onStatisticSelected() {
         GameStatistic stat = (GameStatistic) mStatisticsSelect.getSelectedItem();
         if (stat != null && stat.isUserAttribute()) {
-            mAttributeManager.setHighestPriority(stat.getIdentifier());
             if (mStatisticAdapter != null) {
                 mStatisticAdapter.sort();
+                mStatisticsSelect.setSelection(mStatisticAdapter.getPosition(stat));
             }
         }
     }
     
     private void switchToSpecification() {
         if (!mStateSpecification) {
-            Log.d("GameMemo", "Switching to specification state");
             mStateSpecification = true;
             if (mSwitcher.getDisplayedChild() == 1) {
                 mSwitcher.showPrevious();
@@ -401,6 +430,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
                     applyMenuButtonsState();
                 }
             }, params, mTeamsContainer);
+            mTeamsController.setNoFilter(true);
             mAttributeManager.applyMode(mMode, mTeamsController, getResources());
             applyMenuButtonsState();
         } 
@@ -409,16 +439,19 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
             mBtnModeAll.setEnabled(false);
             mBtnModeChrono.setEnabled(true);
             mBtnModeOverview.setEnabled(true);
+            mStatisticsSelect.setEnabled(false);
             break;
         case STATISTICS_MODE_CHRONO:
             mBtnModeAll.setEnabled(true);
             mBtnModeChrono.setEnabled(false);
             mBtnModeOverview.setEnabled(true);
+            mStatisticsSelect.setEnabled(true);
             break;    
         case STATISTICS_MODE_OVERVIEW:
             mBtnModeAll.setEnabled(true);
             mBtnModeChrono.setEnabled(true);
             mBtnModeOverview.setEnabled(false);
+            mStatisticsSelect.setEnabled(true);
             break; 
         }
     }
@@ -458,8 +491,24 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
                 onStatisticSelected();
             }
         });
+        mStatisticsEdit.setOnClickListener(new OnClickListener() {
+            
+            @Override
+            public void onClick(View v) {
+                onEditStatistics();
+            }
+        });
     }
 
+    private void onEditStatistics() {
+        StatisticAttribute stat = getSelectedStatistic();
+        if (stat == null) {
+            mAttributeManager.getAllAttributes(true).get(0);
+        }
+        Intent i = StatisticEditActivity.getIntent(this, mGameKey, stat);
+        startActivity(i);
+    }
+    
     @Override
     public void onColorChanged(int color) {
         mTeamsController.onColorChanged(color);        
@@ -472,11 +521,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
 
     @Override
     public List<Player> toFilter() {
-        if (mTeamsController != null) {
-            return mTeamsController.toFilter();
-        } else {
-            return Collections.emptyList();
-        }
+        return mTeamsController.toFilter();
     }
 
     @Override
@@ -487,5 +532,6 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
     @Override
     public void onPlayerColorChanged(int arg, Player concernedPlayer) {
         mTeamsController.onPlayerColorChanged(arg, concernedPlayer);
+        concernedPlayer.saveColor(this);
     }
 }

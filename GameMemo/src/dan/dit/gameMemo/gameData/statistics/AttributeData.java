@@ -26,4 +26,12 @@ public class AttributeData {
     public AbstractPlayerTeam getTeam(int index) {
         return index >= 0 && index < mTeams.size() ? mTeams.get(index) : null;
     }
+
+    public int getTeamsCount() {
+        return mTeams.size();
+    }
+
+    public String getCustomValue() {
+        return mCustomValue;
+    }
 }

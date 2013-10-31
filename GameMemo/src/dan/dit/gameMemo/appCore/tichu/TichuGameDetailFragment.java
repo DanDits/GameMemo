@@ -118,7 +118,7 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 	private static final String STORAGE_BIDS_LIST = "STORAGE_BIDS_LIST";
 
 	private static final int[] PLAYER_FINISHER_POS_DRAWABLE_ID = new int[] {R.drawable.game_first, 
-		R.drawable.game_second,R.drawable.game_third, 0};
+		R.drawable.game_second,R.drawable.game_third, R.drawable.game_fourth};
 
 	
 	// references the UI elements or listeners 

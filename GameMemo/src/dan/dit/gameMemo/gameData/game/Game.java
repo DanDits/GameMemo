@@ -508,11 +508,11 @@ public abstract class Game implements Iterable<GameRound>, Compactable {
 	    }
 	}
 	
-	public static void loadPlayers(int gameKey, ContentResolver resolver) {
+	public static void loadPlayers(int gameKey, Context context) {
 		String[] projection = {GameStorageHelper.COLUMN_PLAYERS};
 		Cursor cursor = null;
 		try {
-			cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), projection, null, null,
+			cursor = context.getContentResolver().query(GameStorageHelper.getUriAllItems(gameKey), projection, null, null,
 				null);
 			if (cursor != null) {
 				cursor.moveToFirst();
@@ -521,7 +521,8 @@ public abstract class Game implements Iterable<GameRound>, Compactable {
 					Compacter playersData = new Compacter(cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS)));
 					for (String playerName : playersData) {
 						if (Player.isValidPlayerName(playerName)) {
-							pool.populatePlayer(playerName);
+							Player p = pool.populatePlayer(playerName);
+							p.loadCachedColor(context);
 						}
 					}
 					cursor.moveToNext();
@@ -570,16 +571,16 @@ public abstract class Game implements Iterable<GameRound>, Compactable {
 	}
 
 	public static void loadAllPlayers(final int preferredGameKey,
-			final ContentResolver contentResolver) {
+			final Context context) {
 		Runnable loadPlayerRunnable = new Runnable() {
 			@Override
 			public void run() {
 				if (GameKey.isGameSupported(preferredGameKey)) {
-					Game.loadPlayers(preferredGameKey, contentResolver);
+					Game.loadPlayers(preferredGameKey, context);
 				}
 				for (Integer key : GameKey.ALL_GAMES) {
 					if (!key.equals(Integer.valueOf(preferredGameKey))) {
-						Game.loadPlayers(key, contentResolver);
+						Game.loadPlayers(key, context);
 					}
 				}
 			}

@@ -9,7 +9,7 @@
     <string name="game_starttime">Starttime</string>
     <string name="game_runtime">Duration</string>
     <string name="game_team_X">Team %1$d</string>
-    <string name="tichu_no_rounds">Click on the first player and enter a score!</string>
+    <string name="tichu_no_rounds">1. Press bubbles for tichu bids.\n2. Select the player that finished first.\n3. Enter the card score.</string>
     <string name="doppelkopf_no_rounds">Click on the re player(s)!</string>
     <string name="default_tichu_round_score"> </string><string name="default_player_name">Player</string>
     <string name="game_setup_select_player">Select player</string>
@@ -187,7 +187,12 @@
 	<string name="doppelkopf_rule_system_descr_ka1">Modified tournament1: Re/Contra +1, duty soli after rounds, ends after x rounds not matches</string>
 	<string name="lock_game">Lock game</string>
 	<string name="unlock_game">Unlock game</string>
-	<string name="statistics_show_chart">Calculate</string>
+	<string name="statistics_show_chart_all_games">Calculate for all games</string>	
+	<plurals
+	     name="statistics_show_chart_x_games">
+        <item quantity="one">Calculate for single game</item>
+        <item quantity="other">Calculate for %1$d games</item>
+    </plurals>
 	<string name="statistics_team_name_player">Player</string>
 	<string name="statistics_team_name_enemy">Enemy</string>
 	<string name="statistics_activity_header">Statistics</string>
@@ -198,6 +203,16 @@
 	<string name="statistic_general_longest_time_between_games_descr">The maximum amount of time passed during the start of two consecutive games.</string>
 	<string name="attribute_general_invert_name">Invert</string>
 	<string name="attribute_general_invert_descr">Invert the evaluation of the subattributes.</string>
+	<string name="attribute_general_or_name">Or</string>
+	<string name="attribute_general_or_descr">Accepts if one subattribute is accepted.</string>
+	<string name="statistic_general_game_runtime_name">Game runtime (in minutes)</string>
+	<string name="statistic_general_game_runtime_descr">The duration of the game in minutes.</string>
+	<string name="attribute_general_game_finished_name">Game finished</string>
+	<string name="attribute_general_game_finished_descr">Accepts the game if it is finished.</string>
+	<string name="statistic_general_summer_and_name">Summer (and)</string>
+	<string name="statistic_general_summer_and_descr">Accepts if all subattributes are accepted and sums up the values of all subattributes that are statistics.</string>
+	<string name="statistic_general_summer_or_name">Summer (or)</string>
+	<string name="statistic_general_summer_or_descr">Accepts if at least one subattribute is accepted and sums up the values of all accepted subattributes that are statistics.</string>
 	<string name="attribute_tichu_flag_enemy_name">Enemy</string>
 	<string name="attribute_tichu_flag_enemy_descr">Flag to invert or alter the evaluation of some attributes.</string>
 	<string name="attribute_tichu_mercy_rule_name">Mercy rule</string>
@@ -217,14 +232,37 @@
 	<string name="statistic_tichu_rounds_played_name">Rounds played</string>
 	<string name="statistic_tichu_rounds_played_descr">The amount of rounds played.</string>
 	<string name="statistic_tichu_tichu_score_name">Tichu score</string>
-	<string name="statistic_tichu_tichu_score_descr">Score gained and lost for tichu bids. Supports Enemy | Self, Partner flags. Default: Self + Partner</string>
+	<string name="statistic_tichu_tichu_score_descr">Score gained and lost for tichu bids. Supports Self+Partner (default); Enemy; Self; Partner; Enemy+Self+Partner</string>
 	<string name="statistic_tichu_tichu_score_self_name">Own tichu score</string>
 	<string name="statistic_tichu_tichu_score_self_descr">Own score gained and lost for tichu bids. (Tichu score with self flag.)</string>
+	<string name="statistic_tichu_card_score_name">Card score</string>
+	<string name="statistic_tichu_card_score_descr">Score gained and lost by cards. Supports Self+Partner (default); Self+Enemy; Partner+Enemy; Enemy.</string>
+	<string name="statistic_tichu_small_tichu_name">Small tichus</string>
+	<string name="statistic_tichu_small_tichu_descr">Accepts a round if the calculated amount of small tichu bids is greater than zero. Supports all combinations of Self (Default), Partner, Enemy.</string>
+	<string name="statistic_tichu_big_tichu_name">Big tichus</string>
+	<string name="statistic_tichu_big_tichu_descr">Accepts a round if the calculated amount of big tichu bids is greater than zero. Supports all combinations of Self (Default), Partner, Enemy.</string>
+	<string name="attribute_tichu_small_tichu_won_name">Small tichu won</string>
+	<string name="attribute_tichu_small_tichu_won_descr">Accepts a round if the calculated amount of small tichu bids that are won is greater than zero. Supports all combinations of Self (Default), Partner, Enemy.</string>
+	<string name="attribute_tichu_big_tichu_won_name">Big tichu won</string>
+	<string name="attribute_tichu_big_tichu_won_descr">Accepts a round if the calculated amount of big tichu bids that are won is greater than zero. Supports all combinations of Self (Default), Partner, Enemy.</string>
 	<string name="attribute_tichu_flag_partner_name">Partner</string>
 	<string name="attribute_tichu_flag_partner_descr">Flag to invert or alter the evaluation of some attributes.</string>
 	<string name="attribute_tichu_flag_self_name">Self</string>
 	<string name="attribute_tichu_flag_self_descr">Flag to invert or alter the evaluation of some attributes.</string>
+	<string name="attribute_tichu_finisher_pos_name">Finisher position</string>
+	<string name="attribute_tichu_finisher_pos_descr">Accepts if the player (Self or Self+Partner) or the partner (Partner or Self+Partner) or the enemy (Enemy) finished with the given position.</string>
 	<string name="statistics_x_axis_label">Game</string>
 	<string name="statistics_mode_chrono_no_team">General</string>
 	<string name="statistics_mode_all_no_team">General</string>
+	<string name="attribute_extend">Extend</string>
+	<string name="attribute_name">Name</string>
+	<string name="attribute_description">Description</string>
+	<string name="attribute_custom_value">Value</string>
+	<string name="statistic_reference_statistic">Reference:</string>
+	<string name="attribute_sub_attrs">Subattributes</string>
+	<string name="attribute_sub_attrs_all">Possible attributes</string>
+	<string name="statistics_edit_activity_header">Editor</string>
+	<string name="statistics_edit_sub_attribute_cannot_remove">Can\'t remove inherited subattribute.</string>
+	<string name="statistic_based_on">Based on: </string>
+	<string name="statistic_priority_short">Prio</string>
 </resources>

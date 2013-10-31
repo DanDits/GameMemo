@@ -11,11 +11,11 @@ public class UserStatisticAttribute extends StatisticAttribute {
     
     @Override
     public boolean acceptGame(Game game, AttributeData data) {
-        return acceptGameAllSubattributes(game);
+        return acceptGameAllSubattributes(game, data);
     }
     
     @Override
     public boolean acceptRound(Game game, GameRound round, AttributeData data) {
-        return acceptRoundAllSubattributes(game, round);
+        return acceptRoundAllSubattributes(game, round, data);
     }
 }
