@@ -222,6 +222,12 @@
 	<string name="statistics_menu_pres_type_absolute">absolut</string>
 	<string name="statistics_menu_pres_type_percentual">%</string>
 	<string name="statistics_menu_pres_type_proportional">Teil</string>
+	<string name="statistics_smoothing_none">Keine Glättung</string>
+	<string name="statistics_smoothing_extreme">Extreme Glättung</string>
+	<string name="statistics_menu_chrono_settings">Optionen</string>
+	<string name="statistics_chrono_settings_title">Chrono Optionen</string>
+	<string name="statistics_chrono_settings_single_values">Einzelne Werte</string>
+	<string name="statistics_chrono_settings_summed_values">Summierte Werte</string>
 	<string name="statistic_general_longest_time_between_games_name">Größte Spielpause (in Stunden)</string>
 	<string name="statistic_general_longest_time_between_games_descr">Der größte Zeitraum zwischen dem Start von zwei Spielen.</string>
 	<string name="attribute_general_invert_name">Invertieren</string>
@@ -236,6 +242,8 @@
 	<string name="statistic_general_summer_and_descr">Akzeptiert, falls alle Unterattribute akzeptiert werden und summiert die Werte aller Unterstatistiken.</string>
 	<string name="statistic_general_summer_or_name">Summierer (oder)</string>
 	<string name="statistic_general_summer_or_descr">Akzeptiert, falls mindestens ein Unterattribut akzeptiert wird und summiert die Werte aller akzeptierten Unterstatistiken.</string>
+	<string name="attribute_general_contains_team_name">Enthält Team</string>
+	<string name="attribute_general_contains_team_descr">Akzeptiert, falls das Spiel das Team enthält. Liste die Spielernamen im Wertefeld auf, getrennt durch ein Plus(+).</string>
 	<string name="attribute_tichu_flag_enemy_name">Gegner</string>
 	<string name="attribute_tichu_flag_enemy_descr">Zeichen um das Ergebnis mancher Attribute zu invertieren oder ändern.</string>
 	<string name="attribute_tichu_mercy_rule_name">Mercy Regel</string>

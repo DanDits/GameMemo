@@ -8,7 +8,9 @@ import java.util.ListIterator;
 import java.util.Set;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -28,6 +30,9 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.RadioGroup;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
@@ -52,6 +57,9 @@ import dan.dit.gameMemo.util.NotifyMajorChangeCallback;
 @SuppressLint("NewApi")
 public class StatisticsActivity extends FragmentActivity implements OnColorChangedListener, ChoosePlayerDialogListener {
     private static final String PREFERENCES_MODE = "dan.dit.gameMemo.PREF_STATISTIC_MODE";
+    private static final String PREFERENCES_CHRONO_ALPHA = "dan.dit.gameMemo.PREF_CHRONO_ALPHA";
+    private static final String PREFERENCES_CHRONO_MODE = "dan.dit.gameMemo.PREF_CHRONO_MODE";
+    
     private static final String EXTRA_ALLOWED_STARTTIMES = "dan.dit.gameMemo.EXTRA_ALLOWED_STARTTIMES";
     public static final int STATISTICS_MODE_ALL = 0;
     public static final int STATISTICS_MODE_OVERVIEW = 1;
@@ -73,6 +81,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
     private MenuItem mAddTeam;
     private MenuItem mReset;
     private MenuItem mPresType;
+    private MenuItem mChronoSettings;
     
     private boolean mStateSpecification;
     private GameStatistic mDisplayedStatistic;
@@ -123,6 +132,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         loadStatisticsAndGame();
         applyTheme();
         initMode();
+        loadChronoAlphaAndMode();
         initListeners();
     }
     
@@ -133,6 +143,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         mAddTeam = menu.findItem(R.id.add_team);
         mReset = menu.findItem(R.id.reset);
         mPresType = menu.findItem(R.id.pres_type);
+        mChronoSettings = menu.findItem(R.id.chrono_settings);
         applyMenuButtonsState();
         return true;
     }
@@ -149,6 +160,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
             return; // not yet initialized
         }
         if (mStateSpecification) {
+            mChronoSettings.setVisible(false);
             mPresType.setVisible(false);
             mReset.setVisible(mTeamsController != null);
             mAddTeam.setVisible(mTeamsController != null);
@@ -156,6 +168,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
                 mAddTeam.setEnabled(mTeamsController.hasMissingTeam());
             }
         } else {
+            mChronoSettings.setVisible(mChrono != null);
             mPresType.setVisible(mDisplayedStatistic != null);
             if (mDisplayedStatistic != null) {
                 int presTypeTitleResId = GameStatistic.getPresTypeTextResId(mDisplayedStatistic.getPresentationType());
@@ -194,10 +207,61 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         case R.id.pres_type:
             nextPresType();
             return true;
+        case R.id.chrono_settings:
+            showChronoSettingsDialog();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
     
+    private void showChronoSettingsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View v = this.getLayoutInflater().inflate(R.layout.statistic_chrono_smoothing, null);
+        final SeekBar bar = (SeekBar) v.findViewById(R.id.smoothBar);
+        final RadioGroup group = (RadioGroup) v.findViewById(R.id.radioMode);
+        group.check(mChronoModeSingleValues ? R.id.chrono_mode_single_values : R.id.chrono_mode_summed_values);
+        bar.setMax(1000);
+        bar.setKeyProgressIncrement(100);
+        if (mAlpha < convertToAlpha(1)) {
+            bar.setProgress(bar.getMax());
+        } else {
+            bar.setProgress((int) (- bar.getMax() * Math.log(mAlpha) / 6.0));
+        }
+        bar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                applyAlphaAndMode(convertToAlpha(((double) bar.getProgress()) / bar.getMax()), mChronoModeSingleValues);
+            }
+            
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+            
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress,
+                    boolean fromUser) {
+            }
+        });
+        builder.setView(v)
+        .setTitle(getResources().getString(R.string.statistics_chrono_settings_title))
+        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                setAlphaAndMode(convertToAlpha(((double) bar.getProgress()) / bar.getMax()), group.getCheckedRadioButtonId() == R.id.chrono_mode_single_values);
+            }
+        })
+        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+                applyAlphaAndMode(mAlpha, mChronoModeSingleValues);
+            }
+        }).show();
+    }
+    
+    private double convertToAlpha(double fraction) {
+        return Math.pow(Math.E, -6.0 * fraction);
+    }
     
     private void nextPresType() {
         if (mDisplayedStatistic != null) {
@@ -228,6 +292,10 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
     }
     
     private StatisticAndGameLoader mLoader;
+    private boolean mChronoModeSingleValues;
+    private double mAlpha; // for the chrono mode
+    private StatisticFactoryChrono mChrono;
+    
     private void loadStatisticsAndGame() {
         mAttributeManager = GameKey.getGameStatisticAttributeManager(mGameKey);
         mStatisticsShow.setEnabled(false);
@@ -303,7 +371,8 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
                 mModeChartContainer.setVisibility(View.VISIBLE);
                 mModeChartContainer.removeAllViews();
                 mDisplayedStatistic = getSelectedStatistic();
-                mModeChartContainer.addView(new StatisticFactoryChrono(mDisplayedStatistic, mAttributeManager.getStatistic(mDisplayedStatistic.getReference())).build(StatisticsActivity.this));
+                mChrono = new StatisticFactoryChrono(mDisplayedStatistic, mAttributeManager.getStatistic(mDisplayedStatistic.getReference()), mAlpha, mChronoModeSingleValues);
+                mModeChartContainer.addView(mChrono.build(StatisticsActivity.this));
                 break;
             case STATISTICS_MODE_OVERVIEW:
                 mModeAllContainer.setVisibility(View.GONE);
@@ -347,6 +416,12 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
                     }
                     team.saveColor(this);
                 }
+                if (team.getColor() == PlayerColors.DEFAULT_COLOR) {
+                    team.setColor(team.getFirst().getColor());
+                    if (team.getPlayerCount() > 1) {
+                        team.saveColor(this);
+                    }
+                }
             }
         }
         return teams;
@@ -380,6 +455,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
     private void switchToSpecification() {
         if (!mStateSpecification) {
             mStateSpecification = true;
+            mChrono = null;
             if (mSwitcher.getDisplayedChild() == 1) {
                 mSwitcher.showPrevious();
             }
@@ -408,6 +484,28 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         setMode(mode);
     }
     
+    private void loadChronoAlphaAndMode() {
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        mAlpha = Double.longBitsToDouble(sharedPref.getLong(PREFERENCES_CHRONO_ALPHA, Double.doubleToLongBits(StatisticFactoryChrono.DEFAULT_ALPHA)));
+        mChronoModeSingleValues = sharedPref.getBoolean(PREFERENCES_CHRONO_MODE, StatisticFactoryChrono.DEFAULT_CHRONO_MODE_SINGLE_VALUES);
+    }
+    
+    private void setAlphaAndMode(double alpha, boolean modeSingleValues) {
+        mAlpha = alpha;
+        mChronoModeSingleValues = modeSingleValues;
+        applyAlphaAndMode(mAlpha, modeSingleValues);
+        SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
+        editor.putLong(PREFERENCES_CHRONO_ALPHA, Double.doubleToLongBits(mAlpha));
+        editor.putBoolean(PREFERENCES_CHRONO_MODE, modeSingleValues);
+        editor.apply();
+    }
+    
+    private void applyAlphaAndMode(double alpha, boolean modeSingleValues) {
+        if (mChrono != null) {
+            mChrono.setAlphaAndMode(this, alpha, modeSingleValues);
+        }
+    }
+    
     private void setMode(int newMode) {
         if (!mStateSpecification) {
             return; // ignore if in specification state
@@ -421,19 +519,16 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
     }
     
     private void applyMode() {
-        Bundle params = mAttributeManager.applyMode(mMode, mTeamsController, getResources());
-        if (params != null) {
-            mTeamsController = new TeamSetupTeamsController(mGameKey, this, new NotifyMajorChangeCallback() {
-                
-                @Override
-                public void onMajorChange() {
-                    applyMenuButtonsState();
-                }
-            }, params, mTeamsContainer);
-            mTeamsController.setNoFilter(true);
-            mAttributeManager.applyMode(mMode, mTeamsController, getResources());
-            applyMenuButtonsState();
-        } 
+        Bundle params = mAttributeManager.applyMode(mMode, getResources());
+        mTeamsController = new TeamSetupTeamsController(mGameKey, this, new NotifyMajorChangeCallback() {
+            
+            @Override
+            public void onMajorChange() {
+                applyMenuButtonsState();
+            }
+        }, params, mTeamsContainer);
+        mTeamsController.setNoFilter(true);
+        applyMenuButtonsState();
         switch (mMode) {
         case STATISTICS_MODE_ALL:
             mBtnModeAll.setEnabled(false);

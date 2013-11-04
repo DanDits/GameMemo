@@ -14,11 +14,14 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.TextUtils;
 import dan.dit.gameMemo.R;
-import dan.dit.gameMemo.appCore.gameSetup.TeamSetupTeamsController;
 import dan.dit.gameMemo.gameData.game.Game;
+import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.GameRound;
+import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
+import dan.dit.gameMemo.gameData.player.PlayerPool;
+import dan.dit.gameMemo.gameData.player.PlayerTeam;
 
 public abstract class GameStatisticAttributeManager {
     private int mGameKey;
@@ -119,7 +122,6 @@ public abstract class GameStatisticAttributeManager {
                 if (attr == null) {
                     positionsToLoad.add(data.getPosition());
                 } else {
-                    Log.d("GameMemo", "Loaded user attribute (first try)" + attr);
                     putAttributeInMap(attr);
                 }
                 data.moveToNext();
@@ -129,7 +131,6 @@ public abstract class GameStatisticAttributeManager {
                 data.moveToPosition(curr);
                 StatisticAttribute attr = StatisticAttribute.load(data, this);
                 if (attr != null) {
-                    Log.d("GameMemo", "Loaded user attribute (second try)" + attr);
                     putAttributeInMap(attr);
                     positionsToLoad.remove(curr);
                 } else {
@@ -219,11 +220,28 @@ public abstract class GameStatisticAttributeManager {
         mMissingSubAttrs = null;
     }
     
-    protected static void addAndCheck(StatisticAttribute attr, Map<String, StatisticAttribute> attrs) {
+    protected static void addAndCheck(StatisticAttribute attr, Map<String, StatisticAttribute> attrs, boolean copyAttribute) {
         if (attrs.containsKey(attr.getIdentifier())) {
             throw new IllegalArgumentException("Attribute already contained! Wrong identifier: " + attr  + " all: " + attrs);
         }
+        int prio = attr.getPriority();
         attrs.put(attr.getIdentifier(), attr);
+        if (copyAttribute && prio != StatisticAttribute.PRIORITY_HIDDEN) {
+            attr.setPriority(StatisticAttribute.PRIORITY_HIDDEN);
+            if (attr instanceof GameStatistic) {
+                GameStatistic.Builder copy = new GameStatistic.Builder(null, (GameStatistic) attr);
+                copy.setUserCreated();
+                copy.setPriority(prio);
+                StatisticAttribute copyAttr = copy.getAttribute();
+                attrs.put(copyAttr.getIdentifier(), copyAttr);
+            } else {
+                StatisticAttribute.Builder copy = new StatisticAttribute.Builder(null, attr);
+                copy.setUserCreated();
+                copy.setPriority(prio);
+                StatisticAttribute copyAttr = copy.getAttribute();
+                attrs.put(copyAttr.getIdentifier(), copyAttr);
+            }
+        }
     }
 
     public static final String IDENTIFIER_ATT_INVERT_RESULT = "invert_result";
@@ -233,6 +251,7 @@ public abstract class GameStatisticAttributeManager {
     public static final String IDENTIFIER_STAT_OR_SUMMER = "stat_or_summer";
     public static final String IDENTIFIER_ATT_OR = "or";
     public static final String IDENTIFIER_ATT_GAME_FINISHED = "game_finished";
+    public static final String IDENTIFIER_ATT_CONTAINS_TEAM= "contains_team";
     
     protected Collection<StatisticAttribute> getGeneralPredefinedAttributes() {
         Map<String, StatisticAttribute> attrs = new HashMap<String, StatisticAttribute>();
@@ -272,7 +291,7 @@ public abstract class GameStatisticAttributeManager {
         statBuilder.setNameAndDescriptionResId(R.string.statistic_general_longest_time_between_games_name, R.string.statistic_general_longest_time_between_games_descr);
         statBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
-        addAndCheck(statBuilder.getAttribute(), attrs);
+        addAndCheck(statBuilder.getAttribute(), attrs, false);
         
         // game length
         stat = new GameStatistic() {
@@ -292,7 +311,7 @@ public abstract class GameStatisticAttributeManager {
         statBuilder.setNameAndDescriptionResId(R.string.statistic_general_game_runtime_name, R.string.statistic_general_game_runtime_descr);
         statBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_PROPORTION);
-        addAndCheck(statBuilder.getAttribute(), attrs);
+        addAndCheck(statBuilder.getAttribute(), attrs, false);
         
         // invert result
         att = new UserStatisticAttribute() {
@@ -309,7 +328,7 @@ public abstract class GameStatisticAttributeManager {
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_INVERT_RESULT, mGameKey);
         attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_general_invert_name, R.string.attribute_general_invert_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);
+        addAndCheck(attBuilder.getAttribute(), attrs, false);
        
         // logical or
         att = new UserStatisticAttribute() {
@@ -326,7 +345,7 @@ public abstract class GameStatisticAttributeManager {
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_OR, mGameKey);
         attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_general_or_name, R.string.attribute_general_or_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);
+        addAndCheck(attBuilder.getAttribute(), attrs, false);
        
         // game finished
         att = new UserStatisticAttribute() {
@@ -338,7 +357,7 @@ public abstract class GameStatisticAttributeManager {
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_GAME_FINISHED, mGameKey);
         attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_general_game_finished_name, R.string.attribute_general_game_finished_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);
+        addAndCheck(attBuilder.getAttribute(), attrs, false);
         
         // stat and summer
         stat = new GameStatistic() {
@@ -372,7 +391,7 @@ public abstract class GameStatisticAttributeManager {
         statBuilder.setNameAndDescriptionResId(R.string.statistic_general_summer_and_name, R.string.statistic_general_summer_and_descr);
         statBuilder.setPriority(StatisticAttribute.PRIORITY_HIDDEN);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
-        addAndCheck(statBuilder.getAttribute(), attrs);
+        addAndCheck(statBuilder.getAttribute(), attrs, false);
         
         // stat or summer
         stat = new GameStatistic() {
@@ -408,11 +427,45 @@ public abstract class GameStatisticAttributeManager {
         statBuilder.setNameAndDescriptionResId(R.string.statistic_general_summer_or_name, R.string.statistic_general_summer_or_descr);
         statBuilder.setPriority(StatisticAttribute.PRIORITY_HIDDEN);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
-        addAndCheck(statBuilder.getAttribute(), attrs);
+        addAndCheck(statBuilder.getAttribute(), attrs, false);
+        
+        // contains team
+        att = new UserStatisticAttribute() {
+            private AttributeData customTeam = new AttributeData();
+            private List<AbstractPlayerTeam> teamList = new LinkedList<AbstractPlayerTeam>();
+            private String currCustomValueTeam;
+            @Override public boolean requiresCustomValue() {return true;}
+            @Override
+            public boolean acceptGame(Game game, AttributeData data) {
+                customTeam.mTeams = teamList;
+                if ((currCustomValueTeam == null && !TextUtils.isEmpty(data.mCustomValue)) 
+                        || (currCustomValueTeam != null && !currCustomValueTeam.equals(data.mCustomValue))) {
+                    currCustomValueTeam = data.mCustomValue;
+                    teamList.clear();
+                    if (!TextUtils.isEmpty(currCustomValueTeam)) {
+                        PlayerTeam team = new PlayerTeam();
+                        teamList.add(team);
+                        String[] split = currCustomValueTeam.split("\\+");
+                        PlayerPool pool = GameKey.getPool(mGameKey);
+                        for (String name : split) {
+                            if (pool.contains(name)) {
+                                team.addPlayer(pool.populatePlayer(name));
+                            }
+                        }
+                    }
+                }
+               return super.acceptGame(game, data) && containsAllTeams(game, customTeam);
+            }
+            
+        };
+        attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_CONTAINS_TEAM, mGameKey);
+        attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
+        attBuilder.setNameAndDescriptionResId(R.string.attribute_general_contains_team_name, R.string.attribute_general_contains_team_descr);
+        addAndCheck(attBuilder.getAttribute(), attrs, false);
         return attrs.values();
     }
 
-    public abstract Bundle applyMode(int mode, TeamSetupTeamsController ctr, Resources res);
+    public abstract Bundle applyMode(int mode, Resources res);
 
     public String getUnusedIdentifier(StatisticAttribute baseAttr) {
         int index = 0;

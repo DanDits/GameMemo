@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <SeekBar
+        android:id="@+id/smoothBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/smoothBar"
+        android:text="@string/statistics_smoothing_extreme" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/smoothBar"
+        android:text="@string/statistics_smoothing_none" />
+    
+    <RadioGroup
+        android:id="@+id/radioMode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/textView2"
+        android:checkedButton="@+id/chrono_mode_single_values"
+        android:orientation="horizontal" >
+
+	    <RadioButton
+	        android:id="@+id/chrono_mode_single_values"
+	        android:layout_width="0dp"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="bottom"
+	        android:layout_marginTop="16dp"
+	        android:layout_weight="1"
+	        android:text="@string/statistics_chrono_settings_single_values" />
+	
+	    <RadioButton
+	        android:id="@+id/chrono_mode_summed_values"
+	        android:layout_width="0dp"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="bottom"
+	        android:layout_weight="1"
+	        android:text="@string/statistics_chrono_settings_summed_values" />
+
+	</RadioGroup>
+</RelativeLayout>

@@ -203,10 +203,10 @@ public abstract class Game implements Iterable<GameRound>, Compactable {
 		long runningTime = getRunningTime();
 		int winnerData = getWinnerData();
 
-		// Only save new game if there are rounds
+		/*// Only save new game if there are rounds
 		if (roundsData.length() == 0 && !isValidId(mId)) {
 			return;
-		}
+		}*/
 
 		ContentValues values = (pValues == null) ? new ContentValues() : pValues;
 		values.put(GameStorageHelper.COLUMN_PLAYERS, playerData);

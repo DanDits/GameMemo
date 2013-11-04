@@ -1,6 +1,5 @@
 package dan.dit.gameMemo.gameData.statistics;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -433,7 +432,7 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
         return mIdentifier;
     }
 
-    public Collection<? extends AbstractPlayerTeam> getTeams() {
+    public List<AbstractPlayerTeam> getTeams() {
         return mData.mTeams;
     }
 

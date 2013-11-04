@@ -535,6 +535,9 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
     
     public void setTeamName(int teamKey, String teamName) {
         TeamSetupViewController ctr = mTeamControllers.get(teamKey);
+        if (ctr == null) {
+            return;
+        }
         ctr.setTeamName(teamName, ctr.allowsTeamNameEditing());
     }
     
@@ -636,5 +639,9 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
         }
         mPerformGapClosing = true;
         closeDummyNumberGaps();
+    }
+
+    public int getTeamsCount() {
+        return mTeamControllers.size();
     }
 }

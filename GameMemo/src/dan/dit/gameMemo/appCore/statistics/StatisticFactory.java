@@ -74,7 +74,7 @@ public abstract class StatisticFactory {
         for (int i = 0; i < length; i++) {
           XYSeriesRenderer r = new XYSeriesRenderer();
           r.setColor(colors[i]);
-          r.setPointStyle(styles[i]);
+          r.setPointStyle(styles.length > i ? styles[i] : styles[0]);
           r.setChartValuesFormat(mStat.getFormat());
           renderer.addSeriesRenderer(r);
         }
@@ -133,30 +133,28 @@ public abstract class StatisticFactory {
             mStat.setTeams(teamList);
             if (mRefStat != null && useReference) {
                 mRefStat.setTeams(teamList);
-                mRefStat.initCalculation();
             }
         }
-        
-        AcceptorIterator it = mStat.iterator();
+
         mStat.initCalculation();
+        AcceptorIterator it = mStat.iterator();
         double totalSum = 0;
-        double nextSum;
         while (it.hasNextGame()) {
-            nextSum = nextGameSum(mStat, it);
-            totalSum += nextSum;
+            totalSum += nextGameSum(mStat, it);
         }
-        AcceptorIterator refIt = useReference && mRefStat != null ? mRefStat.iterator() : null;
+        AcceptorIterator refIt = null;
+        if (useReference && mRefStat != null) {
+            mRefStat.initCalculation();
+            refIt = mRefStat.iterator();
+        }
         double totalRefSum = 0;
         if (refIt != null) {
-            double nextRefSum = Double.NaN;
             while (refIt.hasNextGame()) {
-                nextRefSum = nextGameSum(mRefStat, refIt);
-                totalRefSum += nextRefSum;
+                totalRefSum += nextGameSum(mRefStat, refIt);
             }
         } else if (useReference) {
             totalRefSum = it.getAcceptedRoundsCount() > 0 ? it.getAcceptedRoundsCount() : it.getAcceptedGamesCount();
         }
-        double result = nextValue(totalSum, totalRefSum);
-        return result;
+        return nextValue(totalSum, totalRefSum);
     }
 }

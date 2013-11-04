@@ -48,7 +48,11 @@ public class AdvancedStatisticsAdapter extends ArrayAdapter<StatisticAttribute> 
             ((ImageView) view.findViewById(R.id.locked_state)).setImageDrawable(null);
         }
         CharSequence name = attr.getName(mContext.getResources());
-        text.setText(name);
+        if (attr.isUserAttribute()) {
+            text.setText(name);
+        } else {
+            text.setText("<" + name + ">");
+        }
         return view;
 
     }

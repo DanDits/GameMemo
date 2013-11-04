@@ -1,5 +1,6 @@
 package dan.dit.gameMemo.gameData.game.tichu;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +73,7 @@ public class TichuGameStatisticAttributeManager extends
     protected Collection<StatisticAttribute> createPredefinedAttributes() {
         Map<String, StatisticAttribute> attrs = new HashMap<String, StatisticAttribute>();
         for (StatisticAttribute generalAtt : getGeneralPredefinedAttributes()) {
-            addAndCheck(generalAtt, attrs);
+            addAndCheck(generalAtt, attrs, true);
         }
         StatisticAttribute.Builder attBuilder;
         GameStatistic.Builder statBuilder;
@@ -82,19 +83,19 @@ public class TichuGameStatisticAttributeManager extends
         attBuilder = new StatisticAttribute.Builder(IDENTIFIER_ATT_ENEMY, GameKey.TICHU);
         attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_flag_enemy_name, R.string.attribute_tichu_flag_enemy_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);   
+        addAndCheck(attBuilder.getAttribute(), attrs,true);   
         
         // self
         attBuilder = new StatisticAttribute.Builder(IDENTIFIER_ATT_SELF, GameKey.TICHU);
         attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_flag_self_name, R.string.attribute_tichu_flag_self_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);   
+        addAndCheck(attBuilder.getAttribute(), attrs,true);   
         
         // partner
         attBuilder = new StatisticAttribute.Builder(IDENTIFIER_ATT_PARTNER, GameKey.TICHU);
         attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_flag_partner_name, R.string.attribute_tichu_flag_partner_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);  
+        addAndCheck(attBuilder.getAttribute(), attrs,true);  
         
         // mercy rule enabled 
         att = new UserStatisticAttribute() {
@@ -106,7 +107,7 @@ public class TichuGameStatisticAttributeManager extends
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_MERCY_RULE, GameKey.TICHU);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_mercy_rule_name, R.string.attribute_tichu_mercy_rule_descr);
         attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
-        addAndCheck(attBuilder.getAttribute(), attrs);
+        addAndCheck(attBuilder.getAttribute(), attrs,true);
         
         // non default limit
         att = new UserStatisticAttribute() {
@@ -118,7 +119,7 @@ public class TichuGameStatisticAttributeManager extends
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_NON_DEFAULT_LIMIT, GameKey.TICHU);
         attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_non_default_limit_name, R.string.attribute_tichu_non_default_limit_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);
+        addAndCheck(attBuilder.getAttribute(), attrs,true);
         
         // game won
         att = new UserStatisticAttribute() {
@@ -147,14 +148,14 @@ public class TichuGameStatisticAttributeManager extends
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_GAME_WON, GameKey.TICHU);
         attBuilder.setPriority(1);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_game_won_name, R.string.attribute_tichu_game_won_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);
+        addAndCheck(attBuilder.getAttribute(), attrs,true);
         
         // game lost
         attBuilder = new StatisticAttribute.Builder(IDENTIFIER_ATT_GAME_LOST, attrs.get(IDENTIFIER_ATT_GAME_WON));
         att = attBuilder.getAttribute();
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_game_lost_name, R.string.attribute_tichu_game_lost_descr);
         att.addAttribute(attrs.get(IDENTIFIER_ATT_ENEMY));
-        addAndCheck(att, attrs);
+        addAndCheck(att, attrs,true);
         
         // round won
         att = new UserStatisticAttribute() {
@@ -184,14 +185,14 @@ public class TichuGameStatisticAttributeManager extends
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_ROUND_WON, GameKey.TICHU);
         attBuilder.setPriority(1);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_round_won_name, R.string.attribute_tichu_round_won_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);
+        addAndCheck(attBuilder.getAttribute(), attrs,true);
         
         // round lost
         attBuilder = new StatisticAttribute.Builder(IDENTIFIER_ATT_ROUND_LOST, attrs.get(GameStatisticAttributeManager.IDENTIFIER_ATT_INVERT_RESULT));
         att = attBuilder.getAttribute();
         att.addAttribute(attrs.get(IDENTIFIER_ATT_ROUND_WON));
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_round_lost_name, R.string.attribute_tichu_round_lost_descr);
-        addAndCheck(att, attrs);
+        addAndCheck(att, attrs,true);
         
         // played games
         GameStatistic stat = new GameStatistic() {
@@ -204,7 +205,7 @@ public class TichuGameStatisticAttributeManager extends
         statBuilder.setPriority(2);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
         statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_games_played_name, R.string.statistic_tichu_games_played_descr);
-        addAndCheck(statBuilder.getAttribute(), attrs);
+        addAndCheck(statBuilder.getAttribute(), attrs,true);
         
         // played rounds
         stat = new GameStatistic() {
@@ -217,7 +218,7 @@ public class TichuGameStatisticAttributeManager extends
         statBuilder.setPriority(2);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
         statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_rounds_played_name, R.string.statistic_tichu_rounds_played_descr);
-        addAndCheck(statBuilder.getAttribute(), attrs);
+        addAndCheck(statBuilder.getAttribute(), attrs,true);
         
         // tichu score
         stat = new GameStatistic() {
@@ -256,13 +257,13 @@ public class TichuGameStatisticAttributeManager extends
         statBuilder.setPriority(2);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_PROPORTION);
         statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_tichu_score_name, R.string.statistic_tichu_tichu_score_descr);
-        addAndCheck(statBuilder.getAttribute(), attrs);
+        addAndCheck(statBuilder.getAttribute(), attrs,true);
         
         // own tichu score
         statBuilder = new GameStatistic.Builder(IDENTIFIER_STAT_TICHU_SCORE_SELF, (GameStatistic) attrs.get(IDENTIFIER_STAT_TICHU_SCORE));
         statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_tichu_score_self_name, R.string.statistic_tichu_tichu_score_self_descr);
         statBuilder.getStatistic().addAttribute(attrs.get(IDENTIFIER_ATT_SELF));
-        addAndCheck(statBuilder.getAttribute(), attrs);
+        addAndCheck(statBuilder.getAttribute(), attrs,true);
         
         // card score
         stat = new GameStatistic() {
@@ -291,7 +292,7 @@ public class TichuGameStatisticAttributeManager extends
         statBuilder.setPriority(2);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_PROPORTION);
         statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_card_score_name, R.string.statistic_tichu_card_score_descr);
-        addAndCheck(statBuilder.getAttribute(), attrs);
+        addAndCheck(statBuilder.getAttribute(), attrs,true);
         
         // small tichu bid
         stat = new GameStatistic() {
@@ -307,7 +308,7 @@ public class TichuGameStatisticAttributeManager extends
         statBuilder.setPriority(3);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
         statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_small_tichu_name, R.string.statistic_tichu_small_tichu_descr);
-        addAndCheck(statBuilder.getAttribute(), attrs);
+        addAndCheck(statBuilder.getAttribute(), attrs,true);
         
         // big tichu bid
         stat = new GameStatistic() {
@@ -323,7 +324,7 @@ public class TichuGameStatisticAttributeManager extends
         statBuilder.setPriority(3);
         statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
         statBuilder.setNameAndDescriptionResId(R.string.statistic_tichu_big_tichu_name, R.string.statistic_tichu_big_tichu_descr);
-        addAndCheck(statBuilder.getAttribute(), attrs);
+        addAndCheck(statBuilder.getAttribute(), attrs,true);
         
         // small tichu won
         att = new UserStatisticAttribute() {
@@ -335,7 +336,7 @@ public class TichuGameStatisticAttributeManager extends
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_SMALL_TICHU_WON, GameKey.TICHU);
         attBuilder.setPriority(3);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_small_tichu_won_name, R.string.attribute_tichu_small_tichu_won_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);
+        addAndCheck(attBuilder.getAttribute(), attrs,true);
         
         // big tichu won
         att = new UserStatisticAttribute() {
@@ -347,7 +348,7 @@ public class TichuGameStatisticAttributeManager extends
         attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_BIG_TICHU_WON, GameKey.TICHU);
         attBuilder.setPriority(3);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_big_tichu_won_name, R.string.attribute_tichu_big_tichu_won_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);
+        addAndCheck(attBuilder.getAttribute(), attrs,true);
         
         // finisher pos
         att = new UserStatisticAttribute() {
@@ -371,22 +372,21 @@ public class TichuGameStatisticAttributeManager extends
         attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setCustomValue(String.valueOf(1));
         attBuilder.setNameAndDescriptionResId(R.string.attribute_tichu_finisher_pos_name, R.string.attribute_tichu_finisher_pos_descr);
-        addAndCheck(attBuilder.getAttribute(), attrs);
+        addAndCheck(attBuilder.getAttribute(), attrs,true);
         
         return attrs.values();
     }
-   
+
+    private static boolean[] relevant = new boolean[TichuGame.TOTAL_PLAYERS]; // making it not thread save, but reducing allocations
     private static boolean[] getDefaultRelevantPlayers(Game game, GameRound round, AttributeData data) {
         TichuGame g = (TichuGame) game;
-        boolean[] relevant = new boolean[TichuGame.TOTAL_PLAYERS];
         if (data.getTeamsCount() == 0 || (hasAttribute(data, IDENTIFIER_ATT_ENEMY) && hasAttribute(data, IDENTIFIER_ATT_SELF) &&
                 hasAttribute(data, IDENTIFIER_ATT_PARTNER))) {
             // if there is no team or all attributes are set, all players are relevant since we cannot tell friend from foe
-             for (int i = 0; i < relevant.length; i++) {
-                 relevant[i] = true;
-             }
+             Arrays.fill(relevant, true);
         } else {
-            boolean firstTeamOfInterest = g.getTeam1().containsTeam(data.getTeam(0)) && g.getTeam2().containsTeam(data.getTeam(1));
+            Arrays.fill(relevant, false);
+            boolean firstTeamOfInterest = g.getTeam1().containsTeam(data.getTeam(0)) && (data.getTeamsCount() == 1 || g.getTeam2().containsTeam(data.getTeam(1)));
             List<Player> teamOfInterest = data.getTeam(0).getPlayers();
             int playerId = TichuGame.INVALID_PLAYER_ID;
             if (teamOfInterest != null && teamOfInterest.size() == 1) {
@@ -442,28 +442,18 @@ public class TichuGameStatisticAttributeManager extends
     }
 
     @Override
-    public Bundle applyMode(int mode, TeamSetupTeamsController ctr, Resources res) {
+    public Bundle applyMode(int mode, Resources res) {
         String defaultTeamName = res.getString(dan.dit.gameMemo.R.string.statistics_team_name_player);
         String enemyTeamName = res.getString(dan.dit.gameMemo.R.string.statistics_team_name_enemy);
-        if (ctr == null) {
-            TeamSetupTeamsController.Builder builder = new TeamSetupTeamsController.Builder(false, true);
-            for (int i = 0; i < STATISTIC_MAX_TEAMS; i++) {
-                builder.addTeam(2, 2, i >= STATISTIC_MIN_TEAMS, defaultTeamName, false, TeamSetupViewController.DEFAULT_TEAM_COLOR , true, null);
+        TeamSetupTeamsController.Builder builder = new TeamSetupTeamsController.Builder(false, true);
+        for (int i = 0; i < STATISTIC_MAX_TEAMS; i++) {
+            String name = defaultTeamName;
+            if (mode == StatisticsActivity.STATISTICS_MODE_ALL || mode == StatisticsActivity.STATISTICS_MODE_CHRONO) {
+                name = i % 2 == 0 ? defaultTeamName : enemyTeamName;
             }
-            return builder.build();
+            builder.addTeam(2, 2, i >= STATISTIC_MIN_TEAMS, name, false, TeamSetupViewController.DEFAULT_TEAM_COLOR , true, null);
         }
-        switch(mode) {
-        case StatisticsActivity.STATISTICS_MODE_ALL:
-            ctr.setTeamName(1, enemyTeamName);
-            break;
-        case StatisticsActivity.STATISTICS_MODE_CHRONO:
-            ctr.setTeamName(1, enemyTeamName);
-            break;
-        case StatisticsActivity.STATISTICS_MODE_OVERVIEW:
-            ctr.setTeamName(1, defaultTeamName);
-            break;
-        }
-        return null;
+        return builder.build();
     }
 
 

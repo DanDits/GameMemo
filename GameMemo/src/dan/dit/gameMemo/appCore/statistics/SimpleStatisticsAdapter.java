@@ -32,7 +32,11 @@ public class SimpleStatisticsAdapter extends ArrayAdapter<StatisticAttribute> {
             text.setText("");
         } else {
             CharSequence name = attr.getName(mContext.getResources());
-            text.setText(name);
+            if (attr.isUserAttribute()) {
+                text.setText(name);
+            } else {
+                text.setText("<" + name + ">");
+            }
         }
         return view;
     }
