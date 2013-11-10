@@ -1,6 +1,7 @@
 package dan.dit.gameMemo.gameData.statistics;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.GameRound;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
+import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.player.PlayerTeam;
 
@@ -50,6 +52,23 @@ public abstract class GameStatisticAttributeManager {
             }
         }
         return false;
+    }
+    
+
+    protected String[] teamNamesToArray(List<AbstractPlayerTeam> teams, int index, String[] array) {
+        if (teams == null || array == null || index < 0 || index >= teams.size()) {
+            return null;
+        }
+        AbstractPlayerTeam team = teams.get(index);
+        if (array.length < team.getPlayerCount()) {
+            return null;
+        }
+        Arrays.fill(array, null);
+        int i = 0;
+        for (Player p : team) {
+            array[i++] = p.getName();
+        }
+        return array;
     }
     
     public boolean delete(String identifier, SQLiteDatabase db) {
@@ -252,6 +271,7 @@ public abstract class GameStatisticAttributeManager {
     public static final String IDENTIFIER_ATT_OR = "or";
     public static final String IDENTIFIER_ATT_GAME_FINISHED = "game_finished";
     public static final String IDENTIFIER_ATT_CONTAINS_TEAM= "contains_team";
+    public static final String IDENTIFIER_STAT_MINUS_OR_SUMMER = "minus_or_summer";
     
     protected Collection<StatisticAttribute> getGeneralPredefinedAttributes() {
         Map<String, StatisticAttribute> attrs = new HashMap<String, StatisticAttribute>();
@@ -403,7 +423,7 @@ public abstract class GameStatisticAttributeManager {
                 double sum = 0;
                 for (StatisticAttribute attr : data.mAttributes) {
                     AttributeData ownData = attr.getData();
-                    if (attr instanceof GameStatistic && attr.acceptRound(game, round, ownData)) {
+                    if (attr instanceof GameStatistic && attr.acceptGame(game, ownData) && attr.acceptRound(game, round, ownData)) {
                         sum += ((GameStatistic) attr).calculateValue(game, round, ownData);
                     }
                 }
@@ -462,10 +482,46 @@ public abstract class GameStatisticAttributeManager {
         attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
         attBuilder.setNameAndDescriptionResId(R.string.attribute_general_contains_team_name, R.string.attribute_general_contains_team_descr);
         addAndCheck(attBuilder.getAttribute(), attrs, false);
+        
+        // minus or sum
+        stat = new GameStatistic() {
+            @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameOneSubattributes(game, data) && containsAllTeams(game, data);}
+            @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) { return acceptRoundOneSubattributes(game, round, data);}
+
+            @Override
+            public double calculateValue(Game game, GameRound round, AttributeData data) {
+                double sum = 0;
+                for (StatisticAttribute attr : data.mAttributes) {
+                    AttributeData ownData = attr.getData();
+                    if (attr instanceof GameStatistic && attr.acceptGame(game, ownData) && attr.acceptRound(game, round, ownData)) {
+                        sum += ((GameStatistic) attr).calculateValue(game, round, ownData);
+                    }
+                }
+                return -sum;
+            }
+            
+            @Override
+            public double calculateValue(Game game, AttributeData data) {
+                double sum = 0;
+                for (StatisticAttribute attr : data.mAttributes) {
+                    AttributeData ownData = attr.getData();
+                    if (attr instanceof GameStatistic && attr.acceptGame(game, ownData)) {
+                        sum += ((GameStatistic) attr).calculateValue(game, ownData);
+                    }
+                }
+                return -sum;
+            }
+
+        };
+        statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_MINUS_OR_SUMMER, mGameKey);
+        statBuilder.setNameAndDescriptionResId(R.string.statistic_general_minus_summer_or_name, R.string.statistic_general_minus_summer_or_descr);
+        statBuilder.setPriority(StatisticAttribute.PRIORITY_HIDDEN);
+        statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
+        addAndCheck(statBuilder.getAttribute(), attrs, false);
         return attrs.values();
     }
 
-    public abstract Bundle applyMode(int mode, Resources res);
+    public abstract Bundle createTeamsParameters(int mode, Resources res, List<AbstractPlayerTeam> teamSuggestions);
 
     public String getUnusedIdentifier(StatisticAttribute baseAttr) {
         int index = 0;

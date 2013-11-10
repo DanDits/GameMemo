@@ -13,6 +13,7 @@ import org.achartengine.renderer.XYMultipleSeriesRenderer;
 
 import android.content.Context;
 import android.graphics.Paint.Align;
+import android.util.Log;
 import android.view.View;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
@@ -40,24 +41,27 @@ public class StatisticFactoryChrono extends StatisticFactory {
         }
     }
     
-    public View build(Context context) {
+    private XYMultipleSeriesDataset resultDataset;
+    public void executeBuild(Context context, StatisticFactory.StatisticBuildTask task) {
         mTeams = mStat.getTeams();
-        mResultView = ChartFactory.getLineChartView(context, buildDataset(context, mTeams), buildRenderer(context, mTeams));
+        resultDataset = buildDataset(context, mTeams, task);
+    }
+    
+    @Override
+    public View finishBuild(Context context) {
+        mResultView = ChartFactory.getLineChartView(context, resultDataset, buildRenderer(context, mTeams));
         return mResultView;
     }
     
     private XYMultipleSeriesRenderer buildRenderer(Context context, List<AbstractPlayerTeam> teams) {
         Iterator<AbstractPlayerTeam> it = teams.iterator();
-        int[] colors = new int[teams.size() == 0 ? 1 : (teams.size() + 1) / 2 ];
+        int[] colors = new int[teams.size() == 0 ? 1 : teams.size()];
         for (int i = 0; i < colors.length; i++) {
             colors[i] = SERIES_COLOR;
             if (it.hasNext()) {
                 AbstractPlayerTeam team = it.next();
                 if (team != null) {
                     colors[i] = ColorPickerView.tintColor(team.getColor(), 0.5);
-                }
-                if (it.hasNext()) {
-                    it.next(); // skip the enemy team
                 }
             }
         }
@@ -118,7 +122,7 @@ public class StatisticFactoryChrono extends StatisticFactory {
         }
         if (modeSingleValues != mModeSingleValues) {
             mModeSingleValues = modeSingleValues;
-            buildDataset(context, mTeams);
+            buildDataset(context, mTeams, null);
         } else if (Math.abs(alpha - mAlpha) < 10E-10) {
             return; // nothing changed
         }
@@ -127,24 +131,22 @@ public class StatisticFactoryChrono extends StatisticFactory {
         mResultView.repaint();
     }
     
-    private XYMultipleSeriesDataset buildDataset(Context context, List<AbstractPlayerTeam> teams) {
+    private XYMultipleSeriesDataset buildDataset(Context context, List<AbstractPlayerTeam> teams, StatisticBuildTask task) { // listener can be null
         mDataset.clear();
-        values = new ArrayList<List<Double>>((teams.size() + 1)/ 2);
+        values = new ArrayList<List<Double>>(teams.size() + 1);
         Iterator<AbstractPlayerTeam> teamsIt = teams.iterator();
-        ArrayList<AbstractPlayerTeam> playersAndEnemys = new ArrayList<AbstractPlayerTeam>(2);
+        ArrayList<AbstractPlayerTeam> playersList = new ArrayList<AbstractPlayerTeam>(1);
         boolean useReference = useReference();
+        double progress = 0.0;
+        double progressPerTeam = 100.0 / teams.size();
         do {
-            // set up the teams
+            // set up the teams 
             AbstractPlayerTeam players = teamsIt.hasNext() ? teamsIt.next() : null;
-            AbstractPlayerTeam enemys = teamsIt.hasNext() ? teamsIt.next() : null;
-            playersAndEnemys.clear();
-            if (players != null && enemys == null) {
-                playersAndEnemys.add(players);
-            } else if (players != null) {
-                playersAndEnemys.add(players);
-                playersAndEnemys.add(enemys);
+            playersList.clear();
+            if (players != null) {
+                playersList.add(players);
             }
-            mStat.setTeams(playersAndEnemys);
+            mStat.setTeams(playersList);
             // calculate the series
             XYSeries series = new XYSeries(getLegend(context));
             List<Double> currValues = new ArrayList<Double>();
@@ -155,6 +157,7 @@ public class StatisticFactoryChrono extends StatisticFactory {
             // ref stat
             AcceptorIterator refIt = null;
             if (useReference && mRefStat != null) {
+                mRefStat.setTeams(playersList);
                 mRefStat.initCalculation();
                 refIt = mRefStat.iterator();
             }
@@ -163,12 +166,15 @@ public class StatisticFactoryChrono extends StatisticFactory {
             double nextValue = 0;
             double nextRefSum = 0;
             double lastRefValue = 0;
+            if (task != null && task.isCancelled()) {
+                return null;
+            }
             while (it.hasNextGame()) {
                 if (mModeSingleValues) {
                     nextSum = nextGameSum(mStat, it); // no more sum, show games individual value
                 } else {
                     nextSum += nextGameSum(mStat, it);
-                }
+                }  
                 if (useReference) {
                     if (refIt != null) {
                         if (mModeSingleValues) {
@@ -178,6 +184,7 @@ public class StatisticFactoryChrono extends StatisticFactory {
                             if (refIt.hasNextGame() && refIt.getNextGameIndex() == it.getCurrentGameIndex()) {
                                 nextRefSum = nextGameSum(mRefStat, refIt); // no more sum, show games individual value
                             } else {
+                                Log.d("GameMemo", playersList +  "ItGameIndex " + it.getCurrentGameIndex() + " itnextindex " + it.getNextGameIndex() + " refnext:" + refIt.getNextGameIndex() + " ref curr" + refIt.getCurrentGameIndex());
                                 nextRefSum = Double.NaN;
                             }
                         } else {
@@ -202,6 +209,12 @@ public class StatisticFactoryChrono extends StatisticFactory {
                 series.addAnnotation(mStat.getFormat().format(nextValue), index, nextValue);
             }
             mDataset.addSeries(series);
+            progress += progressPerTeam;
+            if (task != null && task.isCancelled()) {
+                return null;
+            } else if (task != null) {
+                task.buildProgress(progress);
+            }
         } while (teamsIt.hasNext());
         applyAlpha();
         return mDataset;

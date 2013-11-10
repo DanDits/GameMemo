@@ -276,6 +276,10 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
 
     @Override
     public void onBackPressed() {
+        if (mStatTask != null) {
+            mStatTask.cancel(true);
+            return;
+        }
         if (mStateSpecification) {
             super.onBackPressed();
             return;
@@ -288,6 +292,9 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         super.onDestroy();
         if (mLoader != null) {
             mLoader.cancel(true);
+        }
+        if (mStatTask != null) {
+            mStatTask.cancel(true);
         }
     }
     
@@ -351,35 +358,73 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         mStatisticsSelect.setAdapter(mStatisticAdapter);
     }
     
+    private StatisticFactory.StatisticBuildTask mStatTask;
     private void onShowStatistic() {
         if (mStateSpecification) {
             mStateSpecification = false;
-            if (mSwitcher.getDisplayedChild() == 0) {
-                mSwitcher.showNext();
-            }
+            mBtnModeAll.setEnabled(false);
+            mBtnModeChrono.setEnabled(false);
+            mBtnModeOverview.setEnabled(false);
+            mStatisticsEdit.setEnabled(false);
+            mStatisticsSelect.setEnabled(false);
+            mStatisticsShow.setEnabled(false);
+            mPresType.setEnabled(false);
+            
+            StatisticFactory.BuildListener listener = new StatisticFactory.BuildListener() {
+
+                @Override
+                public void buildUpdate(int percentage) {
+                    setProgress(percentage * 100);
+                }
+                
+                @Override
+                public void buildComplete(View result) {
+                    setProgress(10000);
+                    mStatTask = null;
+                    mPresType.setEnabled(true);
+                    switch (mMode) {
+                    case STATISTICS_MODE_CHRONO:
+                        /* fall through */
+                    case STATISTICS_MODE_OVERVIEW:
+                        mModeChartContainer.removeAllViews();
+                        mModeChartContainer.addView(result);
+                        break;
+                    case STATISTICS_MODE_ALL:
+                        // nothing to do
+                        break;
+                    }
+                    if (mSwitcher.getDisplayedChild() == 0) {
+                        mSwitcher.showNext();
+                    }
+                }
+
+                @Override
+                public void buildCancelled() {
+                    mStatTask = null;
+                    setProgress(10000);
+                    switchToSpecification();
+                }
+            };
             switch (mMode) {
             case STATISTICS_MODE_ALL:
                 mModeAllContainer.setVisibility(View.VISIBLE);
                 mModeChartContainer.setVisibility(View.GONE);
                 mDisplayedStatistic = null;
                 StatisticsFactoryAll factory = new StatisticsFactoryAll(mGameKey, getUserTeams(), mGames, (ListView) mModeAllContainer.findViewById(R.id.statistic_mode_all_list), (TextView) mModeAllContainer.findViewById(R.id.statistic_mode_all_header));
-                factory.build(StatisticsActivity.this);
-                factory.notifyDataSetChanged();
+                mStatTask = factory.build(StatisticsActivity.this, listener);
                 break;
             case STATISTICS_MODE_CHRONO:
                 mModeAllContainer.setVisibility(View.GONE);
                 mModeChartContainer.setVisibility(View.VISIBLE);
-                mModeChartContainer.removeAllViews();
                 mDisplayedStatistic = getSelectedStatistic();
                 mChrono = new StatisticFactoryChrono(mDisplayedStatistic, mAttributeManager.getStatistic(mDisplayedStatistic.getReference()), mAlpha, mChronoModeSingleValues);
-                mModeChartContainer.addView(mChrono.build(StatisticsActivity.this));
+                mStatTask = mChrono.build(StatisticsActivity.this, listener);
                 break;
             case STATISTICS_MODE_OVERVIEW:
                 mModeAllContainer.setVisibility(View.GONE);
                 mModeChartContainer.setVisibility(View.VISIBLE);
-                mModeChartContainer.removeAllViews();
                 mDisplayedStatistic = getSelectedStatistic();
-                mModeChartContainer.addView(new StatisticFactoryOverview(mDisplayedStatistic, mAttributeManager.getStatistic(mDisplayedStatistic.getReference())).build(StatisticsActivity.this));
+                mStatTask = new StatisticFactoryOverview(mDisplayedStatistic, mAttributeManager.getStatistic(mDisplayedStatistic.getReference())).build(StatisticsActivity.this, listener);
                 break;
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -453,20 +498,23 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
     }
     
     private void switchToSpecification() {
-        if (!mStateSpecification) {
-            mStateSpecification = true;
-            mChrono = null;
-            if (mSwitcher.getDisplayedChild() == 1) {
-                mSwitcher.showPrevious();
-            }
-            mModeChartContainer.removeAllViews();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                if (getActionBar() != null) {
-                    getActionBar().setTitle(getResources().getString(R.string.statistics_activity_header));
-                }
-            }
-            applyMenuButtonsState();
+        mStateSpecification = true;
+        mChrono = null;
+        mDisplayedStatistic = null;
+        if (mSwitcher.getDisplayedChild() == 1) {
+            mSwitcher.showPrevious();
         }
+        mStatisticsEdit.setEnabled(true); // disabled when building a stat
+        mStatisticsShow.setEnabled(mGames != null);
+        mPresType.setEnabled(true);
+        applyModeButtonsState();
+        mModeChartContainer.removeAllViews();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            if (getActionBar() != null) {
+                getActionBar().setTitle(getResources().getString(R.string.statistics_activity_header));
+            }
+        }
+        applyMenuButtonsState();
     }
     
     private void applyTheme() {
@@ -519,7 +567,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
     }
     
     private void applyMode() {
-        Bundle params = mAttributeManager.applyMode(mMode, getResources());
+        Bundle params = mAttributeManager.createTeamsParameters(mMode, getResources(), mTeamsController != null ? mTeamsController.getAllTeams(true) : null);
         mTeamsController = new TeamSetupTeamsController(mGameKey, this, new NotifyMajorChangeCallback() {
             
             @Override
@@ -529,6 +577,10 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         }, params, mTeamsContainer);
         mTeamsController.setNoFilter(true);
         applyMenuButtonsState();
+        applyModeButtonsState();
+    }
+    
+    private void applyModeButtonsState() {
         switch (mMode) {
         case STATISTICS_MODE_ALL:
             mBtnModeAll.setEnabled(false);

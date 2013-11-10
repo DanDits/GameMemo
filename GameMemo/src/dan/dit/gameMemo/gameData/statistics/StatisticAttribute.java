@@ -21,7 +21,7 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
     protected int mNameResId;
     protected int mDescriptionResId;
     protected int mGameKey;
-    protected int mPriority; // negative means hidden, 0 means not set, a higher value means a lower position in the list
+    protected int mPriority; // -1 means hidden, 0 means not set, a higher value means a lower position in the list
     protected String mIdentifier; // must be made unique for a gamekey
     
     // data required for calculations

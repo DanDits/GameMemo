@@ -242,6 +242,8 @@
 	<string name="statistic_general_summer_and_descr">Akzeptiert, falls alle Unterattribute akzeptiert werden und summiert die Werte aller Unterstatistiken.</string>
 	<string name="statistic_general_summer_or_name">Summierer (oder)</string>
 	<string name="statistic_general_summer_or_descr">Akzeptiert, falls mindestens ein Unterattribut akzeptiert wird und summiert die Werte aller akzeptierten Unterstatistiken.</string>
+	<string name="statistic_general_minus_summer_or_name">Minus Summierer (oder)</string>
+	<string name="statistic_general_minus_summer_or_descr">Akzeptiert, falls mindestens ein Unterattribut akzeptiert wird, summiert die Werte aller akzeptierten Unterstatistiken und negiert das Ergebnis.</string>
 	<string name="attribute_general_contains_team_name">Enthält Team</string>
 	<string name="attribute_general_contains_team_descr">Akzeptiert, falls das Spiel das Team enthält. Liste die Spielernamen im Wertefeld auf, getrennt durch ein Plus(+).</string>
 	<string name="attribute_tichu_flag_enemy_name">Gegner</string>

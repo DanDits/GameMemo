@@ -88,7 +88,7 @@ public class TeamSetupTeamsController implements TeamSetupCallback, OnColorChang
             int namesAdded = 0;
             if (playerNames != null) {
                 for (String name : playerNames) {
-                    if (namesAdded < maxPlayers) {
+                    if (namesAdded < maxPlayers && (name == null || Player.isValidPlayerName(name))) {
                         mPlayerNames.add(name);
                         namesAdded++;
                     }

@@ -440,18 +440,27 @@ public class TichuGameStatisticAttributeManager extends
     private static boolean isValidTichu(TichuRound round, int playerId, TichuBidType type, boolean wonOnly) {
         return round.getTichuBid(playerId).getType() == type && (!wonOnly || round.getTichuBid(playerId).isWon());
     }
-
+    
     @Override
-    public Bundle applyMode(int mode, Resources res) {
+    public Bundle createTeamsParameters(int mode, Resources res, List<AbstractPlayerTeam> teamSuggestions) {
         String defaultTeamName = res.getString(dan.dit.gameMemo.R.string.statistics_team_name_player);
         String enemyTeamName = res.getString(dan.dit.gameMemo.R.string.statistics_team_name_enemy);
         TeamSetupTeamsController.Builder builder = new TeamSetupTeamsController.Builder(false, true);
-        for (int i = 0; i < STATISTIC_MAX_TEAMS; i++) {
-            String name = defaultTeamName;
-            if (mode == StatisticsActivity.STATISTICS_MODE_ALL || mode == StatisticsActivity.STATISTICS_MODE_CHRONO) {
-                name = i % 2 == 0 ? defaultTeamName : enemyTeamName;
+        String[] teams = null;
+        if (teamSuggestions != null) {
+            int max = 0;
+            for (AbstractPlayerTeam team : teamSuggestions) {
+                max = Math.max(max, team.getPlayerCount());
             }
-            builder.addTeam(2, 2, i >= STATISTIC_MIN_TEAMS, name, false, TeamSetupViewController.DEFAULT_TEAM_COLOR , true, null);
+            teams = new String[max];
+        }
+        if (mode == StatisticsActivity.STATISTICS_MODE_ALL) {
+            builder.addTeam(2, 2, false, defaultTeamName, false, TeamSetupViewController.DEFAULT_TEAM_COLOR, true, teamNamesToArray(teamSuggestions, 0, teams));
+            builder.addTeam(2, 2, false, enemyTeamName, false, TeamSetupViewController.DEFAULT_TEAM_COLOR, true, teamNamesToArray(teamSuggestions, 1, teams));
+        } else {
+            for (int i = 0; i < STATISTIC_MAX_TEAMS; i++) {
+                builder.addTeam(2, 2, i >= STATISTIC_MIN_TEAMS, defaultTeamName, false, TeamSetupViewController.DEFAULT_TEAM_COLOR , true, teamNamesToArray(teamSuggestions, i, teams));
+            }
         }
         return builder.build();
     }

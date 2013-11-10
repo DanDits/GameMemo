@@ -37,16 +37,25 @@ public class StatisticFactoryOverview extends StatisticFactory {
         return dataset;
     }
     
-    private List<Double> calculateValues(List<AbstractPlayerTeam> allTeams) {
+    private List<Double> calculateValues(List<AbstractPlayerTeam> allTeams, StatisticFactory.StatisticBuildTask task, int startProgress, int endProgress) {
         List<Double> list = new ArrayList<Double>(allTeams.size());
         Iterator<AbstractPlayerTeam> it = allTeams.iterator();
-        while (it.hasNext()) {
-            AbstractPlayerTeam team = it.next();
-            double value = getTeamValueForCurrentStatistic(team);
-            if (!Double.isNaN(value)) {
-                list.add(value);                
-            } else {
-                it.remove();
+        if (allTeams.size() > 0) {
+            double progressPerTeam = (endProgress - startProgress) / (double) allTeams.size();
+            double progress = startProgress;
+            if (task.isCancelled()) {
+                return null;
+            }
+            while (it.hasNext()) {
+                AbstractPlayerTeam team = it.next();
+                double value = getTeamValueForCurrentStatistic(team);
+                progress += progressPerTeam;
+                task.buildProgress(startProgress + progress);
+                if (!Double.isNaN(value)) {
+                    list.add(value);                
+                } else {
+                    it.remove();
+                }
             }
         }
         return list;
@@ -105,12 +114,25 @@ public class StatisticFactoryOverview extends StatisticFactory {
         return renderer;
     }
     
-    public View build(Context context) {
-        List<AbstractPlayerTeam> allTeams = getAllTeams();
-        List<Double> values = calculateValues(allTeams);
-        sortParallel(allTeams, values);
-        View v = AdvancedRangeBarChart.getBarChartView(context, buildDataset(values, context), buildRenderer(context, allTeams, values),
-                Type.DEFAULT, getColors(allTeams));
+    private List<AbstractPlayerTeam> resultAllTeams;
+    private List<Double> resultValues;
+    @Override
+    public void executeBuild(Context context, StatisticFactory.StatisticBuildTask task) {
+        resultAllTeams = getAllTeams();
+        task.buildProgress(5);
+        resultValues = calculateValues(resultAllTeams, task, 5, 85);
+        if (resultValues == null) {
+            return;
+        }
+        task.buildProgress(85);
+        sortParallel(resultAllTeams, resultValues);
+        task.buildProgress(90);
+    }
+    
+    @Override
+    public View finishBuild(Context context) {
+        View v = AdvancedRangeBarChart.getBarChartView(context, buildDataset(resultValues, context), buildRenderer(context, resultAllTeams, resultValues),
+                Type.DEFAULT, getColors(resultAllTeams));
         return v;
     }
     

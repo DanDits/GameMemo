@@ -9,6 +9,7 @@ import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.view.View;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameRound;
@@ -37,7 +38,63 @@ public abstract class StatisticFactory {
         mRefStat = refStat;
     }
     
-    public abstract View build(Context context);
+    public interface BuildListener {
+        void buildUpdate(int percentage);
+        void buildComplete(View result);
+        void buildCancelled();
+    }
+    
+    public class StatisticBuildTask extends AsyncTask<Void, Integer, Void> {
+        
+        private Context context;
+        private BuildListener listener;
+        private StatisticBuildTask(Context context, BuildListener listener) {
+            this.context = context;
+            this.listener = listener;
+        }
+        
+        public void buildProgress(double progress) {
+            publishProgress(Integer.valueOf((int) progress));
+        }
+        
+        @Override
+        protected Void doInBackground(Void... params) {
+            executeBuild(context, this);
+            return null;
+        }
+        
+        @Override
+        protected void onProgressUpdate(Integer...values) {
+            if (listener != null) {
+                listener.buildUpdate(values[0]);
+            }
+        }
+        @Override
+        protected void onPostExecute(Void empty) {
+            if (isCancelled()) {
+                return;
+            }
+            View result = finishBuild(context);
+            if (listener != null) {
+                listener.buildComplete(result);
+            }
+        }
+        
+        @Override
+        protected void onCancelled(Void empty) {
+            if (listener != null) {
+                listener.buildCancelled();
+            }
+        }
+    }
+    public StatisticBuildTask build(Context context, BuildListener listener) {
+        StatisticBuildTask task = new StatisticBuildTask(context, listener);
+        task.execute(new Void[0]);
+        return task;
+    }
+    
+    protected abstract void executeBuild(Context context, StatisticBuildTask task); // asynch
+    public abstract View finishBuild(Context context); // in main thread, used to handle view operations
     
     /**
      * Builds a bar multiple series renderer to use the provided colors.
@@ -157,4 +214,5 @@ public abstract class StatisticFactory {
         }
         return nextValue(totalSum, totalRefSum);
     }
+
 }

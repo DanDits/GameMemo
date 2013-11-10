@@ -40,9 +40,12 @@ public class StatisticsFactoryAll extends StatisticFactory {
         mHeader = header;
     }
 
+    private CharSequence resultHeaderText;
     @Override
-    public View build(Context context) {
-        calculateValues(context);
+    public void executeBuild(Context context, StatisticFactory.StatisticBuildTask task) {
+        if (!calculateValues(context, task)) {
+            return;
+        }
         mAdapter = new AllStatisticsAdapter(context);
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(new OnItemClickListener() {
@@ -57,6 +60,11 @@ public class StatisticsFactoryAll extends StatisticFactory {
             }
         });
         mAdapter.notifyDataSetChanged();
+    }
+    
+    @Override
+    public View finishBuild(Context context) {
+        mHeader.setText(resultHeaderText);
         return mListView;
     }
     
@@ -73,14 +81,21 @@ public class StatisticsFactoryAll extends StatisticFactory {
         return value;
     }
     
-    private void calculateValues(Context context) {
+    private boolean calculateValues(Context context, StatisticBuildTask task) {
         mStatistics = mManager.getStatistics(false);
         mValues = new ArrayList<Double>(mStatistics.size());
+        double progress = 0;
+        double progressPerStat = 100.0 / mStatistics.size();
         for (GameStatistic stat : mStatistics) {
-            mValues.add(initAndCalculateForStatistic(stat));                
+            progress += progressPerStat;
+            task.buildProgress(progress);
+            mValues.add(initAndCalculateForStatistic(stat));   
+            if (task.isCancelled()) {
+                return false;
+            }
         }
         if (mTeams == null || mTeams.size() == 0) {
-            mHeader.setText(context.getResources().getString(R.string.statistics_mode_all_no_team));
+            resultHeaderText = context.getResources().getString(R.string.statistics_mode_all_no_team);
         } else {
             StringBuilder builder = new StringBuilder();
             Iterator<AbstractPlayerTeam> it = mTeams.iterator();
@@ -90,8 +105,9 @@ public class StatisticsFactoryAll extends StatisticFactory {
                     builder.append(" <> ");
                 }
             }
-            mHeader.setText(builder.toString());
+            resultHeaderText = builder.toString();
         }
+        return true;
     }
 
     private class AllStatisticsAdapter extends ArrayAdapter<GameStatistic> {

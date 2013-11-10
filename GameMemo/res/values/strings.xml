@@ -221,6 +221,8 @@
 	<string name="statistic_general_summer_and_descr">Accepts if all subattributes are accepted and sums up the values of all subattributes that are statistics.</string>
 	<string name="statistic_general_summer_or_name">Summer (or)</string>
 	<string name="statistic_general_summer_or_descr">Accepts if at least one subattribute is accepted and sums up the values of all accepted subattributes that are statistics.</string>
+	<string name="statistic_general_minus_summer_or_name">Minus summer (or)</string>
+	<string name="statistic_general_minus_summer_or_descr">Accepts if at least one subattribute is accepted and sums up the values of all accepted subattributes that are statistics and negates the result.</string>
 	<string name="attribute_tichu_flag_enemy_name">Enemy</string>
 	<string name="attribute_tichu_flag_enemy_descr">Flag to invert or alter the evaluation of some attributes.</string>
 	<string name="attribute_tichu_mercy_rule_name">Mercy rule</string>
