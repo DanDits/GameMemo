@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import dan.dit.gameMemo.util.ActivityUtil;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -99,7 +101,7 @@ public abstract class AbstractPlayerTeam implements Iterable<Player> {
         String key = toString();
         if (mColor == PlayerColors.DEFAULT_COLOR) {
             editor.remove(key);
-            editor.apply();
+            ActivityUtil.commitOrApplySharedPreferencesEditor(editor);
             return; // default color is never saved
         }
         
@@ -110,6 +112,6 @@ public abstract class AbstractPlayerTeam implements Iterable<Player> {
             editor.remove(keyList.get(new Random().nextInt(keyList.size())));
         }
         editor.putInt(key, mColor);
-        editor.apply();
+        ActivityUtil.commitOrApplySharedPreferencesEditor(editor);
     }
 }

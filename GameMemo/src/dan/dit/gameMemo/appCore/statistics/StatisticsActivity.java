@@ -51,10 +51,10 @@ import dan.dit.gameMemo.gameData.statistics.StatisticAndGameLoader;
 import dan.dit.gameMemo.gameData.statistics.StatisticAndGameLoader.LoadingListener;
 import dan.dit.gameMemo.gameData.statistics.StatisticAttribute;
 import dan.dit.gameMemo.storage.GameStorageHelper;
+import dan.dit.gameMemo.util.ActivityUtil;
 import dan.dit.gameMemo.util.ColorPickerView.OnColorChangedListener;
 import dan.dit.gameMemo.util.NotifyMajorChangeCallback;
 
-@SuppressLint("NewApi")
 public class StatisticsActivity extends FragmentActivity implements OnColorChangedListener, ChoosePlayerDialogListener {
     private static final String PREFERENCES_MODE = "dan.dit.gameMemo.PREF_STATISTIC_MODE";
     private static final String PREFERENCES_CHRONO_ALPHA = "dan.dit.gameMemo.PREF_CHRONO_ALPHA";
@@ -359,7 +359,8 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
     }
     
     private StatisticFactory.StatisticBuildTask mStatTask;
-    private void onShowStatistic() {
+    @SuppressLint("NewApi")
+	private void onShowStatistic() {
         if (mStateSpecification) {
             mStateSpecification = false;
             mBtnModeAll.setEnabled(false);
@@ -368,7 +369,9 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
             mStatisticsEdit.setEnabled(false);
             mStatisticsSelect.setEnabled(false);
             mStatisticsShow.setEnabled(false);
-            mPresType.setEnabled(false);
+            if (mPresType != null) {
+                mPresType.setEnabled(false);
+            }
             
             StatisticFactory.BuildListener listener = new StatisticFactory.BuildListener() {
 
@@ -381,7 +384,9 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
                 public void buildComplete(View result) {
                     setProgress(10000);
                     mStatTask = null;
-                    mPresType.setEnabled(true);
+                    if (mPresType != null) {
+                        mPresType.setEnabled(true);
+                    }
                     switch (mMode) {
                     case STATISTICS_MODE_CHRONO:
                         /* fall through */
@@ -497,7 +502,8 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         }
     }
     
-    private void switchToSpecification() {
+    @SuppressLint("NewApi")
+	private void switchToSpecification() {
         mStateSpecification = true;
         mChrono = null;
         mDisplayedStatistic = null;
@@ -506,7 +512,9 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         }
         mStatisticsEdit.setEnabled(true); // disabled when building a stat
         mStatisticsShow.setEnabled(mGames != null);
-        mPresType.setEnabled(true);
+        if (mPresType != null) {
+            mPresType.setEnabled(true);
+        }
         applyModeButtonsState();
         mModeChartContainer.removeAllViews();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
@@ -545,7 +553,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
         editor.putLong(PREFERENCES_CHRONO_ALPHA, Double.doubleToLongBits(mAlpha));
         editor.putBoolean(PREFERENCES_CHRONO_MODE, modeSingleValues);
-        editor.apply();
+        ActivityUtil.commitOrApplySharedPreferencesEditor(editor);
     }
     
     private void applyAlphaAndMode(double alpha, boolean modeSingleValues) {
@@ -560,7 +568,7 @@ public class StatisticsActivity extends FragmentActivity implements OnColorChang
         }
         SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
         editor.putInt(PREFERENCES_MODE, newMode);
-        editor.apply();
+        ActivityUtil.commitOrApplySharedPreferencesEditor(editor);
         mMode = newMode;
         applyMode();
         

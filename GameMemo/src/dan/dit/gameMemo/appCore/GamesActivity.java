@@ -20,6 +20,7 @@ import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameDetailFragment.DetailViewCallback;
 import dan.dit.gameMemo.appCore.GamesOverviewListFragment.GameOverviewCallback;
+import dan.dit.gameMemo.appCore.statistics.StatisticsActivity;
 import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothDataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.file.FileWriteDataExchangeActivity;
 import dan.dit.gameMemo.gameData.game.Game;
@@ -55,6 +56,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 	protected GameDetailFragment mDetailsFragment; 
 	protected GamesOverviewListFragment mOverviewFragment;
 	private MenuItem mDeleteOption;
+	private boolean mShowDeleteOptionOnCreation; // in case the option menu gets created after games were checked 
 	private View mGameSetup;
 	private int mGameKey;
 	
@@ -87,7 +89,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 				bar.setHomeButtonEnabled(true);
 				bar.setDisplayHomeAsUpEnabled(true);
 				bar.setIcon(GameKey.getGameIconId(mGameKey));
-				bar.setTitle(GameKey.getGameName(mGameKey));
+				bar.setTitle(GameKey.getGameName(mGameKey, getResources()));
 				bar.setDisplayShowTitleEnabled(true);
 			}
 		}
@@ -122,6 +124,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(GameKey.getGamesMenuLayout(mGameKey), menu);
 		mDeleteOption = menu.findItem(R.id.delete);
+		showDeleteButton(mShowDeleteOptionOnCreation);
 		return true;
 	}
 	
@@ -149,9 +152,24 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 	}
 	
 	protected abstract void startGameSetup(long id);
-	protected abstract void showStatistics();
-	protected abstract void reactToGameSetupActivity(Bundle extras);
+	protected boolean reactToGameSetupActivity(Bundle extras) {
+        if (extras != null) {
+            if (extras.containsKey(GameStorageHelper.getCursorItemType(mGameKey))) {
+                selectGame(extras.getLong(GameStorageHelper.getCursorItemType(mGameKey)));
+            } else {
+                loadGameDetails(extras);
+            }
+            return true;
+        }
+        return false;
+	}
 
+   protected void showStatistics() {
+        Collection<Long> checked = mOverviewFragment.getCheckedGamesStarttimes();
+        Intent i = StatisticsActivity.getIntent(this, mGameKey, checked.isEmpty() ? null : checked);
+        startActivity(i);
+    }
+   
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -210,6 +228,8 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
  		if (mDeleteOption != null) {
  			mDeleteOption.setVisible(show);
  			mDeleteOption.setEnabled(show);
+ 		} else {
+ 		    mShowDeleteOptionOnCreation = show;
  		}
  	}
  	

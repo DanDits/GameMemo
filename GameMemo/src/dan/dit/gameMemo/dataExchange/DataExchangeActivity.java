@@ -62,7 +62,7 @@ public abstract class DataExchangeActivity extends FragmentActivity implements
 			}
 		}
 		mManager = new GamesExchangeManager(getSupportFragmentManager(),
-				gameKeySuggestions, extras != null ? extras.getIntArray(EXTRA_ALL_GAMES) : null);
+				gameKeySuggestions, extras != null ? extras.getIntArray(EXTRA_ALL_GAMES) : null, getResources());
 		if (GameKey.isGameSupported(mSingleGameKey)) {
 			List<Long> asList = new ArrayList<Long>(mSingleGameOfferedStarttimes.length);
 			for (long starttime : mSingleGameOfferedStarttimes) {

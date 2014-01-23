@@ -1,5 +1,9 @@
 package dan.dit.gameMemo.appCore;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -8,12 +12,19 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothDataExchangeActivity;
@@ -46,8 +57,10 @@ public class GameChooserActivity extends FragmentActivity implements
 	private int mLastGameKey;
 	
 	// UI elements to start a specific game
-	private Button mTichu;
-	private Button mDoppelkopf;
+	private ListView mGamesList;
+	private GameAdapter mAdapter;
+	private SparseArray<CharSequence> mGameDescription = new SparseArray<CharSequence>(GameKey.ALL_GAMES.length);
+    private SparseIntArray mGamesCount = new SparseIntArray(GameKey.ALL_GAMES.length);
 
 	/**
 	 * Creates an intent to start this activity, which means bringing it to the top of the
@@ -58,7 +71,7 @@ public class GameChooserActivity extends FragmentActivity implements
 	 */
 	public static Intent getInstance(Context context, int lastGameKey) {
 	    Intent i = new Intent(context, GameChooserActivity.class);
-	    if (GameKey.isGameKey(lastGameKey)) {
+	    if (GameKey.isGameSupported(lastGameKey)) {
 	        i.putExtra(GameChooserActivity.EXTRA_LAST_GAME, lastGameKey);
 	    }
         return i;
@@ -69,8 +82,9 @@ public class GameChooserActivity extends FragmentActivity implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.game_chooser);
-		mTichu = (Button) findViewById(R.id.tichu);
-		mDoppelkopf = (Button) findViewById(R.id.doppelkopf);
+		mGamesList = (ListView) findViewById(R.id.gamesList);
+		mAdapter = new GameAdapter();
+		mGamesList.setAdapter(mAdapter);
         processIntent();
 		Game.loadAllPlayers(mLastGameKey, this.getApplicationContext());
 		initListeners();
@@ -88,6 +102,7 @@ public class GameChooserActivity extends FragmentActivity implements
         Bundle ext = i.getExtras();
         if (ext != null) {
             mLastGameKey = ext.getInt(EXTRA_LAST_GAME, GameKey.NO_GAME);
+            mAdapter.notifyDataSetChanged();
         }
     }
 
@@ -98,54 +113,96 @@ public class GameChooserActivity extends FragmentActivity implements
 	}
     
     private void updateDescriptions() {
-        updateDescription(GameKey.TICHU);
-        updateDescription(GameKey.DOPPELKOPF);        
+        for (int gameKey : GameKey.ALL_GAMES) {
+            updateDescription(gameKey);
+        }
     }
 
 	private void updateDescription(int gameKey) {
         setDescription(gameKey, getResources().getString(R.string.game_chooser_game_descr_no_count,
-                GameKey.getGameName(gameKey)));
+                GameKey.getGameName(gameKey, getResources())));
 	    new GameStorageHelper.RequestStoredGamesCountTask(getContentResolver(), new GameStorageHelper.RequestStoredGamesCountTask.Callback() {
             
             @Override
             public void receiveStoredGamesCount(Integer[] gameKeys, Integer[] gamesCount) {
                 for (int i = 0; i < gameKeys.length; i++) {
+                    mGamesCount.put(gameKeys[i], gamesCount[i]);
                     setDescription(gameKeys[i], getResources().getString(R.string.game_chooser_game_descr,
-                        GameKey.getGameName(gameKeys[i]), gamesCount[i]));
+                        GameKey.getGameName(gameKeys[i], getResources()), gamesCount[i]));
                 }
+                mAdapter.notifyDataSetChanged();
             }
         }).execute(gameKey);
 
 	}
 	
 	private void setDescription(int gameKey, CharSequence descr) {
-	    switch (gameKey) {
-	    case GameKey.TICHU:
-	        mTichu.setText(descr); break;
-	    case GameKey.DOPPELKOPF:
-	        mDoppelkopf.setText(descr); break;
-	    default:
-	        throw new IllegalArgumentException("GameKey not supported: " + gameKey);
-	    }
+        mGameDescription.put(gameKey, descr);
+        mAdapter.notifyDataSetChanged();
 	}
 
 	private void initListeners() {
-		mTichu.setOnClickListener(new OnClickListener() {
+		mGamesList.setOnItemClickListener(new OnItemClickListener() {
 
-			@Override
-			public void onClick(View v) {
-				startGameActivity(GameKey.TICHU);
-			}
-		});
-		mDoppelkopf.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				startGameActivity(GameKey.DOPPELKOPF);
-			}
-		});
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position,
+                    long id) {
+                startGameActivity(getGameKeyForPosition(position));
+            }
+        });
 	}
 
+	private final Comparator<Integer> GAMEKEY_GAMES_COUNT_COMPARATOR = new Comparator<Integer>() {
+
+        @Override
+        public int compare(Integer key1, Integer key2) {
+            Integer count1 = mGamesCount.get(key1);
+            Integer count2 = mGamesCount.get(key2);
+            if (count1 == null) {
+                if (count2 == null) {
+                    return key1 - key2; // smaller game keys at the start
+                }
+                return 1; // key2 is more important, so at start
+            } else if (count2 == null) {
+                return -1; // key1 is more important, so at start
+            } else {
+                return count2 - count1;
+            }
+        }
+	    
+	};
+	
+	private int getGameKeyForPosition(int pos) {
+	    // if we ever get a huge amount of games we probably will need to cache the result of this
+	    List<Integer> keys = GameKey.toList(GameKey.ALL_GAMES);
+	    Collections.sort(keys, GAMEKEY_GAMES_COUNT_COMPARATOR);
+	    return keys.get(pos);
+	}
+	
+	public class GameAdapter extends ArrayAdapter<Integer> {
+	    public GameAdapter() {
+	        super(GameChooserActivity.this, android.R.layout.simple_spinner_dropdown_item,
+	                android.R.id.text1, GameKey.toIntegerArray(GameKey.ALL_GAMES));
+	    }
+	    
+	    @Override
+	    public View getView(int position, View convertView, ViewGroup parent) {
+	        View view = convertView;
+	        if (view == null) {
+	            view = getLayoutInflater().inflate(R.layout.game_chooser_game, null);
+	        }
+	        int gameKey = getGameKeyForPosition(position);
+	        TextView descr = (TextView)view.findViewById(R.id.game_descr);
+	        GameKey.applyTheme(gameKey, getResources(), view);
+            GameKey.applyTheme(gameKey, getResources(), descr);
+            descr.setBackgroundResource(0);
+	        descr.setText(mGameDescription.get(gameKey));
+	        ImageView icon = (ImageView)view.findViewById(R.id.game_icon);
+	        icon.setImageResource(GameKey.getGameIconId(gameKey));
+	        return view;
+	    }
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();

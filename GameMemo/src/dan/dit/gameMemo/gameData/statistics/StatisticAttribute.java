@@ -9,7 +9,6 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
-import android.util.Log;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.GameRound;
@@ -33,7 +32,7 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
     public static final int PRIORITY_HIDDEN = -1;
     
     protected String mName;
-    protected String mDescription;
+    protected String mDescription = "";
     private boolean mUserCreated;
     
     // protected constructor prevents instantiation without the builder
@@ -73,13 +72,13 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
             mBaseAttr.setTeams(teams);
         }
         
+        private AttributeData mDataCombined = new AttributeData();
         @Override
         protected AttributeData getData() {
-            AttributeData data = new AttributeData();
-            data.mAttributes = getAttributes();
-            data.mCustomValue = mData.mCustomValue;
-            data.mTeams = mData.mTeams;
-            return data;
+            mDataCombined.mAttributes = getAttributes();
+            mDataCombined.mCustomValue = mData.mCustomValue;
+            mDataCombined.mTeams = mData.mTeams;
+            return mDataCombined;
         }
         
         @Override
@@ -288,7 +287,6 @@ public abstract class StatisticAttribute implements Comparable<StatisticAttribut
             } else {
                 // sub attribute not yet loaded, this can happen since the loading order is not precalculated, manager is responsible to add it after loading all
                 manager.addMissingSubAttribute(builder.mAttr, subAttrs.getData(i));
-                Log.d("GameMemo", "Sub attribute missing for " + ownIdentifier + " : " + subAttrs.getData(i));
             }
         }
         String name = cursor.getString(cursor.getColumnIndexOrThrow(StatisticsContract.Attribute.COLUMN_NAME_ATTRIBUTE_NAME));

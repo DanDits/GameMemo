@@ -17,12 +17,9 @@ public class CardGameTable {
 	  
 	  /**
 	   * An array of all available columns, querying the content provider with a column not listed here will result in an exception
-	   * so make sure it contains all general game columns plus the tichu specific columns.
+	   * so make sure it contains all general game columns plus the cardgame specific columns.
 	   */
-	  public static final String[] AVAILABLE_COLUMNS = { GameStorageHelper.COLUMN_PLAYERS,
-		        GameStorageHelper.COLUMN_ROUNDS, GameStorageHelper.COLUMN_ID, GameStorageHelper.COLUMN_STARTTIME,
-		        GameStorageHelper.COLUMN_WINNER, GameStorageHelper.COLUMN_METADATA, GameStorageHelper.COLUMN_RUNTIME,
-		        GameStorageHelper.COLUMN_ORIGIN, GameStorageHelper.COLUMN_GAME_KEY};
+	  public static final String[] AVAILABLE_COLUMNS = GameStorageHelper.AVAILABLE_COLUMNS;
 	  public static final Collection<String> AVAILABLE_COLUMNS_COLL = new HashSet<String>(
 				Arrays.asList(AVAILABLE_COLUMNS));
 	  

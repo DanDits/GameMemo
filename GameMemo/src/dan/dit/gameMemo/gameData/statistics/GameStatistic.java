@@ -25,6 +25,27 @@ public abstract class GameStatistic extends StatisticAttribute {
     protected String mReferenceStatisticIdentifier;
     protected List<Game> mAllGames;
     
+    public final static GameStatistic NO_STATISTIC = new GameStatistic() {
+
+        @Override
+        protected double calculateValue(Game game, AttributeData data) {return Double.NaN;}
+
+        @Override
+        protected double calculateValue(Game game, GameRound round,
+                AttributeData data) {return Double.NaN;}
+
+        @Override
+        public boolean acceptGame(Game game, AttributeData data) {return false; }
+
+        @Override
+        public boolean acceptRound(Game game, GameRound round,
+                AttributeData data) {return false;}
+        
+    };
+    static {
+        NO_STATISTIC.mIdentifier = "~~~NO_STATISTIC_HAHAHAHAHA~~~";
+    }
+    
     // fields required for user made statistics
     public static final int ATTRIBUTE_TYPE_USER_STATISTIC = 1;
     
@@ -39,6 +60,11 @@ public abstract class GameStatistic extends StatisticAttribute {
         protected GameStatistic mBaseStat;
         private WrappedGameStatistic(GameStatistic baseStat) {
             mBaseStat = baseStat;
+        }
+        
+        @Override
+        public void initCalculation() {
+            mBaseStat.initCalculation();
         }
         
         @Override
@@ -81,13 +107,13 @@ public abstract class GameStatistic extends StatisticAttribute {
             return result;
         }
         
+        private AttributeData mDataCombined = new AttributeData();
         @Override
         protected AttributeData getData() {
-            AttributeData data = new AttributeData();
-            data.mAttributes = getAttributes();
-            data.mCustomValue = mData.mCustomValue;
-            data.mTeams = mData.mTeams;
-            return data;
+            mDataCombined.mAttributes = getAttributes();
+            mDataCombined.mCustomValue = mData.mCustomValue;
+            mDataCombined.mTeams = mData.mTeams;
+            return mDataCombined;
         }       
         
         @Override
@@ -259,14 +285,15 @@ public abstract class GameStatistic extends StatisticAttribute {
     }
     
     private static final NumberFormat FORMAT_ABS = new DecimalFormat("#.##");
-    private static final NumberFormat FORMAT_PERC = new DecimalFormat("#.##'%'");
+    private static final NumberFormat FORMAT_PERC = new DecimalFormat("#.###'%'");
+    private static final NumberFormat FORMAT_PROP = new DecimalFormat("#.###'÷'");
 
     public final NumberFormat getFormat() {
         switch (mPresentationType) {
         case PRESENTATION_TYPE_ABSOLUTE:
             return FORMAT_ABS;
         case PRESENTATION_TYPE_PROPORTION:
-            return FORMAT_ABS;
+            return FORMAT_PROP;
         case PRESENTATION_TYPE_PERCENTAGE:
             return FORMAT_PERC;
         default:
@@ -299,7 +326,7 @@ public abstract class GameStatistic extends StatisticAttribute {
     }
 
     public void setReferenceStatistic(GameStatistic referenceStat) {
-        if (referenceStat == null) {
+        if (referenceStat == null || referenceStat.equals(NO_STATISTIC)) {
             mReferenceStatisticIdentifier = null;
         } else {
             mReferenceStatisticIdentifier = referenceStat.getIdentifier();

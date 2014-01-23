@@ -9,45 +9,88 @@ import java.util.TimeZone;
 
 import android.content.ContentResolver;
 import android.content.res.Resources;
-import android.database.Cursor;
-import android.net.Uri;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
-import dan.dit.gameMemo.gameData.game.GameBuilder;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.GameRound;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerDuo;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
-import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.storage.database.CardGameTable;
-import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
 public class TichuGame extends Game {
+    /**
+     * The minimum score limit to win a tichu game. Used when choosing the score limit by the user.
+     */
 	public static final int MIN_SCORE_LIMIT = 100;
+	/**
+	 * The maximum score limit to win a tichu game. Used when choosing the score limit by the user. Arbitrary limit
+	 * greater than or equal to MIN_SCORE_LIMIT.
+	 */
 	public static final int MAX_SCORE_LIMIT = 10000;
+	/**
+	 * The default score limit to win a tichu game limit used when the user does not select a custom score.
+	 * Must be element of [MIN_SCORE_LIMIT,MAX_SCORE_LIMIT].
+	 */
 	public static final int DEFAULT_SCORE_LIMIT = 1000;
+	/**
+	 * The default value for the mercy rule. The mercy rule will alter the calculation of lost tichu bids for a TichuRound.
+	 * When set to true, lost tichu bids will add score to the enemy team instead of subtracting from the own team to avoid
+	 * endless games because of lost tichus.
+	 */
 	public static boolean DEFAULT_USE_MERCY_RULE = false;
 	
-	//player ids are unique for each player and follow increase from one player to the next by one
+	/** Player ids are unique for each player and increase from one player to the next by one.<br>Not exactly necessary, but else
+	 * the code would appear to have some magic numbers, and we want to avoid them like the plaque I heard.
+	 */
 	public static final int PLAYER_ONE_ID = 1;
+	/**
+	 * The id of the second player, see PLAYER_ONE_ID + 1.
+	 */
 	public static final int PLAYER_TWO_ID = PLAYER_ONE_ID + 1;
+	/**
+	 * The id of the third player, see PLAYER_ONE_ID + 2.
+	 */
 	public static final int PLAYER_THREE_ID = PLAYER_TWO_ID + 1;
+	/**
+	 * The id of the fourth player, see PLAYER_ONE_ID + 3.
+	 */
 	public static final int PLAYER_FOUR_ID = PLAYER_THREE_ID + 1;
+	/**
+	 * The amount of players for a tichu game. Will not change, but again: No magic numbers.
+	 */
 	public static final int TOTAL_PLAYERS = 4;
+	/**
+	 * The id of an invalid player, used for error handling or signalling absence of a specific requested
+	 * player.
+	 */
 	public static final int INVALID_PLAYER_ID = PLAYER_ONE_ID - 2;
 	
+	/**
+	 * The game name of this great game. With great cards comes grand tichu!
+	 */
 	public static final String GAME_NAME = "Tichu";
+	/**
+	 * The pool that contains all players that ever played a tichu game. Must be initialized on app start.
+	 */
 	public static final PlayerPool PLAYERS = new PlayerPool();
+	/**
+	 * A constant signaling that team1 won the game.
+	 */
 	public static final int WINNER_TEAM1 = Game.WINNER_NONE + 1;
+	/**
+	 * A constant signaling that team2 won the game.
+	 */
 	public static final int WINNER_TEAM2 = Game.WINNER_NONE + 2;
 	
-	/*
+	/**
 	 * TichuGame meta data: [MERCY_RULE,SCORE_LIMIT]
 	 */
 	public static final String META_DATA_USES_MERCY_RULE = "MJ";
+	/**
+     * TichuGame meta data: [MERCY_RULE,SCORE_LIMIT]
+     */
 	public static final String META_DATA_DOES_NOT_USE_MERCY_RULE = "MN";
 	
 	private PlayerDuo firstTeam;
@@ -61,6 +104,14 @@ public class TichuGame extends Game {
 		super();
 	}
 	
+	/**
+	 * Creates a new tichu game with the given scorelimit and mercy rule option.
+	 * @param scoreLimit The score limit required to win the game. If both teams have an equal score
+	 * greater or equal to this limit, the game will be exended for another round until there is a
+	 * difference.
+	 * @param useMercyRule If the mery rule should be used. This will affect the calculation of lost
+	 * tichu bids for a TichuRound.
+	 */
 	public TichuGame(int scoreLimit, boolean useMercyRule) {
 		if (scoreLimit < MIN_SCORE_LIMIT || scoreLimit > MAX_SCORE_LIMIT) {
 			throw new IllegalArgumentException("Score limit out of bounds: " + scoreLimit);
@@ -228,75 +279,6 @@ public class TichuGame extends Game {
 	public void saveGame(ContentResolver resolver) {
 		// if Tichu stores extra columns then add data to ContentValues
 		super.saveGame(null, resolver);
-	}
-	
-	public static List<Game> loadGames(ContentResolver resolver, Uri uri, boolean throwAtFailure) throws CompactedDataCorruptException {
-		return loadGames(resolver, uri, null, null, throwAtFailure);
-	}
-
-	public static List<Game> loadGames(ContentResolver resolver, Uri uri, List<Long> timestamps,
-			boolean throwAtFailure) throws CompactedDataCorruptException {
-		if (timestamps.size() > 0) {
-			String timestampSelection = Game.timestampsToSelection(timestamps);
-			String[] selectionArgs = Game.timestampsToSelectionArgs(timestamps);
-			return loadGames(resolver, uri, timestampSelection, selectionArgs, throwAtFailure);
-		} else {
-			return loadGames(resolver, uri, throwAtFailure);
-		}
-	}
-	
-	private static List<Game> loadGames(ContentResolver resolver, Uri uri,
-			String selection, String[] selectionArgs, boolean throwAtFailure) throws CompactedDataCorruptException {
-		String[] projection = CardGameTable.AVAILABLE_COLUMNS;
-		Cursor cursor = null;
-		try {
-			cursor = resolver.query(uri, projection, selection, selectionArgs,
-				null);
-			List<Game> games = null;
-			if (cursor != null) {
-				games = new LinkedList<Game>();
-				cursor.moveToFirst();
-				while (!cursor.isAfterLast()) {
-					String playerData = cursor.getString(cursor
-							.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS));
-					String roundsData = cursor.getString(cursor
-							.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ROUNDS));
-					String metaData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_METADATA));
-					long startTime = cursor.getLong(cursor
-							.getColumnIndexOrThrow(GameStorageHelper.COLUMN_STARTTIME));
-					long id = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
-					long runningTime = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_RUNTIME));
-					String originData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ORIGIN));
-					
-					GameBuilder builder = new TichuGameBuilder();
-					try {
-						builder.loadMetadata(new Compacter(metaData))
-						.setStarttime(startTime)
-						.setRunningTime(runningTime)
-						.setId(id)
-						.loadPlayer(new Compacter(playerData))
-						.loadOrigin(new Compacter(originData))
-						.loadRounds(new Compacter(roundsData));
-						
-					} catch (CompactedDataCorruptException e) {
-						if (throwAtFailure) {
-							throw e;
-						}
-						builder = null;
-					}
-					if (builder != null) {
-						games.add(builder.build());
-					}
-					cursor.moveToNext();
-				}
-			}
-			return games;
-		} finally {
-			// Always close the cursor
-			if (cursor != null) {
-				cursor.close();
-			}
-		}
 	}
 	
 	@Override

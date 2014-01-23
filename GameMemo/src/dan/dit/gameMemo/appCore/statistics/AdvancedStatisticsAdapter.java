@@ -33,7 +33,7 @@ public class AdvancedStatisticsAdapter extends ArrayAdapter<StatisticAttribute> 
         }
         TextView text = (TextView)view.findViewById(android.R.id.text1);
         StatisticAttribute attr = getItem(position);
-        if (attr == null) {
+        if (attr.equals(GameStatistic.NO_STATISTIC)) {
             text.setText("");
             return view;
         }

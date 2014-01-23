@@ -20,12 +20,15 @@ import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.GameRound;
+import dan.dit.gameMemo.gameData.game.OriginBuilder;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.player.PlayerTeam;
 
 public abstract class GameStatisticAttributeManager {
+    public static final int DEFAULT_STATISTIC_MIN_TEAMS = 2;
+    public static final int DEFAULT_STATISTIC_MAX_TEAMS = 10; // >= MIN_TEAMS
     private int mGameKey;
     private Map<String, StatisticAttribute> mAttrs = new HashMap<String, StatisticAttribute>();
     private Map<String, GameStatistic> mStats = new HashMap<String, GameStatistic>();
@@ -272,16 +275,18 @@ public abstract class GameStatisticAttributeManager {
     public static final String IDENTIFIER_ATT_GAME_FINISHED = "game_finished";
     public static final String IDENTIFIER_ATT_CONTAINS_TEAM= "contains_team";
     public static final String IDENTIFIER_STAT_MINUS_OR_SUMMER = "minus_or_summer";
+    public static final String IDENTIFIER_ATT_ORIGIN = "origin";
     
     protected Collection<StatisticAttribute> getGeneralPredefinedAttributes() {
         Map<String, StatisticAttribute> attrs = new HashMap<String, StatisticAttribute>();
         GameStatistic.Builder statBuilder;
         StatisticAttribute.Builder attBuilder;
         StatisticAttribute att;
+        
+        // game break
         GameStatistic stat = new GameStatistic() {
-            private long mLastGameStarttime;
-            private double mLastGameValue;
-            @Override public void initCalculation() {mLastGameStarttime = -1; mLastGameValue = 0;}
+            private long mLastGameEndtime;
+            @Override public void initCalculation() {mLastGameEndtime = -1;}
             @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameAllSubattributes(game, data) && containsAllTeams(game, data);}
             @Override public boolean acceptRound(Game game, GameRound round, AttributeData data) { return false;}
 
@@ -290,19 +295,13 @@ public abstract class GameStatisticAttributeManager {
             
             @Override
             public double calculateValue(Game game, AttributeData data) {
-                if (mLastGameStarttime == -1) {
-                    mLastGameValue  = 0.0;
-                    mLastGameStarttime = game.getStartTime();
+                if (mLastGameEndtime == -1) {
+                    mLastGameEndtime = game.getStartTime() + game.getRunningTime();
                     return 0;
                 } else {
-                    double currDiff = game.getStartTime() - mLastGameStarttime;
-                    mLastGameStarttime = game.getStartTime();
-                    if (currDiff > mLastGameValue) {
-                        double old = mLastGameValue;
-                        mLastGameValue = currDiff; //maximize the difference
-                        return (currDiff - old) / (1000 * 60 * 60); // in hours
-                    }
-                    return 0;
+                    long result = game.getStartTime() - mLastGameEndtime;
+                    mLastGameEndtime = game.getStartTime() + game.getRunningTime();
+                    return result / (1000.0 * 60.0 * 60.0); // from ms to hours
                 }
             }
 
@@ -310,7 +309,7 @@ public abstract class GameStatisticAttributeManager {
         statBuilder = new GameStatistic.Builder(stat, IDENTIFIER_STAT_LONGEST_TIME_BETWEEN_GAMES, mGameKey);
         statBuilder.setNameAndDescriptionResId(R.string.statistic_general_longest_time_between_games_name, R.string.statistic_general_longest_time_between_games_descr);
         statBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
-        statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_ABSOLUTE);
+        statBuilder.setPresentationType(GameStatistic.PRESENTATION_TYPE_PROPORTION);
         addAndCheck(statBuilder.getAttribute(), attrs, false);
         
         // game length
@@ -323,7 +322,7 @@ public abstract class GameStatisticAttributeManager {
             
             @Override
             public double calculateValue(Game game, AttributeData data) {
-                return game.getRunningTime() / (1000 * 60);
+                return game.getRunningTime() / (1000.0 * 60.0);
             }
 
         };
@@ -483,6 +482,33 @@ public abstract class GameStatisticAttributeManager {
         attBuilder.setNameAndDescriptionResId(R.string.attribute_general_contains_team_name, R.string.attribute_general_contains_team_descr);
         addAndCheck(attBuilder.getAttribute(), attrs, false);
         
+        // origin
+        att = new UserStatisticAttribute() {
+            @Override public boolean requiresCustomValue() {return true;}
+            @Override
+            public boolean acceptGame(Game game, AttributeData data) {
+                if (!TextUtils.isEmpty(data.mCustomValue)) {
+                    String origin = game.getFormattedOrigin();
+                    for (String or : data.mCustomValue.split("\\|")) {
+                        if (!origin.contains(or)) {
+                            return false;
+                        }
+                    }
+                }
+               return super.acceptGame(game, data);
+            }
+            
+        };
+        attBuilder = new StatisticAttribute.Builder(att, IDENTIFIER_ATT_ORIGIN, mGameKey);
+        attBuilder.setPriority(StatisticAttribute.PRIORITY_NONE);
+        attBuilder.setNameAndDescriptionResId(R.string.attribute_general_origin_name, R.string.attribute_general_origin_descr);
+        for (String hint : OriginBuilder.getInstance().getOriginHints()) {
+            if (!TextUtils.isEmpty(hint)) {
+                attBuilder.setCustomValue(hint);
+            }
+        }
+        addAndCheck(attBuilder.getAttribute(), attrs, false);
+        
         // minus or sum
         stat = new GameStatistic() {
             @Override public boolean acceptGame(Game game, AttributeData data) {return acceptGameOneSubattributes(game, data) && containsAllTeams(game, data);}
@@ -542,5 +568,21 @@ public abstract class GameStatisticAttributeManager {
     public boolean isInitialized() {
         return !mStats.isEmpty() || !mAttrs.isEmpty();
     }
+    
+    protected String[] makeFittingNamesArray(List<AbstractPlayerTeam> teams) {
+        if (teams != null) {
+            int max = 0;
+            for (AbstractPlayerTeam team : teams) {
+                max = Math.max(max, team.getPlayerCount());
+            }
+            return new String[max];
+        }
+        return null;
+    }
+
+    public int getGameKey() {
+        return mGameKey;
+    }
+    
     
 }

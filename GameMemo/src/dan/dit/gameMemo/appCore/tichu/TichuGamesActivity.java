@@ -9,7 +9,6 @@ import dan.dit.gameMemo.appCore.GamesActivity;
 import dan.dit.gameMemo.appCore.gameSetup.GameSetupActivity;
 import dan.dit.gameMemo.appCore.gameSetup.TeamSetupTeamsController;
 import dan.dit.gameMemo.appCore.gameSetup.TeamSetupViewController;
-import dan.dit.gameMemo.appCore.statistics.StatisticsActivity;
 import dan.dit.gameMemo.dataExchange.bluetooth.BluetoothDataExchangeActivity;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
@@ -33,11 +32,6 @@ public class TichuGamesActivity extends GamesActivity  {
 	protected void startGameSetup(long id) {
 	    // make options, in case there is a game to copy values from, change the option values
 	    GameSetupOptions.Builder options = new GameSetupOptions.Builder();
-	    
-        // make intent to start setup activity
-		Intent i = new Intent(this, GameSetupActivity.class);
-		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.TICHU);
-		i.putExtra(GameSetupActivity.EXTRA_FLAG_SUGGEST_UNFINISHED_GAME, true);
 
 		// priority to copy info from: parameter id, highlighted id, single checked id
 		long copyGameSetupId = Game.isValidId(id) ? id : getHighlightedGame();
@@ -53,7 +47,7 @@ public class TichuGamesActivity extends GamesActivity  {
 		if (Game.isValidId(copyGameSetupId)) {
 			List<Game> games = null;
 			try {
-				games = GameKey.loadGames(GameKey.TICHU, getContentResolver(), GameStorageHelper.getUriWithId(GameKey.TICHU, copyGameSetupId));
+				games = Game.loadGames(GameKey.TICHU, getContentResolver(), GameStorageHelper.getUriWithId(GameKey.TICHU, copyGameSetupId), true);
 			} catch (CompactedDataCorruptException e) {
 				// fail silently and do not change default information
 			}
@@ -72,17 +66,13 @@ public class TichuGamesActivity extends GamesActivity  {
         TeamSetupTeamsController.Builder teamsBuilder = new TeamSetupTeamsController.Builder(false, false);
         teamsBuilder.addTeam(2, 2, false, null, false, TeamSetupViewController.DEFAULT_TEAM_COLOR, false, team1Names);
         teamsBuilder.addTeam(2, 2, false, null, false, TeamSetupViewController.DEFAULT_TEAM_COLOR, false, team2Names);
-        i.putExtra(GameSetupActivity.EXTRA_TEAMS_PARAMETERS, teamsBuilder.build());
         
-        // set options
-        i.putExtra(GameSetupActivity.EXTRA_OPTIONS_PARAMETERS, options.build());
-        
-        // start the setup
-		startActivityForResult(i, GAME_SETUP_ACTIVITY);
+        Intent i = GameSetupActivity.makeIntent(this, GameKey.TICHU, true, options.build(), teamsBuilder.build());
+        startActivityForResult(i, GAME_SETUP_ACTIVITY);
 	}
 	
 	@Override
-	protected void reactToGameSetupActivity(Bundle extras) {
+	protected boolean reactToGameSetupActivity(Bundle extras) {
 		if (extras != null) {
 			if (extras.containsKey(GameStorageHelper.getCursorItemType(GameKey.TICHU))) {
 				selectGame(extras.getLong(GameStorageHelper.getCursorItemType(GameKey.TICHU)));
@@ -100,15 +90,9 @@ public class TichuGamesActivity extends GamesActivity  {
 					extras.putString(TichuGameDetailFragment.EXTRAS_TEAM2_PLAYER_2, playerNames[3]);
 					loadGameDetails(extras);
 				}
-
 			}
+			return true;
 		}
-	}
-	
-	@Override
-	protected void showStatistics() {
-	    Collection<Long> checked = mOverviewFragment.getCheckedGamesStarttimes();
-        Intent i = StatisticsActivity.getIntent(this, GameKey.TICHU, checked.isEmpty() ? null : checked);
-        startActivity(i);
+		return false;
 	}
 }

@@ -6,15 +6,13 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,11 +22,13 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameDetailFragment;
@@ -51,8 +51,7 @@ import dan.dit.gameMemo.util.compaction.Compacter;
  * Takes a long game id extra (preferred) or a parcelable Uri extra {@link Uri} to the TichuGame to load
  * referenced by the key GameStorageHelper.getCursorItemType(gameKey) as an argument.<br>
  * To start with a new game, do not give a id or uri extra but instead 4 valid player names {@link Player} String extras, 2 for each team.<br>
- * <b>Requires the hosting activity to implement the {@link DetailViewCallback} interface to listen to
- * requests of the user to close this detail fragment.</b>
+ * 
  * @author Daniel
  *
  */
@@ -110,7 +109,6 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 	 */
 	private static final int TICHU_BID_BIG_LOST_DRAWABLE_ID = R.drawable.tichu_big_bid_lost;
 	
-	private static final String STORAGE_IS_IMMUTABLE = "STORAGE_IS_IMMUTABLE";
 	private static final String STORAGE_SELECTED_ROUND = "STORAGE_SELECTED_ROUND";
 	private static final String STORAGE_TEXT_SCORE_TEAM1 = "STORAGE_TEXT_SCORE_TEAM1";
 	private static final String STORAGE_TEXT_SCORE_TEAM2 = "STORAGE_TEXT_SCORE_TEAM2";
@@ -132,7 +130,6 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 	private TextWatcher mScoreTeam2Watcher;
 	private ImageButton mLockIn;
 	private TichuGameRoundAdapter mAdapter;
-	private DetailViewCallback mCallback;
 	
 	// member vars concerning building up a new game round, visualizing and editing rounds
 	private TichuGame mGame;
@@ -157,15 +154,6 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 		TichuGameDetailFragment f = new TichuGameDetailFragment();
         f.setArguments(extras);
         return f;
-	}
-	
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		mCallback = (DetailViewCallback) activity; // throws if given activity does not listen to close requests
-		if (!(activity instanceof DetailViewCallback)) {
-			throw new ClassCastException("Hosting activity must implement DetailViewCallback interface.");
-		}
 	}
 	
 	@Override
@@ -214,19 +202,6 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 		mPlayer[2].setText(mGame.getTeam2().getFirst().getShortenedName(Player.SHORT_NAME_LENGTH));
 		mPlayer[3].setText(mGame.getTeam2().getSecond().getShortenedName(Player.SHORT_NAME_LENGTH));
 	}
-	
-	@Override
- 	public void showGameInfo() {
- 		Resources res = getActivity().getResources();
- 		if (mGame != null) {
-			String formattedInfo = mGame.getFormattedInfo(res);
-			new AlertDialog.Builder(getActivity())
-			.setTitle(getResources().getString(R.string.menu_info_game))
-			.setMessage(formattedInfo)
-			.setIcon(android.R.drawable.ic_dialog_info)
-			.setNeutralButton(android.R.string.ok, null).show();
-		}
- 	}
  	
 	private void loadOrStartGame(Bundle savedInstanceState) {
 		// Check from the saved Instance
@@ -330,6 +305,21 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 			
 		};
 		mScoreTeam1.addTextChangedListener(mScoreTeam1Watcher);
+		OnEditorActionListener closeOnDonePressListener = new OnEditorActionListener() {
+            
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId ==  EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_GO || actionId == EditorInfo.IME_ACTION_SEND) {
+                    if (mCurrRound != null) {
+                        mStateMachine.onLockinButtonPressed();
+                        return true;
+                    }
+                    return false;
+                }
+                return false;
+            }
+        };
+		mScoreTeam1.setOnEditorActionListener(closeOnDonePressListener);
 		mScoreTeam2Watcher = new TextWatcher() {
 
 			@Override
@@ -350,6 +340,7 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 			
 		};
 		mScoreTeam2.addTextChangedListener(mScoreTeam2Watcher);
+        mScoreTeam2.setOnEditorActionListener(closeOnDonePressListener);
 		OnLongClickListener exchangePlayerListener = new OnLongClickListener() {
 
 			@Override
@@ -498,7 +489,7 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 		assert Game.isValidId(gameId);
 		List<Game> games = null;
 		try {
-			games = TichuGame.loadGames(getActivity().getContentResolver(), GameStorageHelper.getUriWithId(GameKey.TICHU, gameId), true);
+			games = Game.loadGames(GameKey.TICHU, getActivity().getContentResolver(), GameStorageHelper.getUriWithId(GameKey.TICHU, gameId), true);
 		} catch (CompactedDataCorruptException e) {
 			games = null;
 		}
@@ -823,7 +814,7 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 				saveCloseAndRematch();
 				break;
 			case STATE_EXPECT_DATA:
-				assert false; // button should not be available when game not finished and no valid round given
+				// button should not be available when game not finished and no valid round given
 				break;
 			case STATE_ADD_ROUND:
 				mGame.addRound(mCurrRound);
@@ -847,7 +838,7 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 		
 		private CharSequence getMainInfoText() {
 			StringBuilder builder = new StringBuilder(20);
-			builder.append(GameKey.getGameName(GameKey.TICHU));
+			builder.append(GameKey.getGameName(GameKey.TICHU, getResources()));
 			builder.append(' ');
 			builder.append(mGame.getScoreTeam1());
 			builder.append(':');
@@ -946,10 +937,6 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 			window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 			window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		}
-	}
-
-	public long getDisplayedGameId() {
-		return mGame == null ? Game.NO_ID : mGame.getId();
 	}
 
 	@Override

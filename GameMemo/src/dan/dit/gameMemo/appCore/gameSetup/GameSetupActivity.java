@@ -7,6 +7,7 @@ import java.util.TimerTask;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
@@ -50,7 +51,7 @@ import dan.dit.gameMemo.util.NotifyMajorChangeCallback;
 public class GameSetupActivity extends FragmentActivity implements ChoosePlayerDialogListener, OnColorChangedListener {
     public static final String EXTRA_TEAMS_PARAMETERS = "dan.dit.gameMemo.TEAMS_PARAMETERS"; // see TeamSetupTeamsController for more information
 	public static final String EXTRA_OPTIONS_PARAMETERS = "dan.dit.gameMemo.OPTIONS_PARAMETERS"; // see TeamSetupOptionsController for more information
-    public static final String EXTRA_FLAG_SUGGEST_UNFINISHED_GAME = "dan.dit.gameMemo.SUGGEST_UNFINISHED"; // boolean, default false
+    private static final String EXTRA_FLAG_SUGGEST_UNFINISHED_GAME = "dan.dit.gameMemo.SUGGEST_UNFINISHED"; // boolean, default false
     private static final long SHUFFLE_PERIOD = 150; // in ms
 	private static final long SHUFFLE_DURATION = 900; // in ms
 	
@@ -69,6 +70,15 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	private MenuItem mAddTeam;
 	private MenuItem mShuffle;
 
+	public static Intent makeIntent(Context context, int gameKey, boolean suggestUnfinished, Bundle optionsParameters, Bundle teamsParameters) {
+        Intent i = new Intent(context, GameSetupActivity.class);
+        i.putExtra(GameKey.EXTRA_GAMEKEY, gameKey);
+        i.putExtra(EXTRA_FLAG_SUGGEST_UNFINISHED_GAME, suggestUnfinished);
+        i.putExtra(EXTRA_OPTIONS_PARAMETERS, optionsParameters);
+        i.putExtra(EXTRA_TEAMS_PARAMETERS, teamsParameters);
+        return i;
+	}
+	
 	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -176,7 +186,9 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	
 	private void resetFields() {
 	    mTeamsController.resetFields();
-	    mOptionsController.reset();
+	    if (mOptionsController != null) {
+	        mOptionsController.reset();
+	    }
 		applyButtonsState();		
 		mScrollView.fullScroll(View.FOCUS_UP);
 	}
@@ -366,7 +378,7 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	
 	private void initTitle() {
 		mStartGame.setCompoundDrawablesWithIntrinsicBounds(GameKey.getGameIconId(mGameKey), 0, 0, 0);
-		mStartGame.setText(getResources().getString(R.string.game_setup_start, GameKey.getGameName(mGameKey)));
+		mStartGame.setText(getResources().getString(R.string.game_setup_start, GameKey.getGameName(mGameKey, getResources())));
 	}
 	
 	private void initTeamsUI(Bundle parameters) {
@@ -389,7 +401,9 @@ public class GameSetupActivity extends FragmentActivity implements ChoosePlayerD
 	}
 	
 	private void initOptionsUI(Bundle args) {
-	    mOptionsController = GameKey.makeGameSetupOptionsController(mGameKey, this, mOptionsContainer, args);
+	    if (args != null) {
+	        mOptionsController = GameKey.makeGameSetupOptionsController(mGameKey, this, mOptionsContainer, args);
+	    }
 	}
 
 	@Override

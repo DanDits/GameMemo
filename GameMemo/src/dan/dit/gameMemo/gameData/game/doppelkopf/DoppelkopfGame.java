@@ -4,27 +4,22 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
 import android.content.ContentResolver;
 import android.content.res.Resources;
-import android.database.Cursor;
-import android.net.Uri;
 import android.util.SparseArray;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.Game;
-import dan.dit.gameMemo.gameData.game.GameBuilder;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.GameRound;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
+import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.player.PlayerTeam;
-import dan.dit.gameMemo.storage.GameStorageHelper;
-import dan.dit.gameMemo.storage.database.CardGameTable;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
@@ -288,75 +283,6 @@ public class DoppelkopfGame extends Game {
 		return mPlayers.size();
 	}
 	
-	public static List<Game> loadGames(ContentResolver resolver, Uri uri, boolean throwAtFailure) throws CompactedDataCorruptException {
-		return loadGames(resolver, uri, null, null, throwAtFailure);
-	}
-
-	public static List<Game> loadGames(ContentResolver resolver, Uri uri, List<Long> timestamps,
-			boolean throwAtFailure) throws CompactedDataCorruptException {
-		if (timestamps.size() > 0) {
-			String timestampSelection = Game.timestampsToSelection(timestamps);
-			String[] selectionArgs = Game.timestampsToSelectionArgs(timestamps);
-			return loadGames(resolver, uri, timestampSelection, selectionArgs, throwAtFailure);
-		} else {
-			return loadGames(resolver, uri, throwAtFailure);
-		}
-	}
-	
-	private static List<Game> loadGames(ContentResolver resolver, Uri uri,
-			String selection, String[] selectionArgs, boolean throwAtFailure) throws CompactedDataCorruptException {
-		String[] projection = CardGameTable.AVAILABLE_COLUMNS;
-		Cursor cursor = null;
-		try {
-			cursor = resolver.query(uri, projection, selection, selectionArgs,
-				null);
-			List<Game> games = null;
-			if (cursor != null) {
-				games = new LinkedList<Game>();
-				cursor.moveToFirst();
-				while (!cursor.isAfterLast()) {
-					String playerData = cursor.getString(cursor
-							.getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS));
-					String roundsData = cursor.getString(cursor
-							.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ROUNDS));
-					String metaData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_METADATA));
-					long startTime = cursor.getLong(cursor
-							.getColumnIndexOrThrow(GameStorageHelper.COLUMN_STARTTIME));
-					long id = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
-					long runningTime = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_RUNTIME));
-					String originData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ORIGIN));
-					
-					GameBuilder builder = new DoppelkopfGameBuilder();
-					try {
-						builder.loadMetadata(new Compacter(metaData))
-						.setStarttime(startTime)
-						.setRunningTime(runningTime)
-						.setId(id)
-						.loadPlayer(new Compacter(playerData))
-						.loadOrigin(new Compacter(originData))
-						.loadRounds(new Compacter(roundsData));
-						
-					} catch (CompactedDataCorruptException e) {
-						if (throwAtFailure) {
-							throw e;
-						}
-						builder = null;
-					}
-					if (builder != null) {
-						games.add(builder.build());
-					}
-					cursor.moveToNext();
-				}
-			}
-			return games;
-		} finally {
-			// Always close the cursor
-			if (cursor != null) {
-				cursor.close();
-			}
-		}
-	}
-	
 	public double getDurchlauf() {
 		return getDurchlauf(rounds.size());
 	}
@@ -447,4 +373,16 @@ public class DoppelkopfGame extends Game {
 		}
 		return count;
 	}
+
+    public boolean containsPlayers(AbstractPlayerTeam team) {
+        if (team == null) {
+            return true;
+        }
+        for (Player p : team) {
+            if (!mPlayers.contains(p)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

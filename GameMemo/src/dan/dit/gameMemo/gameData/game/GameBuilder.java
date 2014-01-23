@@ -1,10 +1,34 @@
 package dan.dit.gameMemo.gameData.game;
 
+import android.database.Cursor;
+import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
 public abstract class GameBuilder {
 	protected Game mInst;
+	
+	public GameBuilder loadCursor(Cursor cursor) throws CompactedDataCorruptException {
+	    String playerData = cursor.getString(cursor
+                .getColumnIndexOrThrow(GameStorageHelper.COLUMN_PLAYERS));
+        String roundsData = cursor.getString(cursor
+                .getColumnIndexOrThrow(GameStorageHelper.COLUMN_ROUNDS));
+        String metaData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_METADATA));
+        long startTime = cursor.getLong(cursor
+                .getColumnIndexOrThrow(GameStorageHelper.COLUMN_STARTTIME));
+        long id = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ID));
+        long runningTime = cursor.getLong(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_RUNTIME));
+        String originData = cursor.getString(cursor.getColumnIndexOrThrow(GameStorageHelper.COLUMN_ORIGIN));
+        
+        loadMetadata(new Compacter(metaData))
+        .setStarttime(startTime)
+        .setRunningTime(runningTime)
+        .setId(id)
+        .loadPlayer(new Compacter(playerData))
+        .loadOrigin(new Compacter(originData))
+        .loadRounds(new Compacter(roundsData));    
+        return this;
+	}
 	
 	public static Compacter getCompressor(Game game) { // works together with loadAll
 		Compacter cmp = new Compacter(6);

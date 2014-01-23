@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -90,7 +89,6 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 	private ViewSwitcher mSwitcher;
 	private ImageButton mMainAction;
 	private MenuItem mLockItem;
-	private DetailViewCallback mCallback;
 
 	private DoppelkopfRound mCurrRound;
 	private DoppelkopfGame mGame;
@@ -115,15 +113,6 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		DoppelkopfGameDetailFragment f = new DoppelkopfGameDetailFragment();
         f.setArguments(extras);
         return f;
-	}
-	
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		mCallback = (DetailViewCallback) activity; // throws if given activity does not listen to close requests
-		if (!(activity instanceof DetailViewCallback)) {
-			throw new ClassCastException("Hosting activity must implement DetailViewCallback interface.");
-		}
 	}
 	
 	@Override
@@ -354,6 +343,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		inflater.inflate(R.menu.doppelkopf_game_detail, menu);
 		menu.findItem(R.id.game_detail_option_show_delta).setChecked(getPreferencesShowDelta());
 		mLockItem = menu.findItem(R.id.lock_game);
+		applyLock();
 	}
 
 	
@@ -484,11 +474,6 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 	}
 
 	@Override
-	public long getDisplayedGameId() {
-		return mGame == null ? Game.NO_ID : mGame.getId();
-	}
-
-	@Override
 	public void setInfoText(CharSequence main, CharSequence extra) {
 		if (mInfoText.getVisibility() != View.VISIBLE) {
 			mInfoText.setVisibility(View.VISIBLE);
@@ -551,7 +536,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		assert Game.isValidId(gameId);
 		List<Game> games = null;
 		try {
-			games = DoppelkopfGame.loadGames(getActivity().getContentResolver(), GameStorageHelper.getUriWithId(GameKey.DOPPELKOPF, gameId), true);
+			games = Game.loadGames(GameKey.DOPPELKOPF, getActivity().getContentResolver(), GameStorageHelper.getUriWithId(GameKey.DOPPELKOPF, gameId), true);
 		} catch (CompactedDataCorruptException e) {
 		    Log.e("Doppelkopf", "Compacted data corrupt: " + e.getCorruptData() + " : " + e.toString() + " : " + games);
 			games = null;
@@ -924,14 +909,15 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		if (mGame == null) {
 			return;
 		}
-		//TODO save user input to restore
+		// could save user input to restore, but since most obvious case (orientation change) is 
+		// not happening, we are fine
 	}
 	
 	private void handleRestorageOfUnsavedUserInput(Bundle savedInstanceState) {
 		if (savedInstanceState == null) {
 			return;
 		}
-		//TODO restore user input
+		// could restore user input here, see onSaveInstanceState
 	}
 	
 	private void saveCloseAndRematch() {
@@ -1038,7 +1024,7 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 		
 		private CharSequence getMainInfoText() {
 			StringBuilder builder = new StringBuilder(20);
-			builder.append(GameKey.getGameName(GameKey.DOPPELKOPF));
+			builder.append(GameKey.getGameName(GameKey.DOPPELKOPF, getResources()));
 			if (mGame.hasLimit()) {
 				builder.append(' ');
 				builder.append(Math.min((int ) mGame.getDurchlauf() + 1, mGame.getLimit()));
@@ -1079,19 +1065,6 @@ public class DoppelkopfGameDetailFragment extends GameDetailFragment {
 	@Override
 	protected Game getGame() {
 		return mGame;
-	}
-
-	@Override
-	protected void showGameInfo() {
- 		Resources res = getActivity().getResources();
- 		if (mGame != null) {
-			String formattedInfo = mGame.getFormattedInfo(res);
-			new AlertDialog.Builder(getActivity())
-			.setTitle(getResources().getString(R.string.menu_info_game))
-			.setMessage(formattedInfo)
-			.setIcon(android.R.drawable.ic_dialog_info)
-			.setNeutralButton(android.R.string.ok, null).show();
-		}
 	}
 
     public boolean hasSelectedRound() {

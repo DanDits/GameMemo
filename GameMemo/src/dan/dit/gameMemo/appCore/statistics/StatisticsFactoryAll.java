@@ -46,8 +46,14 @@ public class StatisticsFactoryAll extends StatisticFactory {
         if (!calculateValues(context, task)) {
             return;
         }
+    }
+    
+    @Override
+    public View finishBuild(Context context) {
+        mHeader.setText(resultHeaderText);
         mAdapter = new AllStatisticsAdapter(context);
         mListView.setAdapter(mAdapter);
+        mListView.setSelector(GameKey.getSelectorResource(mManager.getGameKey()));
         mListView.setOnItemClickListener(new OnItemClickListener() {
 
             @Override
@@ -60,11 +66,6 @@ public class StatisticsFactoryAll extends StatisticFactory {
             }
         });
         mAdapter.notifyDataSetChanged();
-    }
-    
-    @Override
-    public View finishBuild(Context context) {
-        mHeader.setText(resultHeaderText);
         return mListView;
     }
     
@@ -127,22 +128,14 @@ public class StatisticsFactoryAll extends StatisticFactory {
                 row = inflater.inflate(dan.dit.gameMemo.R.layout.statistics_all_row, parent, false);
             }
             ((TextView) row.findViewById(R.id.statistic_name)).setText(getItem(position).getName(res));
-            int presTypeTitleResId = 0;
-            switch (getItem(position).getPresentationType()) {
-            case GameStatistic.PRESENTATION_TYPE_ABSOLUTE:
-                presTypeTitleResId = R.string.statistics_menu_pres_type_absolute; break;
-            case GameStatistic.PRESENTATION_TYPE_PERCENTAGE:
-                presTypeTitleResId = R.string.statistics_menu_pres_type_percentual; break;
-            case GameStatistic.PRESENTATION_TYPE_PROPORTION:
-                presTypeTitleResId = R.string.statistics_menu_pres_type_proportional; break;
-            }
-            ((TextView) row.findViewById(R.id.statistic_value)).setText(mStatistics.get(position).getFormat().format(mValues.get(position)) +
-                    "\n(" + res.getString(presTypeTitleResId) + ")");
+            ((TextView) row.findViewById(R.id.statistic_value)).setText(mStatistics.get(position).getFormat().format(mValues.get(position)));
             return row;
         }
     }
 
     public void notifyDataSetChanged() {
-        mAdapter.notifyDataSetChanged();
+        if (mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
+        }
     }
 }

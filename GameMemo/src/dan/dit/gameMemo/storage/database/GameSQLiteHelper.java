@@ -14,7 +14,12 @@ import dan.dit.gameMemo.storage.GameStorageHelper;
 public class GameSQLiteHelper extends SQLiteOpenHelper {
 	public static final String GENERAL_GAME_TABLE_PREFIX = "game_";
 	private static final String DATABASE_NAME = "gamesData";
-	private static final int DATABASE_VERSION = 1;
+	/*
+	 * Change log: 
+	 * 1 Default version
+	 * 2 Added SportGameTable
+	 */
+	private static final int DATABASE_VERSION = 2;
 
 	public static final String DATABASE_CREATE_DEFAULT_TABLE_COLUMNS = 
 			GameStorageHelper.COLUMN_ID + " integer primary key autoincrement, "
@@ -38,11 +43,23 @@ public class GameSQLiteHelper extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase database) {
 		CardGameTable.onCreate(database);
+		SportGameTable.onCreate(database);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		CardGameTable.onUpgrade(db, oldVersion, newVersion);
+		if (newVersion == 2) {
+	        SportGameTable.onCreate(db);
+		} else {
+		    SportGameTable.onUpgrade(db, oldVersion, newVersion);
+		}
+	}
+	
+	@Override
+	public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        super.onDowngrade(db, oldVersion, newVersion);
+	    // Any table that requires onDowngrade must be invoked here
 	}
 
 }

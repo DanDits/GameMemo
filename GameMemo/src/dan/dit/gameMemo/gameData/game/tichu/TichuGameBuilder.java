@@ -11,8 +11,8 @@ public class TichuGameBuilder extends GameBuilder {
 	public TichuGameBuilder() {
 		mInst = new TichuGame();
 	}
-	
-	@Override
+
+    @Override
 	public GameBuilder loadPlayer(Compacter playerData) throws CompactedDataCorruptException {
 		if (playerData.getSize() != TichuGame.TOTAL_PLAYERS) {
 			throw new CompactedDataCorruptException("A tichu game needs 4 players, not " + playerData.getSize())

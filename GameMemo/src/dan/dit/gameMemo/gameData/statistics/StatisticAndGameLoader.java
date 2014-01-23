@@ -125,7 +125,7 @@ public class StatisticAndGameLoader extends
         for (Uri u : uris) {
             List<Game> games = null;
             try {
-                games = GameKey.loadGames(mGameKey, mApplicationContext.getContentResolver(), u);
+                games = Game.loadGames(mGameKey, mApplicationContext.getContentResolver(), u, false);
             } catch(CompactedDataCorruptException e) {
             }
             if (games != null) {

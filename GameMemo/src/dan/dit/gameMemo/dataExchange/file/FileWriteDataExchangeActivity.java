@@ -124,7 +124,7 @@ public class FileWriteDataExchangeActivity extends DataExchangeActivity {
                 if (mTempGamesDataForGames != null) {
                     mTempGamesDataForGames.retainAll(newAllGames); // so that mTempGamesDataForGames is a subset of newAllGames
                 }
-                mManager.setAllGames(newAllGames);
+                mManager.setAllGames(newAllGames, getResources());
             }
         }).execute(GameKey.toIntegerArray(GameKey.ALL_GAMES));
 	}

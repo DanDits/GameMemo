@@ -1,6 +1,6 @@
 package dan.dit.gameMemo.gameData.player;
 
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -55,16 +55,15 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
 			if (constraint != null) {
 				String trimmedConstraint = constraint.toString().trim().toLowerCase(Locale.getDefault());
 				if (trimmedConstraint.length() > 0) {
-					Set<Player> suggestions = new HashSet<Player>(); // there will never be many suggested players
+					List<Player> suggestions = new LinkedList<Player>(); // there will never be many suggested players
 					for (Player curr : allPlayers) {
-						if (curr != null) {
+						if (curr != null && !suggestions.contains(curr)) {
 							String currName = curr.getName().toLowerCase(Locale.getDefault());
-							if (trimmedConstraint.length() >= MIN_LENGTH_TO_FILTER_IN_WORD 
-									&& currName.contains(trimmedConstraint)) {
-								suggestions.add(curr);
-							} else if (trimmedConstraint.length() < MIN_LENGTH_TO_FILTER_IN_WORD 
-									&& currName.startsWith(trimmedConstraint)) {
-								suggestions.add(curr);
+							if (currName.startsWith(trimmedConstraint)) {
+							    suggestions.add(0, curr);
+							} else if (trimmedConstraint.length() >= MIN_LENGTH_TO_FILTER_IN_WORD
+							        && currName.contains(trimmedConstraint)) {
+							    suggestions.add(curr);
 							}
 						}
 					}
@@ -82,7 +81,7 @@ public class PlayerAdapter extends ArrayAdapter<Player> {
 				FilterResults results) {
 			if (results != null && results.count > 0) {
 				@SuppressWarnings("unchecked")
-				Set<Player> suggestions = (Set<Player>) results.values;
+				List<Player> suggestions = (List<Player>) results.values;
 				clear();
 				for (Player p : suggestions) {
 					add(p);

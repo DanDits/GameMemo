@@ -17,7 +17,6 @@ import dan.dit.gameMemo.appCore.GamesActivity;
 import dan.dit.gameMemo.appCore.gameSetup.GameSetupActivity;
 import dan.dit.gameMemo.appCore.gameSetup.TeamSetupTeamsController;
 import dan.dit.gameMemo.appCore.gameSetup.TeamSetupViewController;
-import dan.dit.gameMemo.appCore.doppelkopf.GameSetupOptions;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.doppelkopf.DoppelkopfGame;
@@ -35,8 +34,6 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
         // make options, in case there is a game to copy values from, change the option values
         GameSetupOptions.Builder options = makeOptionsBuilder();
         
-		Intent i = new Intent(this, GameSetupActivity.class);
-		i.putExtra(GameKey.EXTRA_GAMEKEY, GameKey.DOPPELKOPF);
 		// priority to copy info from: parameter id, highlighted id, single checked id
 		long copyGameSetupId = Game.isValidId(id) ? id : getHighlightedGame();
 		if (!Game.isValidId(copyGameSetupId)) {
@@ -49,7 +46,7 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 		if (Game.isValidId(copyGameSetupId)) {
 			List<Game> games = null;
 			try {
-				games = GameKey.loadGames(GameKey.DOPPELKOPF, getContentResolver(), GameStorageHelper.getUriWithId(GameKey.DOPPELKOPF, copyGameSetupId));
+				games = Game.loadGames(GameKey.DOPPELKOPF, getContentResolver(), GameStorageHelper.getUriWithId(GameKey.DOPPELKOPF, copyGameSetupId), true);
 			} catch (CompactedDataCorruptException e) {
 				// fail silently and do not change default information
 			}
@@ -71,11 +68,7 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
         teamsBuilder.addTeam(4, 5, false, getResources().getString(R.string.doppelkopf_team_name), false, 
                 TeamSetupViewController.DEFAULT_TEAM_COLOR, false, playerNames); 
         
-        i.putExtra(GameSetupActivity.EXTRA_TEAMS_PARAMETERS, teamsBuilder.build());
-
-        // set options
-        i.putExtra(GameSetupActivity.EXTRA_OPTIONS_PARAMETERS, options.build());
-        
+        Intent i = GameSetupActivity.makeIntent(this, GameKey.DOPPELKOPF, true, options.build(), teamsBuilder.build());
 		startActivityForResult(i, GAME_SETUP_ACTIVITY);
 	}
 	
@@ -85,7 +78,7 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 	}
 	
 	@Override
-	protected void reactToGameSetupActivity(Bundle extras) {
+	protected boolean reactToGameSetupActivity(Bundle extras) {
 		if (extras != null) {
 			if (extras.containsKey(GameStorageHelper.getCursorItemType(GameKey.DOPPELKOPF))) {
 				selectGame(extras.getLong(GameStorageHelper.getCursorItemType(GameKey.DOPPELKOPF)));
@@ -102,7 +95,9 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 					loadGameDetails(extras);
 				}
 			}
+			return true;
 		}
+		return false;
 	}
 	
 	private String getDefaultRuleSystem() {
@@ -153,11 +148,6 @@ public class DoppelkopfGamesActivity extends GamesActivity  {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	@Override
-	protected void showStatistics() {
-		//TODO start statistics for doppelkopf...
 	}
 	
 	@Override

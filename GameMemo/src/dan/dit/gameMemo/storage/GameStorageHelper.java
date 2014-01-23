@@ -10,12 +10,25 @@ import android.os.AsyncTask;
 import android.util.SparseArray;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
-
+/**
+ * General helper class for data storage of games. Supports storage in different type of storage devices, but
+ * currently and in planned future only a local database is supported. Handles multiple tables that support a set of columns,
+ * but share the columns defined by this class.
+ * @author Daniel
+ *
+ */
+/*
+ * Note when adding a new table: Invoke the onCreate and onUpgrade/Downgrade from the GameSQLiteHelper class.
+ */
 public final class GameStorageHelper {
 	public static final int URI_TYPE_ALL = 0;
 	public static final int URI_TYPE_SINGLE_ID = 1;
 	public static final int URI_TYPE_SINGLE_STARTTIME = 2;
 	
+    public static final String[] AVAILABLE_COLUMNS = { GameStorageHelper.COLUMN_PLAYERS,
+        GameStorageHelper.COLUMN_ROUNDS, GameStorageHelper.COLUMN_ID, GameStorageHelper.COLUMN_STARTTIME,
+        GameStorageHelper.COLUMN_WINNER, GameStorageHelper.COLUMN_METADATA, GameStorageHelper.COLUMN_RUNTIME,
+        GameStorageHelper.COLUMN_ORIGIN, GameStorageHelper.COLUMN_GAME_KEY};
 	public static final String COLUMN_ID = "_id";
 	public static final String COLUMN_STARTTIME = "sTime";
 	public static final String COLUMN_PLAYERS = "players";

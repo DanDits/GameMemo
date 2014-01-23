@@ -162,9 +162,9 @@ public class RenamePlayerDialogFragment extends DialogFragment  {
 		   builder.append("\n(");
 		   if (mGameKey.length == 1) {
 			   if (mRenameInGameIds.length == 0) {
-				   builder.append(getResources().getString(R.string.single_rename_in_games_all, GameKey.getGameName(mGameKey[0])));
+				   builder.append(getResources().getString(R.string.single_rename_in_games_all, GameKey.getGameName(mGameKey[0], getActivity().getResources())));
 			   } else {
-				   builder.append(getResources().getQuantityString(R.plurals.single_rename_in_games_count, mRenameInGameIds.length, mRenameInGameIds.length, GameKey.getGameName(mGameKey[0])));
+				   builder.append(getResources().getQuantityString(R.plurals.single_rename_in_games_count, mRenameInGameIds.length, mRenameInGameIds.length, GameKey.getGameName(mGameKey[0], getActivity().getResources())));
 			   }
 		   } else {
 			   builder.append(getResources().getString(R.string.rename_in_games, mGameKey.length));

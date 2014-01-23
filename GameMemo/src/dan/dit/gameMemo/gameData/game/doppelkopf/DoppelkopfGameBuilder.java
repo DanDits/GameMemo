@@ -16,7 +16,7 @@ public class DoppelkopfGameBuilder extends GameBuilder {
 		mInst = new DoppelkopfGame();
 	}
 	
-	@Override
+    @Override
 	public GameBuilder loadMetadata(Compacter metaData)
 			throws CompactedDataCorruptException {
 		DoppelkopfGame game = ((DoppelkopfGame) mInst);

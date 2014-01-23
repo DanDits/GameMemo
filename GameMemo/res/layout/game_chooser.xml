@@ -4,18 +4,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <Button
-        android:id="@+id/tichu"
+    <ListView
+        android:id="@+id/gamesList"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/tichu_button"
-        android:drawableLeft="@drawable/tichu_phoenix" />
-
-    <Button
-        android:id="@+id/doppelkopf"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/doppelkopf_button"
-        android:drawableLeft="@drawable/doppelkopf_icon" />
+        android:layout_height="wrap_content" >
+    </ListView>
 
 </LinearLayout>

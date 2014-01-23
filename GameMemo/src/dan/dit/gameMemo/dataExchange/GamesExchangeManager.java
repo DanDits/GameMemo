@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import android.content.ContentResolver;
+import android.content.res.Resources;
 import android.support.v4.app.FragmentManager;
 import android.util.SparseArray;
 import android.view.View;
@@ -30,9 +31,9 @@ public class GamesExchangeManager {
 	private List<GameDataExchanger> mDataExchangers;
 	private GamesOverviewDialog mGamesOverviewDialog;
 	private SparseArray<Collection<Long>> mGameOffers;
-	public GamesExchangeManager(FragmentManager fragManager, int[] gamesSuggestions, int[] allGames) {
+	public GamesExchangeManager(FragmentManager fragManager, int[] gamesSuggestions, int[] allGames, Resources res) {
 		mDataExchangers = new LinkedList<GameDataExchanger>(); 
-		setAllGames(allGames == null ? null : GameKey.toList(allGames));
+		setAllGames(allGames == null ? null : GameKey.toList(allGames), res);
 		mGameOffers = new SparseArray<Collection<Long>>(5);
 		setSelectedGames(gamesSuggestions);
 		initFragManager(fragManager);
@@ -164,9 +165,9 @@ public class GamesExchangeManager {
 		return mAllGames;
 	}
 	
-	public void setAllGames(List<Integer> allGames) {
+	public void setAllGames(List<Integer> allGames, Resources res) {
         mAllGames = (allGames != null && allGames.size() > 0) ? allGames : GameKey.toList(GameKey.ALL_GAMES);
-        GameKey.sortByName(mAllGames);
+        GameKey.sortByName(mAllGames, res);
         setSelectedGames(getSelectedGames());
         if (mGamesOverviewDialog != null) {
             mGamesOverviewDialog.notifyDataSetChanged();

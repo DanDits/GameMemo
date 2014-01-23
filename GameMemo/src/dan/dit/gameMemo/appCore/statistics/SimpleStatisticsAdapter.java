@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import dan.dit.gameMemo.gameData.statistics.GameStatistic;
 import dan.dit.gameMemo.gameData.statistics.StatisticAttribute;
 
 public class SimpleStatisticsAdapter extends ArrayAdapter<StatisticAttribute> {
@@ -28,7 +29,7 @@ public class SimpleStatisticsAdapter extends ArrayAdapter<StatisticAttribute> {
         TextView text = (TextView)view.findViewById(android.R.id.text1);
         text.setTextColor(Color.BLACK);
         StatisticAttribute attr = mAll.get(position);
-        if (attr == null) {
+        if (attr.equals(GameStatistic.NO_STATISTIC)) {
             text.setText("");
         } else {
             CharSequence name = attr.getName(mContext.getResources());

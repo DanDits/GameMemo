@@ -213,8 +213,15 @@ public class GameDataExchanger implements PostRecipient {
 	private void onReceiveRequest(String message) {	
 		List<Long> timestamps = timesFromString(message);
 		// load the games that are requested and that we actually have
-		List<Game> gamesToSend = GameKey.loadGames(mGameKey, mContentResolver, timestamps);
-		sendGames(gamesToSend);
+		List<Game> gamesToSend = null;
+        try {
+            gamesToSend = Game.loadGames(mGameKey, mContentResolver, GameStorageHelper.getUriAllItems(mGameKey), timestamps, false);
+        } catch (CompactedDataCorruptException e) {
+            gamesToSend = null;
+        }
+        if (gamesToSend != null) {
+            sendGames(gamesToSend);
+        }
 		// sending data complete
 		mPartnerRequestSatisfied = true;
 	}
@@ -239,21 +246,17 @@ public class GameDataExchanger implements PostRecipient {
 				if (!mOwnStarttimes.contains(Long.valueOf(curr.getStartTime()))) {
 					// we do not yet have this game, save it
 					curr.saveGame(mContentResolver);
-					Log.d(TAG, "Saving game newly." + curr.toString());
 					mGamesReceivedCount++;
 				} else if (mOwnUnfinishedGamesStarttimes.contains(Long.valueOf(curr.getStartTime()))) {
 					// already has the game, but unfinished, so overwrite the own game instead of newly saving it (chances are it is now finished)
 					long unfinishedId = Game.getUnfinishedGame(mGameKey, mContentResolver, curr.getStartTime());
 					if (Game.isValidId(unfinishedId)) { 
 						// received game is unfinished game, overwrite it
-						Log.d(TAG, "Overwriting game." + curr.toString());
 						if (curr.saveGame(mContentResolver, unfinishedId)) {
 							mGamesReceivedCount++; // saving is always successful since the id is valid and curr game does not yet have an id
 						}
 					} // else the game is already finished, ignore the game, we do not change finished games 
-					else {
-						Log.e(TAG, "Received already existing and finished game, do not save: " + curr.toString());
-					}
+					
 				}
 			}
 		}

@@ -31,6 +31,7 @@ import dan.dit.gameMemo.dataExchange.DataExchangeActivity;
 import dan.dit.gameMemo.dataExchange.ExchangeService;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.util.ActivityUtil;
+import dan.dit.gameMemo.util.ShowStacktraceUncaughtExceptionHandler;
 
 /**
  * A special implementation of a {@link DataExchangeActivity}.
@@ -80,6 +81,7 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
 	public void onCreate(Bundle savedInstanceData) {
 		super.onCreate(savedInstanceData);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        Thread.setDefaultUncaughtExceptionHandler(new ShowStacktraceUncaughtExceptionHandler(this));
 		setContentView(R.layout.data_exchange_bluetooth);
 		setProgressBarIndeterminateVisibility(false);
 		mBtAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -95,7 +97,15 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
         	mActivityEnabledBluetooth = savedInstanceData.getBoolean(STORAGE_ACTIVITY_ENABLED_BLUETOOTH);
         }
         mConnectionStatusText = (TextView) findViewById(R.id.data_exchange_connection_status_text);
-        initDeviceList();
+        try {
+            initDeviceList();
+        } catch (SecurityException se) {
+            // user managed to remove bluetooth permission, well, cannot do my job then
+            Toast.makeText(this, getResources().getString(R.string.bluetooth_permission_required), Toast.LENGTH_LONG).show();
+            setResult(RESULT_CANCELED);
+            finish();
+            return;
+        }
 	}
 	
 	@Override
@@ -252,6 +262,9 @@ public class BluetoothDataExchangeActivity extends DataExchangeActivity {
     	BluetoothDevice btDevice = (BluetoothDevice) device;
     	 // save the connected device's name
         mLastConnectedDeviceName = btDevice.getName();
+        if (mLastConnectedDeviceName == null) {
+            mLastConnectedDeviceName = "Unknown device";
+        }
         Toast.makeText(this, 
         		getResources().getString(R.string.data_exchange_connected_to, 
         				mLastConnectedDeviceName), Toast.LENGTH_SHORT).show();

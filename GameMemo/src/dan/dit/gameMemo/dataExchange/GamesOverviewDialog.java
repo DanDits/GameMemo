@@ -161,7 +161,7 @@ public class GamesOverviewDialog extends DialogFragment {
 			icon.setImageResource(GameKey.getGameIconId(gameKey));
 			// selection checkbox
 			CheckBox checker = (CheckBox) row.findViewById(R.id.gameSelected);
-			checker.setText(GameKey.getGameName(gameKey));
+			checker.setText(GameKey.getGameName(gameKey, getResources()));
 			checker.setClickable(false);
 			checker.setFocusable(false);
 			checker.setChecked(mCurrentlySelectedGames.contains(Integer.valueOf(gameKey)));

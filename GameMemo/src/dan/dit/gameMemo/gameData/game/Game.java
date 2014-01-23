@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import android.app.AlertDialog;
@@ -23,6 +24,7 @@ import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.compaction.Compactable;
+import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
 public abstract class Game implements Iterable<GameRound>, Compactable {
@@ -156,6 +158,50 @@ public abstract class Game implements Iterable<GameRound>, Compactable {
 	public void unloadData(Compacter compactedData) {
 		//ignore
 	}
+	
+   public static List<Game> loadGames(int gameKey, ContentResolver resolver, Uri uri, boolean throwAtFailure) throws CompactedDataCorruptException {
+        return loadGames(gameKey, resolver, uri, null, null, throwAtFailure);
+    }
+
+    public static List<Game> loadGames(int gameKey, ContentResolver resolver, Uri uri, List<Long> timestamps,
+            boolean throwAtFailure) throws CompactedDataCorruptException {
+        if (timestamps.size() > 0) {
+            String timestampSelection = Game.timestampsToSelection(timestamps);
+            String[] selectionArgs = Game.timestampsToSelectionArgs(timestamps);
+            return loadGames(gameKey, resolver, uri, timestampSelection, selectionArgs, throwAtFailure);
+        } else {
+            return loadGames(gameKey, resolver, uri, throwAtFailure);
+        }
+    }
+    
+    private static List<Game> loadGames(int gameKey, ContentResolver resolver, Uri uri,
+            String selection, String[] selectionArgs, boolean throwAtFailure) throws CompactedDataCorruptException {
+        String[] projection = GameKey.getStorageAvailableColumnsProj(gameKey);;
+        Cursor cursor = null;
+        try {
+            cursor = resolver.query(uri, projection, selection, selectionArgs,
+                null);
+            List<Game> games = null;
+            if (cursor != null) {
+                games = new LinkedList<Game>();
+                cursor.moveToFirst();
+                while (!cursor.isAfterLast()) {
+                    Game g = GameKey.getBuilder(gameKey).loadCursor(cursor).build();
+                    
+                    if (g != null) {
+                        games.add(g);
+                    }
+                    cursor.moveToNext();
+                }
+            }
+            return games;
+        } finally {
+            // Always close the cursor
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
 
 	public boolean updateRound(int index, GameRound updatedRound) { // must not be supported (since it also uses reset)
 		if (index < 0 || index >= getRoundCount()) {

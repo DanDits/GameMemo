@@ -2,6 +2,9 @@ package dan.dit.gameMemo.appCore;
 
 import java.util.Date;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.MenuItem;
@@ -15,7 +18,8 @@ import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment.ChoosePlayerD
  * This fragments holds all information necessary to show and edit a new or
  * already existing game instance. Usually requires a gamekey and id to display
  * an existing game or a gamekey and parameters to create a new game. The game is saved
- * automatically.
+ * automatically.<b>Requires the hosting activity to implement the {@link DetailViewCallback} interface to listen to
+ * requests of the user to close this detail fragment.</b>
  * @author Daniel
  *
  */
@@ -25,7 +29,9 @@ public abstract class GameDetailFragment extends ListFragment implements
 	 * Indicates if games that are loaded and are already finished are immutable and game rounds cannot be added or changed.
 	 */
 	public static final boolean LOADED_FINISHED_GAMES_ARE_IMMUTABLE = true;
-	
+
+    protected static final String STORAGE_IS_IMMUTABLE = "STORAGE_IS_IMMUTABLE";
+    
 	/**
 	 * A callback interface that is required for the hosting activity to hide the fragment or display
 	 * information about the game.
@@ -51,6 +57,17 @@ public abstract class GameDetailFragment extends ListFragment implements
 		void setInfo(CharSequence main, CharSequence extra);
 	}
 
+
+    protected DetailViewCallback mCallback;
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mCallback = (DetailViewCallback) activity; // throws if given activity does not listen to close requests
+        if (!(activity instanceof DetailViewCallback)) {
+            throw new ClassCastException("Hosting activity must implement DetailViewCallback interface.");
+        }
+    }
+    
 	/**
 	 * If the game is loaded from the database and is already finished at this time, this flag is set to true.
 	 */
@@ -96,7 +113,17 @@ public abstract class GameDetailFragment extends ListFragment implements
 			selectRound(position);
 		}
 	}
-
+	   
+	/**
+     * Returns the game id of the game instance or Game.NO_ID if there is no game
+     * displayed or if this game does not yet have a game id. 
+     * @return The id of the displayed game or Game.NO_ID.
+     */
+    public long getDisplayedGameId() {
+        Game game = getGame();
+        return game == null ? Game.NO_ID : game.getId();
+    }
+    
 	/**
 	 * Returns true if the game instance is immutable. This requires the fragment to not allow
 	 * changes to the game instance.
@@ -119,14 +146,19 @@ public abstract class GameDetailFragment extends ListFragment implements
 	 * Shows additional game information like the runtime or starttime for guys that just can't have enough
 	 * information.
 	 */
-	protected abstract void showGameInfo();
+	protected void showGameInfo() {
+        Resources res = getActivity().getResources();
+        if (getGame() != null) {
+            String formattedInfo = getGame().getFormattedInfo(res);
+            new AlertDialog.Builder(getActivity())
+            .setTitle(getResources().getString(R.string.menu_info_game))
+            .setMessage(formattedInfo)
+            .setIcon(android.R.drawable.ic_dialog_info)
+            .setNeutralButton(android.R.string.ok, null).show();
+        }
+	}
 	
-	/**
-	 * Returns the game id of the game instance or Game.NO_ID if there is no game
-	 * displayed or if this game does not yet have a game id. 
-	 * @return The id of the displayed game or Game.NO_ID.
-	 */
-	public abstract long getDisplayedGameId();
+
 
 	/**
 	 * Saves the current game, updating its running time. This updates

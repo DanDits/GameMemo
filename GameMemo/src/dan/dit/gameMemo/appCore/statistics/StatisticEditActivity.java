@@ -364,7 +364,7 @@ public class StatisticEditActivity extends Activity {
         
         List<GameStatistic> stats = mManager.getStatistics(true);
         mAllReferenceStatistics = new ArrayList<StatisticAttribute>(stats.size() + 1);
-        mAllReferenceStatistics.add(null);
+        mAllReferenceStatistics.add(GameStatistic.NO_STATISTIC);
         mAllReferenceStatistics.addAll(stats);
         mReferenceSelect.setAdapter(new SimpleStatisticsAdapter(this, mAllReferenceStatistics));
         applyReferenceSelection();
