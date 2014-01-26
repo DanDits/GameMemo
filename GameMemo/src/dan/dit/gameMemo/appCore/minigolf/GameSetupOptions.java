@@ -1,17 +1,21 @@
 package dan.dit.gameMemo.appCore.minigolf;
 
+import java.util.LinkedList;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.gameSetup.GameSetupOptionsController;
 import dan.dit.gameMemo.gameData.game.GameKey;
+import dan.dit.gameMemo.gameData.game.SportGame;
 import dan.dit.gameMemo.gameData.game.minigolf.MinigolfGame;
 
 public class GameSetupOptions extends GameSetupOptionsController {
@@ -39,7 +43,7 @@ public class GameSetupOptions extends GameSetupOptionsController {
         }
     }
     
-    private EditText mLocation;
+    private AutoCompleteTextView mLocation;
     private SeekBar mDefaultLanes;
     private TextView mDefaultLanesDescr;
     
@@ -50,7 +54,12 @@ public class GameSetupOptions extends GameSetupOptionsController {
     @Override
     protected View init(LayoutInflater inflater) {
         View root = inflater.inflate(R.layout.minigolf_game_setup_options, null);
-        mLocation = (EditText) root.findViewById(R.id.location);
+        mLocation = (AutoCompleteTextView) root.findViewById(R.id.location);
+        SportGame.initLocations(mContext.getContentResolver(), GameKey.MINIGOLF);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(mContext,
+                android.R.layout.simple_dropdown_item_1line, new LinkedList<String>(SportGame.ALL_LOCATIONS));
+        mLocation.setAdapter(adapter);
+
         mDefaultLanesDescr = (TextView) root.findViewById(R.id.default_lanes_count_descr);
         mDefaultLanes = (SeekBar) root.findViewById(R.id.lanes_count);
         

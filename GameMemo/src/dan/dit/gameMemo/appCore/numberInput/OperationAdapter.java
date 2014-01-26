@@ -33,7 +33,7 @@ public class OperationAdapter extends ArrayAdapter<Operation> {
         } else {
             iconView.setVisibility(View.GONE);
         }
-        textView.setText(op.getName());
+        textView.setText(op.getName(getContext().getResources()));
         
         return v;
     }

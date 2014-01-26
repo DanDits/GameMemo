@@ -1,9 +1,11 @@
 package dan.dit.gameMemo.appCore.numberInput;
 
+import android.content.res.Resources;
+
 public class MultiOperation extends AlgebraicOperation {
     public MultiOperation(double operand) {
         super(operand);
-        if (Math.abs(operand) < 10E-15) {
+        if (AlgebraicOperation.isZero(operand)) {
             throw new IllegalArgumentException("Multiplying by zero is no invertible algebraic operation, build a SetOperation instead.");
         }
     }
@@ -22,7 +24,7 @@ public class MultiOperation extends AlgebraicOperation {
     }
 
     @Override
-    public String getName() {
+    public String getName(Resources res) {
         return "*" + DOUBLE_FORMAT.format(mOperand);
     }
 

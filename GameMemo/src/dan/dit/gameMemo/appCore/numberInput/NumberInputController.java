@@ -5,9 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -15,7 +16,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.game.GameKey;
@@ -96,8 +99,7 @@ public class NumberInputController implements OperationCallback {
             mUndoneOperations.add(0, done);
             executeOperationOnActive(done.getInverseOperation(), false, false);
             mRedo.setEnabled(true);
-            mUndo.setEnabled(!mDoneOperations.isEmpty());
-            Log.d("Minigolf", "Undoing: " + done.getName() + " by doing " + done.getInverseOperation().getName());
+            onDoneOperationsChange();
         } else {
             Toast.makeText(mContext, "Nothing to undo", Toast.LENGTH_SHORT).show();
         }
@@ -108,10 +110,22 @@ public class NumberInputController implements OperationCallback {
             Operation toRedo = mUndoneOperations.remove(0);
             executeOperationOnActive(toRedo, false, true);
             mRedo.setEnabled(!mUndoneOperations.isEmpty());
-            Log.d("Minigolf", "Redoing: " + toRedo.getName());
         }else {
             Toast.makeText(mContext, "Nothing to redo", Toast.LENGTH_SHORT).show();
         }
+    }
+    
+    public void executeCustomOperation(CustomOperation op) {
+        boolean hasInverse = op.getInverseOperation() != null;
+        executeOperationOnActive(op, true, hasInverse);
+        if (!hasInverse) {
+            // as we cannot make this undone but still did it, we have to clear the history
+            clearHistory();         
+        }
+    }
+    
+    private void onDoneOperationsChange() {
+        mUndo.setEnabled(!mDoneOperations.isEmpty());
     }
     
     private void executeOperationOnActive(Operation toExecute, boolean clearRedoables, boolean addToDone) {
@@ -123,7 +137,6 @@ public class NumberInputController implements OperationCallback {
                     toExecute.setInverse(inverse);
                     inverse.setInverse(toExecute);
                 }
-                //TODO missing other special oeprations like NewOperation/RemoveOperation
             }
             boolean flagDoAdd = true;
             if (mDoneOperations.size() > 0 ) {
@@ -137,12 +150,15 @@ public class NumberInputController implements OperationCallback {
             if (flagDoAdd) {
                 mDoneOperations.add(toExecute);
             }
-            mUndo.setEnabled(true);
-            Log.d("Minigolf",   "  doing: " + toExecute.getName());
+            onDoneOperationsChange();
         }
         if (toExecute instanceof RemoveOperation) {
             toExecute.execute(Double.NaN);
         } else if (toExecute instanceof NewOperation) {
+            if (((NewOperation) toExecute).getOperationToAdd() == null && addToDone && mDoneOperations.size() > 0) {
+                mDoneOperations.remove(mDoneOperations.size() - 1); // not sure that we really created an operation
+                onDoneOperationsChange();
+            }
             toExecute.execute(Double.NaN);
         } else {
             List<OperationListener> activeListeners = new ArrayList<OperationListener>(mListener.size());
@@ -191,7 +207,7 @@ public class NumberInputController implements OperationCallback {
                     case 'a':
                         operation = new AbsoluteOperation(Double.parseDouble(lastLetters)); break;
                     case 'n':
-                        operation = new NewOperation(this, null); break;
+                        operation = new NewOperation(this, null, -1); break;
                     case 's':
                         operation = new SignOperation(); break;
                     case 'c':
@@ -268,13 +284,15 @@ public class NumberInputController implements OperationCallback {
     }
 
     private void undoableRemoveOperation(Operation toRemove) {
-        executeOperationOnActive(new RemoveOperation(this, toRemove), true, true);
+        executeOperationOnActive(new RemoveOperation(this, toRemove, mOps.indexOf(toRemove)), true, true);
     }
     
     @Override
-    public void newOperation(Operation toAdd) {
+    public void newOperation(Operation toAdd, int position) {
         if (toAdd == null) {
-            // TODO create new operation dialogs
+            showNewOperationDialog(position);
+        } else if (position >= 0 && position <= mOps.size()){
+            mOps.add(position, toAdd);
         } else {
             mOps.add(toAdd);
         }
@@ -282,15 +300,69 @@ public class NumberInputController implements OperationCallback {
         mAdapter.notifyDataSetChanged();
     }
 
-    @Override
-    public Operation getLastCreatedOperation() {
-        if (mOps.isEmpty()) {
-            return null;
-        } else {
-            return mOps.get(mOps.size() - 1);
-        }
+    private void showNewOperationDialog(int operationPosition) {
+        View baseView = ((LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.new_operation_dialog, null);
+        final RadioGroup group = (RadioGroup) baseView.findViewById(R.id.op_type);
+        final EditText number = (EditText) baseView.findViewById(R.id.op_number);
+        
+        // Use the Builder class for convenient dialog construction
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setIcon(R.drawable.ic_menu_add)
+        .setTitle(mContext.getResources().getString(R.string.number_input_new_operation_heading))
+                .setView(baseView)
+               .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                   public void onClick(DialogInterface dialog, int id) {
+                       double num = Double.NaN;
+                       if (number.getText().length() > 0) {
+                           try {
+                               num = Double.parseDouble(number.getText().toString());
+                           } catch(NumberFormatException nfe) {
+                           }
+                       }
+                       Operation op = null;
+                       int checkedId = group.getCheckedRadioButtonId();
+                       switch (checkedId) {
+                       case R.id.op_absolute:
+                           op = new AbsoluteOperation(num); break;
+                       case R.id.op_clear:
+                           op = new ClearOperation(); break;
+                       case R.id.op_sign:
+                           op = new SignOperation(); break;                           
+                       }
+                       if (checkedId == R.id.op_plus || checkedId == R.id.op_minus || checkedId == R.id.op_multi || checkedId == R.id.op_divide) {
+                           if (!Double.isNaN(num) && !Double.isInfinite(num)) {
+                            switch (checkedId) {
+                            case R.id.op_plus:
+                                op = new PlusOperation(num); break;
+                            case R.id.op_minus:
+                                op = new MinusOperation(num); break;
+                            case R.id.op_multi:
+                                if (!AlgebraicOperation.isZero(num)) {
+                                    op = new MultiOperation(num);
+                                } else {
+                                    op = new AbsoluteOperation(num);
+                                }
+                                break;
+                            case R.id.op_divide:
+                                if (!AlgebraicOperation.isZero(num)) {
+                                    op = new DivideOperation(num);
+                                }
+                                break;
+                            default:
+                                break;
+                            }
+                           }
+                       }
+                       if (op != null) {
+                           executeOperationOnActive(new NewOperation(NumberInputController.this, op, -1), false, true);
+                       }
+                   }
+               })
+               .setNegativeButton(android.R.string.no, null);
+        final AlertDialog dialog = builder.create();
+        dialog.show();
     }
-
+    
     @Override
     public OperationListener getActiveListener() {
         for (OperationListener list : mListener) {
@@ -323,7 +395,7 @@ public class NumberInputController implements OperationCallback {
         mDoneOperations.clear();
         mUndoneOperations.clear();
         mRedo.setEnabled(false);
-        mUndo.setEnabled(false);
+        onDoneOperationsChange();
     }
 
     public void clearOperations() {

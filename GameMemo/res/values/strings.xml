@@ -363,4 +363,9 @@
 	<string name="minigolf_lane_name">Lane name</string>
 	<string name="minigolf_lane_descr">Hints and description</string>
 	<string name="delete">Delete</string>
+	<string name="number_input_new_operation_heading">New operation</string>
+	<string name="number_input_new_operation_name">New</string>
+	<string name="number_input_absolute_operation_name">Number</string>
+	<string name="number_input_number_value_hint">Enter number</string>
+	<string name="user_game_name">Custom</string>
 </resources>

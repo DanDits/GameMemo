@@ -39,6 +39,7 @@ import dan.dit.gameMemo.appCore.gameSetup.TeamSetupTeamsController;
 import dan.dit.gameMemo.appCore.numberInput.AbsoluteOperation;
 import dan.dit.gameMemo.appCore.numberInput.AlgebraicOperation;
 import dan.dit.gameMemo.appCore.numberInput.ClearOperation;
+import dan.dit.gameMemo.appCore.numberInput.CustomOperation;
 import dan.dit.gameMemo.appCore.numberInput.NumberInputController;
 import dan.dit.gameMemo.appCore.numberInput.Operation;
 import dan.dit.gameMemo.appCore.numberInput.OperationListener;
@@ -57,6 +58,11 @@ import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 public class MinigolfGameDetailFragment extends GameDetailFragment {
+    private static final boolean MINIGOLF_LOADED_FINISHED_GAMES_ARE_IMMUTABLE = false;
+    private static final String CUSTOM_OPERATION_NEXT_BAHN_KEY = "next_bahn";
+    private static final String CUSTOM_OPERATION_PREV_BAHN_KEY = "prev_bahn";
+    private static final String CUSTOM_OPERATION_NEW_BAHN_KEY = "new_bahn";
+    
     private ImageButton mNextBahn;
     private ImageButton mPrevBahn;
     private TextView mBahnTitle;
@@ -155,6 +161,37 @@ public class MinigolfGameDetailFragment extends GameDetailFragment {
                             ((MinigolfRound) mGame.getRound(mSelectedBahn)).setValue(mPosition, MinigolfRound.DEFAULT_VALUE);
                             mAdapter.notifyDataSetChanged();
                         } else if (op instanceof SelectListenerOperation) {
+                        } else if (op instanceof CustomOperation) {
+                            boolean isInverse = ((CustomOperation) op).isInverse();
+                            String key = ((CustomOperation) op).getKey();
+                            if (key.equals(CUSTOM_OPERATION_PREV_BAHN_KEY)) {
+                                if (isInverse) {
+                                    if (mSelectedBahn == mGame.getRoundCount() - 1) {
+                                        selectRound(0);
+                                    } else {
+                                        selectRound(mSelectedBahn + 1);
+                                    }
+                                } else {
+                                    if (mSelectedBahn > 0) {
+                                        selectRound(mSelectedBahn - 1);
+                                    } else {
+                                        selectRound(mGame.getRoundCount() - 1); // cycle through - continue at the end when it reached the first bahn
+                                    }
+                                }
+                            } else if (key.equals(CUSTOM_OPERATION_NEXT_BAHN_KEY)) {
+                                if (isInverse) {
+                                    selectRound(mSelectedBahn - 1);
+                                } else {
+                                    selectRound(mSelectedBahn + 1);                                    
+                                }
+                            } else if (key.equals(CUSTOM_OPERATION_NEW_BAHN_KEY)) {
+                                if (isInverse) {
+                                    mGame.removeLane(mGame.getRoundCount() - 1);
+                                } else {
+                                    mGame.createLane();
+                                }
+                                selectRound(mGame.getRoundCount() - 1);
+                            }
                         }
                         fillData();
                         return true;
@@ -186,14 +223,14 @@ public class MinigolfGameDetailFragment extends GameDetailFragment {
                 mInputController.clearOperations();
             }
             if (mInputController.getOperationsCount() == 0) {
-                mInputController.newOperation(new AbsoluteOperation(1));
-                mInputController.newOperation(new AbsoluteOperation(2));
-                mInputController.newOperation(new AbsoluteOperation(3));
-                mInputController.newOperation(new AbsoluteOperation(4));
-                mInputController.newOperation(new AbsoluteOperation(5));
-                mInputController.newOperation(new AbsoluteOperation(6));
-                mInputController.newOperation(new AbsoluteOperation(7));
-                mInputController.newOperation(new ClearOperation());
+                mInputController.newOperation(new AbsoluteOperation(1), 0);
+                mInputController.newOperation(new AbsoluteOperation(2), 1);
+                mInputController.newOperation(new AbsoluteOperation(3), 2);
+                mInputController.newOperation(new AbsoluteOperation(4), 3);
+                mInputController.newOperation(new AbsoluteOperation(5), 4);
+                mInputController.newOperation(new AbsoluteOperation(6), 5);
+                mInputController.newOperation(new AbsoluteOperation(7), 6);
+                mInputController.newOperation(new ClearOperation(), 7);
                 
             }
             adaptInputListeners();
@@ -212,26 +249,32 @@ public class MinigolfGameDetailFragment extends GameDetailFragment {
             
             @Override
             public void onClick(View v) {
-                if (mSelectedBahn > 0) {
-                    selectRound(mSelectedBahn - 1);
-                } else {
-                    selectRound(mGame.getRoundCount() - 1); // cycle through - continue at the end when it reached the first bahn
-                }
+                onPrevBahnClick();
             }
         });
         mNextBahn.setOnClickListener(new OnClickListener() {
             
             @Override
             public void onClick(View v) {
-                if (mSelectedBahn < mGame.getRoundCount() - 1) {
-                    selectRound(mSelectedBahn + 1);
-                } else {
-                    // create a new bahn, since we reached the end
-                    mGame.createLane();
-                    selectRound(mGame.getRoundCount() - 1);
-                }
+                onNextBahnClick();
             }
         });
+    }
+    
+    private static final CustomOperation PREV_OP = new CustomOperation(CUSTOM_OPERATION_PREV_BAHN_KEY);
+    private static final CustomOperation NEXT_OP = new CustomOperation(CUSTOM_OPERATION_NEXT_BAHN_KEY);
+    private static final CustomOperation NEW_OP = new CustomOperation(CUSTOM_OPERATION_NEW_BAHN_KEY);
+    private void onPrevBahnClick() {
+        if (mGame.getRoundCount() > 1) {
+            mInputController.executeCustomOperation(PREV_OP);
+        }
+    }
+    private void onNextBahnClick() {
+        if (mSelectedBahn < mGame.getRoundCount() - 1) {
+            mInputController.executeCustomOperation(NEXT_OP);
+        } else {
+            mInputController.executeCustomOperation(NEW_OP);
+        }
     }
     
     private void loadOrStartGame(Bundle savedInstanceState) {
@@ -290,7 +333,7 @@ public class MinigolfGameDetailFragment extends GameDetailFragment {
             assert games.size() == 1;
             mGame = (MinigolfGame) games.get(0);
             // this variable must never ever be changed, consider it to be final
-            mIsLoadedFinishedGame = (saveInstanceState == null) ? (LOADED_FINISHED_GAMES_ARE_IMMUTABLE ? mGame.isFinished() : false)
+            mIsLoadedFinishedGame = (saveInstanceState == null) ? (MINIGOLF_LOADED_FINISHED_GAMES_ARE_IMMUTABLE ? mGame.isFinished() : false)
                     : saveInstanceState.getBoolean(STORAGE_IS_IMMUTABLE);
             if (mGame.isFinished()) {
                 mLastRunningTimeUpdate = null; // so we do not update the running time anymore when loading a finished game
@@ -437,7 +480,7 @@ public class MinigolfGameDetailFragment extends GameDetailFragment {
 
     @Override
     protected boolean isImmutable() {
-        return LOADED_FINISHED_GAMES_ARE_IMMUTABLE && mIsLoadedFinishedGame;
+        return mIsLoadedFinishedGame && MINIGOLF_LOADED_FINISHED_GAMES_ARE_IMMUTABLE;
     }
 
     @Override
@@ -449,9 +492,6 @@ public class MinigolfGameDetailFragment extends GameDetailFragment {
     protected void selectRound(int position) {
         mSelectedBahn = position;
         mSelectedPlayer = mGame.getFirstIncompletePlayer(mSelectedBahn);
-        if (mInputController != null) {
-            mInputController.clearHistory();
-        }
         fillData();
     }
 
@@ -495,13 +535,17 @@ public class MinigolfGameDetailFragment extends GameDetailFragment {
             if (mSelectedBahn > SHOWN_SCORES_LEFT_COUNT) {
                 scoresBuilder.append(".. ");
             }
+            int count = 0;
             for (int i = mSelectedBahn - 1; i >= mSelectedBahn - SHOWN_SCORES_LEFT_COUNT && i >= 0; i--) {
-                scoresBuilder.append(getRoundScore(i, position));
+                scoresBuilder.append(getRoundScore(Math.max(0, mSelectedBahn - SHOWN_SCORES_LEFT_COUNT) + count, position));
                 scoresBuilder.append(' ');
+                count++;
             }
+            scoresBuilder.append(' ');
             int boldStartIndex = scoresBuilder.length();
             scoresBuilder.append(getRoundScore(mSelectedBahn, position));
             int boldEndIndex = scoresBuilder.length();
+            scoresBuilder.append(' ');
             scoresBuilder.append(' ');
             for (int i = mSelectedBahn + 1; i <= mSelectedBahn + SHOWN_SCORES_LEFT_COUNT && i < mGame.getRoundCount(); i++) {
                 scoresBuilder.append(getRoundScore(i, position));
@@ -558,9 +602,11 @@ public class MinigolfGameDetailFragment extends GameDetailFragment {
             
             @Override
             public void onClick(View v) {
-                mGame.removeLane(mSelectedBahn);
-                fillData();
-                dialog.dismiss();
+                if (mGame.removeLane(mSelectedBahn)) {
+                    mInputController.clearHistory();
+                    fillData();
+                    dialog.dismiss();
+                }
             }
         });
         dialog.show();

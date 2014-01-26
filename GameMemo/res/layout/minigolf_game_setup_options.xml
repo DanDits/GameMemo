@@ -22,7 +22,7 @@
         android:max="29"
         android:progress="14" />
 
-    <EditText
+    <AutoCompleteTextView
         android:id="@+id/location"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -31,6 +31,6 @@
         android:hint="@string/sport_game_location"
         android:inputType="textCapWords" >
 
-</EditText>
+</AutoCompleteTextView>
     
 </RelativeLayout>

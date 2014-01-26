@@ -2,13 +2,15 @@ package dan.dit.gameMemo.appCore.numberInput;
 
 import java.text.NumberFormat;
 
+import android.content.res.Resources;
+
 public abstract class Operation {
     protected Operation mInverse;
     public abstract double execute(double on);
     
     public abstract Operation getInverseOperation();
 
-    public abstract String getName();
+    public abstract String getName(Resources res);
     
     public int getIconResId() {
         return 0;

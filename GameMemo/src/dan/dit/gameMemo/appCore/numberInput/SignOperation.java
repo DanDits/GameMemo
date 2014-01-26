@@ -1,5 +1,7 @@
 package dan.dit.gameMemo.appCore.numberInput;
 
+import android.content.res.Resources;
+
 public class SignOperation extends Operation {
 
     @Override
@@ -13,7 +15,7 @@ public class SignOperation extends Operation {
     }
 
     @Override
-    public String getName() {
+    public String getName(Resources res) {
         return "±";
     }
 

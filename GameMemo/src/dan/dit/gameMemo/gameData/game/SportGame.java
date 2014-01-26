@@ -1,7 +1,9 @@
 package dan.dit.gameMemo.gameData.game;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -15,6 +17,7 @@ import dan.dit.gameMemo.util.compaction.Compacter;
 
 public abstract class SportGame extends Game {
     protected String mLocation;
+    public static Set<String> ALL_LOCATIONS;
     
     public String getLocation() {
         return mLocation;
@@ -25,6 +28,30 @@ public abstract class SportGame extends Game {
             mLocation = "";
         } else {
             mLocation = location;
+            if (ALL_LOCATIONS != null) {
+                ALL_LOCATIONS.add(mLocation);
+            }
+        }
+    }
+    
+    public static void initLocations(ContentResolver resolver, int gameKey) {
+        ALL_LOCATIONS = new HashSet<String>();
+        String[] proj = new String[] {SportGameTable.COLUMN_LOCATION, GameStorageHelper.COLUMN_ID};
+        Cursor cursor = null;
+        try {
+            cursor = resolver.query(GameStorageHelper.getUriAllItems(gameKey), proj, null, null,null);
+            if (cursor != null) {
+                cursor.moveToFirst();
+                while (!cursor.isAfterLast()) {
+                    ALL_LOCATIONS.add(cursor.getString(cursor.getColumnIndexOrThrow(SportGameTable.COLUMN_LOCATION)));
+                    cursor.moveToNext();
+                }
+            }
+        } finally {
+            // Always close the cursor
+            if (cursor != null) {
+                cursor.close();
+            }
         }
     }
     

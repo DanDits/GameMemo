@@ -1,5 +1,7 @@
 package dan.dit.gameMemo.appCore.numberInput;
 
+import android.content.res.Resources;
+
 public class AbsoluteOperation extends Operation {
     private double mValue;
     public AbsoluteOperation(double value) {
@@ -21,7 +23,7 @@ public class AbsoluteOperation extends Operation {
     }
 
     @Override
-    public String getName() {
+    public String getName(Resources res) {
         return DOUBLE_FORMAT.format(mValue);
     }
 

@@ -378,4 +378,9 @@
 	<string name="minigolf_lane_name">Bahnname</string>
 	<string name="minigolf_lane_descr">Hinweise und Beschreibung</string>
 	<string name="delete">Löschen</string>
+	<string name="number_input_new_operation_heading">Neuer Befehl</string>
+	<string name="number_input_new_operation_name">Neu</string>
+	<string name="number_input_absolute_operation_name">Zahl</string>
+	<string name="number_input_number_value_hint">Zahl eingeben</string>
+	<string name="user_game_name">Eigene</string>
 </resources>

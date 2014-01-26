@@ -39,6 +39,7 @@ import dan.dit.gameMemo.gameData.game.minigolf.MinigolfGameStatisticAttributeMan
 import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGameBuilder;
 import dan.dit.gameMemo.gameData.game.tichu.TichuGameStatisticAttributeManager;
+import dan.dit.gameMemo.gameData.game.user.UserGame;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.gameData.statistics.GameStatisticAttributeManager;
@@ -90,9 +91,14 @@ public final class GameKey {
 	public static final int MINIGOLF = 3;
 	
 	/**
-	 * Contains all game keys that are supported.
+	 * The constant for the {@link UserGame} class.
 	 */
-	public static final int[] ALL_GAMES = new int[] {TICHU, DOPPELKOPF, MINIGOLF};
+	public static final int USERGAME = 4;
+	
+	/**
+	 * Contains all game keys that will appear in the game chooser activity.
+	 */
+	public static final int[] ALL_GAMES = new int[] {TICHU, DOPPELKOPF, MINIGOLF, USERGAME};
 	
 	/**
 	 * Private to avoid instantiation of this utility class.
@@ -197,6 +203,8 @@ public final class GameKey {
 			return dan.dit.gameMemo.R.drawable.doppelkopf_icon;
 		case GameKey.MINIGOLF:
 		    return dan.dit.gameMemo.R.drawable.minigolf_icon;
+		case GameKey.USERGAME:
+		    return dan.dit.gameMemo.R.drawable.user_game_icon;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -218,6 +226,8 @@ public final class GameKey {
 			return DoppelkopfGame.GAME_NAME;
 		case MINIGOLF:
 		    return res == null ? MinigolfGame.GAME_NAME : res.getString(R.string.minigolf_game_name);
+		case USERGAME:
+		    return res == null ? UserGame.NAME : res.getString(R.string.user_game_name);
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -239,6 +249,8 @@ public final class GameKey {
 			return DoppelkopfGame.GAME_NAME;
         case MINIGOLF:
             return res == null ? MinigolfGame.GAME_NAME : res.getString(R.string.minigolf_game_name);
+        case USERGAME:
+            return res == null ? UserGame.NAME : res.getString(R.string.user_game_name);
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -259,6 +271,8 @@ public final class GameKey {
 			return DoppelkopfGame.PLAYERS;
 		case GameKey.MINIGOLF:
 		    return MinigolfGame.PLAYERS;
+		case GameKey.USERGAME:
+		    return UserGame.PLAYERS;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -279,6 +293,8 @@ public final class GameKey {
 			return new DoppelkopfGameBuilder();
 		case MINIGOLF:
 		    return new MinigolfGameBuilder();
+		case USERGAME:
+		    //TODO
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);			
 		}
@@ -344,17 +360,6 @@ public final class GameKey {
 		}
 		return false;
 	}
-	
-	public static final boolean isGameInUse(int gameKey) {
-	    // currently all games listed in ALL_GAMES are "used" in the meaning of they are important enough to list them in game lists
-	    // metagames that can define multiple subgames can ignore possible reserved keys here for games that the user did not care about
-	       for (int key : ALL_GAMES) {
-	            if (gameKey == key) {
-	                return true;
-	            }
-	        }
-	        return false;
-	}
 
 	public static int getBackgroundResource(int gameKey) {
 		switch (gameKey) {
@@ -364,6 +369,8 @@ public final class GameKey {
 			return R.drawable.doppelkopf_color;
 		case MINIGOLF:
 		    return R.drawable.minigolf_color;
+		case USERGAME:
+		    return R.drawable.usergame_color;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -384,6 +391,8 @@ public final class GameKey {
             return R.color.doppelkopf_text_color;
         case MINIGOLF:
             return R.color.minigolf_text_color;
+        case USERGAME:
+            return R.color.usergame_text_color;
         default:
             throw new IllegalArgumentException("Game not supported: " + gameKey);               
         }
@@ -397,6 +406,8 @@ public final class GameKey {
 			return R.drawable.doppelkopf_button;
 		case MINIGOLF:
 		    return R.drawable.minigolf_button;
+		case USERGAME:
+		    return R.drawable.usergame_button;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -410,6 +421,8 @@ public final class GameKey {
 			return R.drawable.doppelkopf_list_selector;
 		case MINIGOLF:
 		    return R.drawable.minigolf_list_selector;
+		case USERGAME:
+		    return R.drawable.usergame_list_selector;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -434,6 +447,8 @@ public final class GameKey {
 			return R.layout.doppelkopf_main;
 		case MINIGOLF:
 		    return R.layout.minigolf_main;
+		case USERGAME:
+		    //TODO
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -463,6 +478,8 @@ public final class GameKey {
 			return DoppelkopfGamesActivity.class;
 		case MINIGOLF:
 		    return MinigolfGamesActivity.class;
+		case USERGAME:
+		    //TODO
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
@@ -476,6 +493,8 @@ public final class GameKey {
 			return R.layout.doppelkopf_list;
 		case MINIGOLF:
 		    return R.layout.minigolf_list;
+		case USERGAME:
+		    //TODO
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -489,6 +508,8 @@ public final class GameKey {
 			return R.menu.doppelkopf_list;
 		case MINIGOLF:
 		    return R.menu.minigolf_list;
+		case USERGAME:
+		    //TODO
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -503,6 +524,8 @@ public final class GameKey {
 			return DoppelkopfGameDetailFragment.newInstance(gameId);
 		case MINIGOLF:
 		    return MinigolfGameDetailFragment.newInstance(gameId);
+		case USERGAME:
+		    //TODO
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -517,6 +540,8 @@ public final class GameKey {
 			return DoppelkopfGameDetailFragment.newInstance(extras);
 	     case MINIGOLF:
 	        return MinigolfGameDetailFragment.newInstance(extras);
+	        case USERGAME:
+	            //TODO
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);				
 		}
@@ -531,6 +556,8 @@ public final class GameKey {
             return new dan.dit.gameMemo.appCore.doppelkopf.GameSetupOptions(context, container, parameters);
         case MINIGOLF:
             return new dan.dit.gameMemo.appCore.minigolf.GameSetupOptions(context, container, parameters);
+        case USERGAME:
+            //TODO
         default:
             return GameSetupNoOptions.INSTANCE;               
         }
@@ -540,6 +567,7 @@ public final class GameKey {
 		switch(gameKey) {
 		case GameKey.TICHU:
 		case GameKey.DOPPELKOPF:
+        case USERGAME:
 			return CardGameTable.TABLE_CARD_GAMES;
 		case MINIGOLF:
 		    return SportGameTable.TABLE_SPORT_GAMES;
@@ -552,6 +580,7 @@ public final class GameKey {
 		switch(gameKey) {
 		case GameKey.TICHU:
 		case GameKey.DOPPELKOPF:
+		case USERGAME:
 			return CardGameTable.AVAILABLE_COLUMNS_COLL;
 		case MINIGOLF:
 		    return SportGameTable.AVAILABLE_COLUMNS_COLL;
@@ -564,6 +593,7 @@ public final class GameKey {
         switch(gameKey) {
         case GameKey.TICHU:
         case GameKey.DOPPELKOPF:
+        case USERGAME:
             return CardGameTable.AVAILABLE_COLUMNS;
         case MINIGOLF:
             return SportGameTable.AVAILABLE_COLUMNS;
@@ -577,6 +607,7 @@ public final class GameKey {
 		case GameKey.TICHU:
 		case GameKey.DOPPELKOPF:
 		case MINIGOLF:
+		case USERGAME:
 			return GamesDBContentProvider.makeUri(gameKey, uriType);
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -592,6 +623,8 @@ public final class GameKey {
             return DoppelkopfGameStatisticAttributeManager.INSTANCE;
         case MINIGOLF:
             return MinigolfGameStatisticAttributeManager.INSTANCE;
+        case USERGAME:
+            //TODO
         default:
             throw new IllegalArgumentException("Game not supported: " + gameKey);
         }

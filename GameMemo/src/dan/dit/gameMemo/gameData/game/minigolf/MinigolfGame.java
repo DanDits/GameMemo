@@ -287,10 +287,11 @@ public class MinigolfGame extends SportGame {
         return round.getFirstIncompletePlayer();
     }
 
-    public void removeLane(int bahn) {
+    public boolean removeLane(int bahn) {
         if (rounds.size() > 1) {
-            rounds.remove(bahn);
+            return rounds.remove(bahn) != null;
         }
+        return false;
     }
     
 }
