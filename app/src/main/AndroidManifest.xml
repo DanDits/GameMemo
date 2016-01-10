@@ -46,6 +46,9 @@
             android:name=".appCore.tichu.TichuGamesActivity" >
         </activity>
         <activity
+            android:name=".appCore.binokel.BinokelGamesActivity" >
+        </activity>
+        <activity
             android:name=".appCore.doppelkopf.DoppelkopfGamesActivity" >
         </activity>
         <activity
@@ -55,11 +58,6 @@
             android:name=".appCore.custom.CustomGamesActivity" >
         </activity>
         <activity android:name=".appCore.doppelkopf.DoppelkopfGameDetailActivity">
-        </activity>
-        <activity
-            android:name=".appCore.tichu.TichuGameDetailActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustPan" >
         </activity>
         <activity
             android:name=".appCore.GameDetailActivity"
@@ -73,9 +71,7 @@
         <activity
             android:name=".util.DebugShowStacktraceActivity">
         </activity>
-        <activity
-            android:name=".appCore.tichu.TichuGamesStatisticsActivity">
-        </activity>
+
         <activity
             android:name=".dataExchange.bluetooth.BluetoothDataExchangeActivity"
             android:configChanges="keyboardHidden|orientation|screenSize">

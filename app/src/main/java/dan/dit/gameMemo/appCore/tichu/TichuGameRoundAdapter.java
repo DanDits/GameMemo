@@ -18,7 +18,7 @@ import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.game.tichu.TichuRound;
 /**
  * This adapter is used to visualize single rounds of a TichuGame inside a ListView
- * of a {@link TichuGameDetailActivity}.<br>
+ * of a GameDetailActivity.<br>
  * For a round the user can optionally show tichu bids and show the delta to the previous round.
  * A row can be marked, which should be interpreted as the last selected row, as this row will get highlighted.
  * For each round, the score up to this round for each team will be displayed.

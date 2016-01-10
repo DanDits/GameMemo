@@ -21,6 +21,8 @@ import android.widget.TextView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameDetailActivity;
 import dan.dit.gameMemo.appCore.GameDetailFragment;
+import dan.dit.gameMemo.appCore.binokel.BinokelGameDetailFragment;
+import dan.dit.gameMemo.appCore.binokel.BinokelGamesActivity;
 import dan.dit.gameMemo.appCore.custom.CustomGameDetailFragment;
 import dan.dit.gameMemo.appCore.custom.CustomGamesActivity;
 import dan.dit.gameMemo.appCore.doppelkopf.DoppelkopfGameDetailActivity;
@@ -32,6 +34,9 @@ import dan.dit.gameMemo.appCore.minigolf.MinigolfGameDetailFragment;
 import dan.dit.gameMemo.appCore.minigolf.MinigolfGamesActivity;
 import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment;
 import dan.dit.gameMemo.appCore.tichu.TichuGamesActivity;
+import dan.dit.gameMemo.gameData.game.binokel.BinokelGame;
+import dan.dit.gameMemo.gameData.game.binokel.BinokelGameBuilder;
+import dan.dit.gameMemo.gameData.game.binokel.BinokelGameStatisticAttributeManager;
 import dan.dit.gameMemo.gameData.game.custom.CustomGame;
 import dan.dit.gameMemo.gameData.game.custom.CustomGameBuilder;
 import dan.dit.gameMemo.gameData.game.custom.CustomGameStatisticAttributeManager;
@@ -98,11 +103,17 @@ public final class GameKey {
 	 * The constant for the {@link CustomGame} class.
 	 */
 	public static final int CUSTOMGAME = 4;
+
+	/**
+	 * The constant for the {@link BinokelGame} class.
+	 */
+	public static final int BINOKELGAME = 5;
 	
 	/**
 	 * Contains all game keys that will appear in the game chooser activity.
 	 */
-	public static final int[] ALL_GAMES = new int[] {TICHU, DOPPELKOPF, MINIGOLF, CUSTOMGAME};
+	public static final int[] ALL_GAMES = new int[] {TICHU, DOPPELKOPF, BINOKELGAME, MINIGOLF,
+            CUSTOMGAME};
 	
 	/**
 	 * Private to avoid instantiation of this utility class.
@@ -201,14 +212,16 @@ public final class GameKey {
 	 */
 	public static int getGameIconId(int gameKey) {
 		switch(gameKey) {
-		case GameKey.TICHU:
-			return dan.dit.gameMemo.R.drawable.tichu_phoenix;
-		case GameKey.DOPPELKOPF:
-			return dan.dit.gameMemo.R.drawable.doppelkopf_icon;
-		case GameKey.MINIGOLF:
-		    return dan.dit.gameMemo.R.drawable.minigolf_icon;
-		case GameKey.CUSTOMGAME:
-		    return dan.dit.gameMemo.R.drawable.user_game_icon;
+            case GameKey.TICHU:
+                return dan.dit.gameMemo.R.drawable.tichu_phoenix;
+            case GameKey.DOPPELKOPF:
+                return dan.dit.gameMemo.R.drawable.doppelkopf_icon;
+            case GameKey.MINIGOLF:
+                return dan.dit.gameMemo.R.drawable.minigolf_icon;
+            case GameKey.CUSTOMGAME:
+                return dan.dit.gameMemo.R.drawable.user_game_icon;
+            case GameKey.BINOKELGAME:
+                return dan.dit.gameMemo.R.drawable.binokel_icon;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -224,14 +237,16 @@ public final class GameKey {
 	 */
 	public static CharSequence getGameName(int gameKey, Resources res) {
 		switch(gameKey) {
-		case GameKey.TICHU:
-			return TichuGame.GAME_NAME;
-		case GameKey.DOPPELKOPF:
-			return DoppelkopfGame.GAME_NAME;
-		case MINIGOLF:
-		    return res == null ? MinigolfGame.GAME_NAME : res.getString(R.string.minigolf_game_name);
-		case CUSTOMGAME:
-		    return res == null ? CustomGame.NAME : res.getString(R.string.user_game_name);
+            case GameKey.TICHU:
+                return TichuGame.GAME_NAME;
+            case GameKey.DOPPELKOPF:
+                return DoppelkopfGame.GAME_NAME;
+            case MINIGOLF:
+                return res == null ? MinigolfGame.GAME_NAME : res.getString(R.string.minigolf_game_name);
+            case CUSTOMGAME:
+                return res == null ? CustomGame.NAME : res.getString(R.string.user_game_name);
+            case BINOKELGAME:
+                return BinokelGame.GAME_NAME;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -247,14 +262,16 @@ public final class GameKey {
      */
 	public static String getGameNameString(int gameKey, Resources res) {
 		switch(gameKey) {
-		case GameKey.TICHU:
-			return TichuGame.GAME_NAME;
-		case GameKey.DOPPELKOPF:
-			return DoppelkopfGame.GAME_NAME;
-        case MINIGOLF:
-            return res == null ? MinigolfGame.GAME_NAME : res.getString(R.string.minigolf_game_name);
-        case CUSTOMGAME:
-            return res == null ? CustomGame.NAME : res.getString(R.string.user_game_name);
+            case GameKey.TICHU:
+                return TichuGame.GAME_NAME;
+            case GameKey.DOPPELKOPF:
+                return DoppelkopfGame.GAME_NAME;
+            case MINIGOLF:
+                return res == null ? MinigolfGame.GAME_NAME : res.getString(R.string.minigolf_game_name);
+            case CUSTOMGAME:
+                return res == null ? CustomGame.NAME : res.getString(R.string.user_game_name);
+            case BINOKELGAME:
+                return BinokelGame.GAME_NAME;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -278,15 +295,17 @@ public final class GameKey {
 	 * @return The PlayerPool for the game.
 	 */
 	public static PlayerPool getPool(int gameKey) {
-		switch(gameKey) {
-		case GameKey.TICHU:
-			return TichuGame.PLAYERS;
-		case GameKey.DOPPELKOPF:
-			return DoppelkopfGame.PLAYERS;
-		case GameKey.MINIGOLF:
-		    return MinigolfGame.PLAYERS;
-		case GameKey.CUSTOMGAME:
-		    return CustomGame.PLAYERS;
+        switch(gameKey) {
+            case GameKey.TICHU:
+                return TichuGame.PLAYERS;
+            case GameKey.DOPPELKOPF:
+                return DoppelkopfGame.PLAYERS;
+            case GameKey.MINIGOLF:
+                return MinigolfGame.PLAYERS;
+            case GameKey.CUSTOMGAME:
+                return CustomGame.PLAYERS;
+            case GameKey.BINOKELGAME:
+                return BinokelGame.PLAYERS;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
 		}
@@ -301,14 +320,16 @@ public final class GameKey {
 	 */
 	public static GameBuilder getBuilder(int gameKey) {
 		switch(gameKey) {
-		case GameKey.TICHU:
-			return new TichuGameBuilder();
-		case DOPPELKOPF:
-			return new DoppelkopfGameBuilder();
-		case MINIGOLF:
-		    return new MinigolfGameBuilder();
-		case CUSTOMGAME:
-		    return new CustomGameBuilder();
+            case GameKey.TICHU:
+                return new TichuGameBuilder();
+            case DOPPELKOPF:
+                return new DoppelkopfGameBuilder();
+            case MINIGOLF:
+                return new MinigolfGameBuilder();
+            case CUSTOMGAME:
+                return new CustomGameBuilder();
+            case BINOKELGAME:
+                return new BinokelGameBuilder();
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);			
 		}
@@ -377,16 +398,18 @@ public final class GameKey {
 
 	public static int getBackgroundResource(int gameKey) {
 		switch (gameKey) {
-		case GameKey.TICHU:
-			return R.drawable.tichu_color;
-		case GameKey.DOPPELKOPF:
-			return R.drawable.doppelkopf_color;
-		case MINIGOLF:
-		    return R.drawable.minigolf_color;
-		case CUSTOMGAME:
-		    return R.drawable.usergame_color;
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+            case GameKey.TICHU:
+                return R.drawable.tichu_color;
+            case GameKey.DOPPELKOPF:
+                return R.drawable.doppelkopf_color;
+            case MINIGOLF:
+                return R.drawable.minigolf_color;
+            case CUSTOMGAME:
+                return R.drawable.usergame_color;
+            case BINOKELGAME:
+                return R.drawable.binokel_color;
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 	
@@ -403,46 +426,52 @@ public final class GameKey {
 	
 	private static int getButtonTextColorResource(int gameKey) {
         switch (gameKey) {
-        case GameKey.TICHU:
-            return R.color.tichu_text_color;
-        case GameKey.DOPPELKOPF:
-            return R.color.doppelkopf_text_color;
-        case MINIGOLF:
-            return R.color.minigolf_text_color;
-        case CUSTOMGAME:
-            return R.color.usergame_text_color;
-        default:
-            throw new IllegalArgumentException("Game not supported: " + gameKey);               
+            case GameKey.TICHU:
+                return R.color.tichu_text_color;
+            case GameKey.DOPPELKOPF:
+                return R.color.doppelkopf_text_color;
+            case MINIGOLF:
+                return R.color.minigolf_text_color;
+            case CUSTOMGAME:
+                return R.color.usergame_text_color;
+            case BINOKELGAME:
+                return R.color.binokel_text_color;
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
         }
 	}
 	
 	private static int getButtonResource(int gameKey) {
 		switch (gameKey) {
-		case GameKey.TICHU:
-			return R.drawable.tichu_button;
-		case GameKey.DOPPELKOPF:
-			return R.drawable.doppelkopf_button;
-		case MINIGOLF:
-		    return R.drawable.minigolf_button;
-		case CUSTOMGAME:
-		    return R.drawable.usergame_button;
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+            case GameKey.TICHU:
+                return R.drawable.tichu_button;
+            case GameKey.DOPPELKOPF:
+                return R.drawable.doppelkopf_button;
+            case MINIGOLF:
+                return R.drawable.minigolf_button;
+            case CUSTOMGAME:
+                return R.drawable.usergame_button;
+            case BINOKELGAME:
+                return R.drawable.binokel_button;
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 	
 	public static int getSelectorResource(int gameKey) {
 		switch (gameKey) {
-		case GameKey.TICHU:
-			return R.drawable.tichu_list_selector;
-		case GameKey.DOPPELKOPF:
-			return R.drawable.doppelkopf_list_selector;
-		case MINIGOLF:
-		    return R.drawable.minigolf_list_selector;
-		case CUSTOMGAME:
-		    return R.drawable.usergame_list_selector;
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+            case GameKey.TICHU:
+                return R.drawable.tichu_list_selector;
+            case GameKey.DOPPELKOPF:
+                return R.drawable.doppelkopf_list_selector;
+            case MINIGOLF:
+                return R.drawable.minigolf_list_selector;
+            case CUSTOMGAME:
+                return R.drawable.usergame_list_selector;
+            case BINOKELGAME:
+                return R.drawable.binokel_list_selector;
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 
@@ -459,189 +488,209 @@ public final class GameKey {
 
 	public static int getGamesMainLayout(int gameKey) {
 		switch (gameKey) {
-		case GameKey.TICHU:
-			return R.layout.tichu_main;
-		case GameKey.DOPPELKOPF:
-			return R.layout.doppelkopf_main;
-		case MINIGOLF:
-		    return R.layout.minigolf_main;
-		case CUSTOMGAME:
-		    return R.layout.custom_main;
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+            case GameKey.TICHU:
+                return R.layout.tichu_main;
+            case GameKey.DOPPELKOPF:
+                return R.layout.doppelkopf_main;
+            case MINIGOLF:
+                return R.layout.minigolf_main;
+            case CUSTOMGAME:
+                return R.layout.custom_main;
+            case BINOKELGAME:
+                return R.layout.binokel_main;
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 
 	public static int getGameDetailLayout(int gameKey) {
 		switch (gameKey) {
-		default:
-			return R.layout.generic_detail_fragment;			
+            default:
+                return R.layout.generic_detail_fragment;
 		}
 	}
 
 	public static Class<?> getGameDetailActivity(int gameKey) {
 		switch (gameKey) {
-		case DOPPELKOPF:
-		    return DoppelkopfGameDetailActivity.class;
-		default:
-			return GameDetailActivity.class;			
+            case DOPPELKOPF:
+                return DoppelkopfGameDetailActivity.class;
+            default:
+                return GameDetailActivity.class;
 		}
 	}
 	
 	public static Class<?> getGamesActivity(int gameKey) {
 		switch (gameKey) {
-		case TICHU:
-			return TichuGamesActivity.class;
-		case DOPPELKOPF:
-			return DoppelkopfGamesActivity.class;
-		case MINIGOLF:
-		    return MinigolfGamesActivity.class;
-		case CUSTOMGAME:
-		    return CustomGamesActivity.class;
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);
+            case TICHU:
+                return TichuGamesActivity.class;
+            case DOPPELKOPF:
+                return DoppelkopfGamesActivity.class;
+            case MINIGOLF:
+                return MinigolfGamesActivity.class;
+            case CUSTOMGAME:
+                return CustomGamesActivity.class;
+            case BINOKELGAME:
+                return BinokelGamesActivity.class;
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 
 	public static int getGameOverviewListLayout(int gameKey) {
 		switch (gameKey) {
-		case TICHU:
-        case DOPPELKOPF:
-        case MINIGOLF:
-        case CUSTOMGAME:
+            case TICHU:
+            case DOPPELKOPF:
+            case MINIGOLF:
+            case CUSTOMGAME:
+            case BINOKELGAME:
 			return R.layout.generic_list;
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 
 	public static int getGamesMenuLayout(int gameKey) {
 		switch (gameKey) {
-		case GameKey.TICHU:
-			return R.menu.tichu_list;
-		case GameKey.DOPPELKOPF:
-			return R.menu.doppelkopf_list;
-		case MINIGOLF:
-		    return R.menu.minigolf_list;
-		case CUSTOMGAME:
-		    return R.menu.custom_list;
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+            case GameKey.TICHU:
+                return R.menu.tichu_list;
+            case GameKey.DOPPELKOPF:
+                return R.menu.doppelkopf_list;
+            case MINIGOLF:
+                return R.menu.minigolf_list;
+            case CUSTOMGAME:
+                return R.menu.custom_list;
+            case BINOKELGAME:
+                return R.menu.binokel_list;
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 
 	public static GameDetailFragment getNewGameDetailFragmentInstance(
 			int gameKey, long gameId) {
 		switch (gameKey) {
-		case GameKey.TICHU:
-			return TichuGameDetailFragment.newInstance(gameId);
-		case DOPPELKOPF:
-			return DoppelkopfGameDetailFragment.newInstance(gameId);
-		case MINIGOLF:
-		    return MinigolfGameDetailFragment.newInstance(gameId);
-		case CUSTOMGAME:
-		    return CustomGameDetailFragment.newInstance(gameId);
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+            case GameKey.TICHU:
+                return TichuGameDetailFragment.newInstance(gameId);
+            case DOPPELKOPF:
+                return DoppelkopfGameDetailFragment.newInstance(gameId);
+            case MINIGOLF:
+                return MinigolfGameDetailFragment.newInstance(gameId);
+            case CUSTOMGAME:
+                return CustomGameDetailFragment.newInstance(gameId);
+            case BINOKELGAME:
+                return BinokelGameDetailFragment.newInstance(gameId);
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 	
 	public static GameDetailFragment getNewGameDetailFragmentInstance(
 			int gameKey, Bundle extras) {
 		switch (gameKey) {
-		case GameKey.TICHU:
-			return TichuGameDetailFragment.newInstance(extras);
-		case DOPPELKOPF:
-			return DoppelkopfGameDetailFragment.newInstance(extras);
-	     case MINIGOLF:
-	        return MinigolfGameDetailFragment.newInstance(extras);
-	     case CUSTOMGAME:
-	         return CustomGameDetailFragment.newInstance(extras);
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);				
+            case GameKey.TICHU:
+                return TichuGameDetailFragment.newInstance(extras);
+            case DOPPELKOPF:
+                return DoppelkopfGameDetailFragment.newInstance(extras);
+             case MINIGOLF:
+                return MinigolfGameDetailFragment.newInstance(extras);
+             case CUSTOMGAME:
+                 return CustomGameDetailFragment.newInstance(extras);
+            case BINOKELGAME:
+                return BinokelGameDetailFragment.newInstance(extras);
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 
     public static GameSetupOptionsController makeGameSetupOptionsController(
             int gameKey, Context context, ViewGroup container, Bundle parameters) {
         switch (gameKey) {
-        case GameKey.TICHU:
-            return new dan.dit.gameMemo.appCore.tichu.GameSetupOptions(context, container, parameters);
-        case DOPPELKOPF: 
-            return new dan.dit.gameMemo.appCore.doppelkopf.GameSetupOptions(context, container, parameters);
-        case MINIGOLF:
-            return new dan.dit.gameMemo.appCore.minigolf.GameSetupOptions(context, container, parameters);
-        case CUSTOMGAME:
-            return new dan.dit.gameMemo.appCore.custom.GameSetupOptions(context, container, parameters);
-        default:
-            return GameSetupNoOptions.INSTANCE;               
+            case GameKey.TICHU:
+                return new dan.dit.gameMemo.appCore.tichu.GameSetupOptions(context, container, parameters);
+            case DOPPELKOPF:
+                return new dan.dit.gameMemo.appCore.doppelkopf.GameSetupOptions(context, container, parameters);
+            case MINIGOLF:
+                return new dan.dit.gameMemo.appCore.minigolf.GameSetupOptions(context, container, parameters);
+            case CUSTOMGAME:
+                return new dan.dit.gameMemo.appCore.custom.GameSetupOptions(context, container, parameters);
+            case BINOKELGAME:
+                return new dan.dit.gameMemo.appCore.binokel.GameSetupOptions(context, container,
+                        parameters);
+            default:
+                return GameSetupNoOptions.INSTANCE;
         }
     }
 
 	public static String getStorageTableName(int gameKey) {
-		switch(gameKey) {
-		case GameKey.TICHU:
-		case GameKey.DOPPELKOPF:
-        case CUSTOMGAME:
-			return CardGameTable.TABLE_CARD_GAMES;
-		case MINIGOLF:
-		    return SportGameTable.TABLE_SPORT_GAMES;
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);
+        switch(gameKey) {
+            case GameKey.TICHU:
+            case GameKey.DOPPELKOPF:
+            case GameKey.BINOKELGAME:
+            case CUSTOMGAME:
+                return CardGameTable.TABLE_CARD_GAMES;
+            case MINIGOLF:
+                return SportGameTable.TABLE_SPORT_GAMES;
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 
 	public static Collection<String> getStorageAvailableColumns(int gameKey) {
-		switch(gameKey) {
-		case GameKey.TICHU:
-		case GameKey.DOPPELKOPF:
-		case CUSTOMGAME:
-			return CardGameTable.AVAILABLE_COLUMNS_COLL;
-		case MINIGOLF:
-		    return SportGameTable.AVAILABLE_COLUMNS_COLL;
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);
+        switch(gameKey) {
+            case GameKey.TICHU:
+            case GameKey.DOPPELKOPF:
+            case GameKey.BINOKELGAME:
+            case CUSTOMGAME:
+                return CardGameTable.AVAILABLE_COLUMNS_COLL;
+            case MINIGOLF:
+                return SportGameTable.AVAILABLE_COLUMNS_COLL;
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 	
     public static String[] getStorageAvailableColumnsProj(int gameKey) {
         switch(gameKey) {
-        case GameKey.TICHU:
-        case GameKey.DOPPELKOPF:
-        case CUSTOMGAME:
-            return CardGameTable.AVAILABLE_COLUMNS;
-        case MINIGOLF:
-            return SportGameTable.AVAILABLE_COLUMNS;
-        default:
-            throw new IllegalArgumentException("Game not supported: " + gameKey);
+            case GameKey.TICHU:
+            case GameKey.DOPPELKOPF:
+            case BINOKELGAME:
+            case CUSTOMGAME:
+                return CardGameTable.AVAILABLE_COLUMNS;
+            case MINIGOLF:
+                return SportGameTable.AVAILABLE_COLUMNS;
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
         }
     }
     
 	public static Uri getStorageUri(int gameKey, int uriType) {
 		switch(gameKey) {
-		case GameKey.TICHU:
-		case GameKey.DOPPELKOPF:
-		case MINIGOLF:
-		case CUSTOMGAME:
-			return GamesDBContentProvider.makeUri(gameKey, uriType);
-		default:
-			throw new IllegalArgumentException("Game not supported: " + gameKey);
+            case GameKey.TICHU:
+            case GameKey.DOPPELKOPF:
+            case BINOKELGAME:
+            case MINIGOLF:
+            case CUSTOMGAME:
+                return GamesDBContentProvider.makeUri(gameKey, uriType);
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
 		}
 	}
 
     public static GameStatisticAttributeManager getGameStatisticAttributeManager(
             int gameKey) {
         switch (gameKey) {
-        case TICHU:
-            return TichuGameStatisticAttributeManager.INSTANCE;
-        case DOPPELKOPF:
-            return DoppelkopfGameStatisticAttributeManager.INSTANCE;
-        case MINIGOLF:
-            return MinigolfGameStatisticAttributeManager.INSTANCE;
-        case CUSTOMGAME:
-            return CustomGameStatisticAttributeManager.INSTANCE;
-        default:
-            throw new IllegalArgumentException("Game not supported: " + gameKey);
+            case TICHU:
+                return TichuGameStatisticAttributeManager.INSTANCE;
+            case DOPPELKOPF:
+                return DoppelkopfGameStatisticAttributeManager.INSTANCE;
+            case MINIGOLF:
+                return MinigolfGameStatisticAttributeManager.INSTANCE;
+            case CUSTOMGAME:
+                return CustomGameStatisticAttributeManager.INSTANCE;
+            case BINOKELGAME:
+                return BinokelGameStatisticAttributeManager.INSTANCE;
+            default:
+                throw new IllegalArgumentException("Game not supported: " + gameKey);
         }
     }
 }

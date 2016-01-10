@@ -19,10 +19,10 @@ import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 /**
  * This fragment activity is the home activity for tichu games. It holds
  * a {@link TichuGamesOverviewListFragment} and offers an option menu to start
- * the {@link GameSetupActivity}, the {@link TichuGamesStatisticsActivity}
+ * the {@link GameSetupActivity}, the {@link dan.dit.gameMemo.appCore.statistics.StatisticsActivity}
  * or the {@link BluetoothDataExchangeActivity}.<br>
- * Depending on the layout, it also holds a {@link TichuGameDetailFragment} or starts a {@link TichuGameDetailActivity}
- * when there is a game being selected.
+ * Depending on the layout, it also holds a {@link TichuGameDetailFragment} and starts a
+ * GameDetailActivity when there is a game being selected.
  * @author Daniel
  *
  */
