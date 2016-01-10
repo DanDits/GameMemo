@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item 
+        android:id="@+id/location"
+        android:showAsAction="ifRoom"
+        android:icon="@drawable/location_inverse"
+        android:title="@string/sport_game_location">
+        </item>
+    <item 
+        android:id="@+id/info"
+        android:showAsAction="ifRoom"
+        android:icon="@drawable/ic_menu_info"
+        android:title="@string/menu_game_info">
+       </item>  
+</menu>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <AutoCompleteTextView
+        android:id="@+id/gameNames"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:ems="10"
+        android:hint="@string/customgame_game_name_hint"
+        android:inputType="textCapSentences"
+        android:textColorHint="@color/hint_stressed" >
+
+        <requestFocus />
+    </AutoCompleteTextView>
+
+    <CheckBox
+        android:id="@+id/roundBased"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/gameNames"
+        android:checked="true"
+        android:text="@string/customgame_roundbased" />
+    
+</RelativeLayout>

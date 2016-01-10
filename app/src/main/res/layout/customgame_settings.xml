@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <EditText
+            android:id="@+id/gameName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/gameFinished"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/gameFinished"
+            android:hint="@string/customgame_game_name_hint"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColorHint="@color/hint_stressed" />
+
+        <ImageButton
+            android:id="@+id/gameFinished"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:background="@drawable/usergame_button"
+            android:src="@drawable/ic_menu_unlocked" />
+
+        <EditText
+            android:id="@+id/gameDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/gameName"
+            android:ems="10"
+            android:hint="@string/customgame_detail_settings_description_hint"
+            android:inputType="textMultiLine" >
+
+            <requestFocus />
+        </EditText>
+
+        <EditText
+            android:id="@+id/gameStartscore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/gameDescription"
+            android:layout_toRightOf="@+id/textView2"
+            android:ems="10"
+            android:hint="@string/customgame_startscore"
+            android:inputType="numberSigned|numberDecimal" />
+
+        <View
+            android:id="@+id/view1"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_below="@+id/gameHighestWins"
+            android:layout_marginBottom="2dp"
+            android:layout_marginTop="3dp"
+            android:background="@android:color/black" />
+
+        <ImageButton
+            android:id="@+id/addPlayer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/view1"
+            android:background="@drawable/usergame_button"
+            android:src="@drawable/add_player" />
+
+        <EditText
+            android:id="@+id/newPlayerName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/addPlayer"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/view1"
+            android:layout_toLeftOf="@+id/addPlayer"
+            android:ems="10"
+            android:hint="@string/customgame_detail_settings_new_player_hint"
+            android:inputType="textCapWords" />
+
+        <View
+            android:id="@+id/view2"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_below="@+id/newPlayerName"
+            android:layout_marginBottom="2dp"
+            android:layout_marginTop="3dp"
+            android:background="@android:color/black" />
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/inputDelayTime"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/view2"
+            android:text="@string/customgame_detail_settings_delay_descr" />
+
+        <CheckBox
+            android:id="@+id/autoselectNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/inputDelayTime"
+            android:text="@string/customgame_detail_settings_autoselectnext_descr" />
+
+        <CheckBox
+            android:id="@+id/gameHighestWins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/gameStartscore"
+            android:text="@string/customgame_highest_score_wins" />
+
+        <EditText
+            android:id="@+id/inputDelayTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/view2"
+            android:layout_toRightOf="@+id/textView1"
+            android:ems="10"
+            android:hint="@string/customgame_detail_settings_delay_hint"
+            android:inputType="numberDecimal" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/gameStartscore"
+            android:layout_alignBottom="@+id/gameStartscore"
+            android:layout_alignParentLeft="true"
+            android:text="@string/customgame_startscore" />
+
+    </RelativeLayout>
+
+</ScrollView>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dan.dit.gameMemo.util.LinearLayoutCheckable xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/LinearLayoutCheckable1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/tichu_list_selector"
+    android:orientation="horizontal" >
+
+    <ImageView
+        android:id="@+id/player1_tichu_bid_image"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="4"
+        android:contentDescription="@string/tichu_game_tichu_round_bid_image_content_description"
+        android:maxHeight="@dimen/tichu_image_in_round_max_height"
+        android:scaleType="centerInside" />
+
+    <TextView
+        android:id="@+id/team1_delta"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="4"
+        android:gravity="right"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/team1_score"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="7"
+        android:gravity="right"
+        android:text="@string/default_tichu_round_score"
+        android:textSize="20sp" />
+
+    <View
+        android:id="@+id/view2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2" />
+
+    <ImageView
+        android:id="@+id/player2_tichu_bid_image"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="4"
+        android:contentDescription="@string/tichu_game_tichu_round_bid_image_content_description"
+        android:maxHeight="@dimen/tichu_image_in_round_max_height"
+        android:scaleType="centerInside" />
+
+    <ImageView
+        android:id="@+id/player3_tichu_bid_image"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="4"
+        android:contentDescription="@string/tichu_game_tichu_round_bid_image_content_description"
+        android:maxHeight="@dimen/tichu_image_in_round_max_height"
+        android:scaleType="centerInside" />
+
+    <TextView
+        android:id="@+id/team2_delta"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="4"
+        android:gravity="right"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/team2_score"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="7"
+        android:gravity="right"
+        android:text="@string/default_tichu_round_score"
+        android:textSize="20sp" />
+
+    <View
+        android:id="@+id/view1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2" />
+
+    <ImageView
+        android:id="@+id/player4_tichu_bid_image"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="4"
+        android:contentDescription="@string/tichu_game_tichu_round_bid_image_content_description"
+        android:maxHeight="@dimen/tichu_image_in_round_max_height"
+        android:scaleType="centerInside" />
+
+</dan.dit.gameMemo.util.LinearLayoutCheckable>

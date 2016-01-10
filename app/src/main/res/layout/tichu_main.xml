@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <Button
+        android:id="@+id/setup_game"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/tichu_button"
+        android:drawableLeft="@drawable/ic_menu_add"
+        android:layout_margin="2dp"
+        android:text="@string/setup_game" />
+    
+    <fragment 
+        android:id ="@+id/game_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="dan.dit.gameMemo.appCore.tichu.TichuGamesOverviewListFragment" />
+
+</LinearLayout>

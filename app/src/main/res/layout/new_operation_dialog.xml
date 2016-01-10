@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+   <RadioGroup
+       android:id="@+id/op_type"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_alignParentLeft="true"
+       android:layout_alignParentRight="true"
+       android:checkedButton="@+id/op_absolute"
+       android:orientation="vertical" >
+
+	    <RadioButton
+	        android:id="@+id/op_absolute"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:text="@string/number_input_absolute_operation_name" />
+	
+	    <RadioButton
+	        android:id="@+id/op_plus"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:text="+" />
+	
+	    <RadioButton
+	        android:id="@+id/op_minus"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:text="-" />
+	
+	    <RadioButton
+	        android:id="@+id/op_multi"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:text="*" />
+	
+	    <RadioButton
+	        android:id="@+id/op_divide"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:text="/" />
+	
+	    <RadioButton
+	        android:id="@+id/op_clear"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:text="C" />
+	
+	    <RadioButton
+	        android:id="@+id/op_sign"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:text="±" />
+</RadioGroup>
+
+    <EditText
+        android:id="@+id/op_number"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/op_type"
+        android:ems="10"
+        android:hint="@string/number_input_number_value_hint"
+        android:inputType="numberSigned|numberDecimal" >
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/op_number"
+        android:text="@string/number_input_delete_op_hint" />
+
+</RelativeLayout>

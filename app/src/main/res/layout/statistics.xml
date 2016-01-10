@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ViewSwitcher xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/statistic_switcher"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:id="@+id/statistic_setup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <LinearLayout
+            android:id="@+id/mode_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true" >
+
+            <ImageButton
+                android:id="@+id/mode_all"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:layout_weight="1"
+                android:src="@drawable/stat_mode_all" />
+
+            <ImageButton
+                android:id="@+id/mode_overview"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_weight="1"
+                android:src="@drawable/stat_mode_overview" />
+
+            <ImageButton
+                android:id="@+id/mode_chrono"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:layout_weight="1"
+                android:src="@drawable/stat_mode_chron" />
+        </LinearLayout>
+
+        <Spinner
+            android:id="@+id/statistic_select"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/mode_container"
+            android:layout_toLeftOf="@+id/statistic_edit" />
+
+        <ImageButton
+            android:id="@+id/statistic_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/mode_container"
+            android:src="@drawable/ic_menu_edit" />
+
+        <Button
+            android:id="@+id/statistic_show"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/statistic_select"
+            android:text="@string/statistics_show_chart_all_games" />
+
+        <ScrollView
+            android:id="@+id/teams_container_scroll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/statistic_show" >
+
+            <LinearLayout
+                android:id="@+id/teams_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+            </LinearLayout>
+        </ScrollView>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/statistic_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <LinearLayout
+            android:id="@+id/statistic_mode_chart_holder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:orientation="vertical" >
+        </LinearLayout>
+        
+        <LinearLayout
+            android:id="@+id/statistic_mode_all_holder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/statistic_mode_all_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TextView" />
+            
+            <ListView
+	            android:id="@+id/statistic_mode_all_list"
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent">
+        	</ListView>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</ViewSwitcher>

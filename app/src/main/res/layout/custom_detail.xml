@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/detail_base_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+    <!-- Dummy list required but not used -->
+
+    <TextView
+        android:id="@+id/mainInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:visibility="gone" />
+
+     <ListView android:id="@id/android:list"
+               android:layout_width="match_parent"
+               android:layout_height="1dp"
+               android:background="#00FF00"
+            	android:visibility="gone"
+               android:drawSelectorOnTop="false"/>
+    <View
+            android:id="@android:id/empty"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            android:layout_gravity="center_horizontal"/>
+    
+    <RelativeLayout
+        android:id="@+id/rounds_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/round_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:gravity="center_horizontal"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="Round X"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <ImageButton
+            android:id="@+id/last_round"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/round_title"
+            android:background="@drawable/usergame_button"
+            android:src="@drawable/left_round_select" />
+
+        <ImageButton
+            android:id="@+id/next_round"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/round_title"
+            android:background="@drawable/usergame_button"
+            android:src="@drawable/right_round_select" />
+
+    </RelativeLayout>
+
+    <GridView
+        android:id="@+id/scores_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5"
+        android:horizontalSpacing="10dp"
+        android:listSelector="@drawable/usergame_list_selector"
+        android:numColumns="1"
+        android:verticalSpacing="3dp" >
+
+    </GridView>
+
+    <ProgressBar
+        android:id="@+id/inputDelayProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@android:color/black" />
+
+    <LinearLayout
+        android:id="@+id/score_input_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="2dp"
+        android:layout_weight="3"
+        android:orientation="horizontal" >
+
+    </LinearLayout>
+
+</LinearLayout>

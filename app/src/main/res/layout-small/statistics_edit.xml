@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="200dp" >
+
+        <RelativeLayout
+            android:id="@+id/attribute_data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <Spinner
+                android:id="@+id/attribute_select"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:focusable="false"
+                android:focusableInTouchMode="false" />
+
+            <Button
+                android:id="@+id/attribute_extend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/attribute_select"
+                android:layout_centerHorizontal="true"
+                android:text="@string/attribute_extend" />
+
+            <View
+                android:id="@+id/border1"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/attribute_extend"
+                android:background="@android:color/black" />
+
+            <EditText
+                android:id="@+id/attribute_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/border1"
+                android:ems="10"
+                android:gravity="center_vertical|center_horizontal"
+                android:hint="@string/attribute_name" >
+
+                <requestFocus android:layout_height="wrap_content" />
+            </EditText>
+
+            <EditText
+                android:id="@+id/attribute_descr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/attribute_name"
+                android:ems="10"
+                android:hint="@string/attribute_description" />
+
+            <EditText
+                android:id="@+id/attribute_custom_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+                android:layout_below="@id/attribute_descr"
+                android:ems="10"
+                android:hint="@string/attribute_custom_value" />
+
+            <View
+                android:id="@+id/border2"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/attribute_custom_value"
+                android:background="@android:color/black" />
+
+            <RelativeLayout
+                android:id="@+id/statistic_data_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/border2" >
+
+                <Button
+                    android:id="@+id/pres_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:text="@string/statistics_menu_pres_type_absolute" />
+
+                <Spinner
+                    android:id="@+id/reference_select"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/pres_type"
+                    android:layout_toRightOf="@+id/textView1" />
+
+                <TextView
+                    android:id="@+id/textView1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/border3"
+                    android:layout_alignTop="@+id/pres_type"
+                    android:layout_toRightOf="@+id/pres_type"
+                    android:gravity="center_vertical"
+                    android:text="@string/statistic_reference_statistic" />
+
+                <View
+                    android:id="@+id/border3"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_alignBottom="@+id/reference_select"
+                    android:layout_alignParentLeft="true"
+                    android:background="@android:color/black" />
+            </RelativeLayout>
+
+            <ImageButton
+                android:id="@+id/attribute_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/attribute_extend"
+                android:layout_alignParentRight="true"
+                android:src="@drawable/ic_menu_delete_black" />
+
+            <TextView
+                android:id="@+id/based_on_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_below="@+id/attribute_select"
+                android:layout_toLeftOf="@+id/attribute_extend"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <EditText
+                android:id="@+id/priority"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/attribute_name"
+                android:layout_alignBottom="@+id/attribute_name"
+                android:layout_alignParentRight="true"
+                android:layout_toRightOf="@id/attribute_name"
+                android:ems="10"
+                android:hint="@string/statistic_priority_short"
+                android:inputType="numberSigned" />
+
+        </RelativeLayout>
+    </ScrollView>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <View
+            android:id="@+id/separator"
+            android:layout_width="1dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="false"
+            android:background="@android:color/black" />
+
+        <TextView
+            android:id="@+id/sub_attrs_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/separator"
+            android:gravity="center_horizontal"
+            android:text="@string/attribute_sub_attrs" />
+
+        <ListView
+            android:id="@+id/sub_attrs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/sub_attrs_title"
+            android:layout_toLeftOf="@+id/separator" >
+        </ListView>
+
+        <TextView
+            android:id="@+id/sub_attrs_all_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/separator"
+            android:gravity="center_horizontal"
+            android:text="@string/attribute_sub_attrs_all" />
+
+        <ListView
+            android:id="@+id/sub_attrs_all"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/sub_attrs"
+            android:layout_toRightOf="@+id/separator" >
+        </ListView>
+    </RelativeLayout>
+
+</LinearLayout>
