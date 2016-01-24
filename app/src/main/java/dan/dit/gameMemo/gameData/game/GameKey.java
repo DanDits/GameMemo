@@ -107,12 +107,12 @@ public final class GameKey {
 	/**
 	 * The constant for the {@link BinokelGame} class.
 	 */
-	public static final int BINOKELGAME = 5;
+	public static final int BINOKEL = 5;
 	
 	/**
 	 * Contains all game keys that will appear in the game chooser activity.
 	 */
-	public static final int[] ALL_GAMES = new int[] {TICHU, DOPPELKOPF, BINOKELGAME, MINIGOLF,
+	public static final int[] ALL_GAMES = new int[] {TICHU, DOPPELKOPF, BINOKEL, MINIGOLF,
             CUSTOMGAME};
 	
 	/**
@@ -220,7 +220,7 @@ public final class GameKey {
                 return dan.dit.gameMemo.R.drawable.minigolf_icon;
             case GameKey.CUSTOMGAME:
                 return dan.dit.gameMemo.R.drawable.user_game_icon;
-            case GameKey.BINOKELGAME:
+            case GameKey.BINOKEL:
                 return dan.dit.gameMemo.R.drawable.binokel_icon;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
@@ -245,7 +245,7 @@ public final class GameKey {
                 return res == null ? MinigolfGame.GAME_NAME : res.getString(R.string.minigolf_game_name);
             case CUSTOMGAME:
                 return res == null ? CustomGame.NAME : res.getString(R.string.user_game_name);
-            case BINOKELGAME:
+            case BINOKEL:
                 return BinokelGame.GAME_NAME;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
@@ -270,7 +270,7 @@ public final class GameKey {
                 return res == null ? MinigolfGame.GAME_NAME : res.getString(R.string.minigolf_game_name);
             case CUSTOMGAME:
                 return res == null ? CustomGame.NAME : res.getString(R.string.user_game_name);
-            case BINOKELGAME:
+            case BINOKEL:
                 return BinokelGame.GAME_NAME;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
@@ -304,7 +304,7 @@ public final class GameKey {
                 return MinigolfGame.PLAYERS;
             case GameKey.CUSTOMGAME:
                 return CustomGame.PLAYERS;
-            case GameKey.BINOKELGAME:
+            case GameKey.BINOKEL:
                 return BinokelGame.PLAYERS;
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);	
@@ -328,7 +328,7 @@ public final class GameKey {
                 return new MinigolfGameBuilder();
             case CUSTOMGAME:
                 return new CustomGameBuilder();
-            case BINOKELGAME:
+            case BINOKEL:
                 return new BinokelGameBuilder();
 		default:
 			throw new IllegalArgumentException("Game not supported: " + gameKey);			
@@ -406,7 +406,7 @@ public final class GameKey {
                 return R.drawable.minigolf_color;
             case CUSTOMGAME:
                 return R.drawable.usergame_color;
-            case BINOKELGAME:
+            case BINOKEL:
                 return R.drawable.binokel_color;
             default:
                 throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -434,7 +434,7 @@ public final class GameKey {
                 return R.color.minigolf_text_color;
             case CUSTOMGAME:
                 return R.color.usergame_text_color;
-            case BINOKELGAME:
+            case BINOKEL:
                 return R.color.binokel_text_color;
             default:
                 throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -451,7 +451,7 @@ public final class GameKey {
                 return R.drawable.minigolf_button;
             case CUSTOMGAME:
                 return R.drawable.usergame_button;
-            case BINOKELGAME:
+            case BINOKEL:
                 return R.drawable.binokel_button;
             default:
                 throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -468,7 +468,7 @@ public final class GameKey {
                 return R.drawable.minigolf_list_selector;
             case CUSTOMGAME:
                 return R.drawable.usergame_list_selector;
-            case BINOKELGAME:
+            case BINOKEL:
                 return R.drawable.binokel_list_selector;
             default:
                 throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -496,7 +496,7 @@ public final class GameKey {
                 return R.layout.minigolf_main;
             case CUSTOMGAME:
                 return R.layout.custom_main;
-            case BINOKELGAME:
+            case BINOKEL:
                 return R.layout.binokel_main;
             default:
                 throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -529,7 +529,7 @@ public final class GameKey {
                 return MinigolfGamesActivity.class;
             case CUSTOMGAME:
                 return CustomGamesActivity.class;
-            case BINOKELGAME:
+            case BINOKEL:
                 return BinokelGamesActivity.class;
             default:
                 throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -542,7 +542,7 @@ public final class GameKey {
             case DOPPELKOPF:
             case MINIGOLF:
             case CUSTOMGAME:
-            case BINOKELGAME:
+            case BINOKEL:
 			return R.layout.generic_list;
             default:
                 throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -559,7 +559,7 @@ public final class GameKey {
                 return R.menu.minigolf_list;
             case CUSTOMGAME:
                 return R.menu.custom_list;
-            case BINOKELGAME:
+            case BINOKEL:
                 return R.menu.binokel_list;
             default:
                 throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -577,7 +577,7 @@ public final class GameKey {
                 return MinigolfGameDetailFragment.newInstance(gameId);
             case CUSTOMGAME:
                 return CustomGameDetailFragment.newInstance(gameId);
-            case BINOKELGAME:
+            case BINOKEL:
                 return BinokelGameDetailFragment.newInstance(gameId);
             default:
                 throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -595,7 +595,7 @@ public final class GameKey {
                 return MinigolfGameDetailFragment.newInstance(extras);
              case CUSTOMGAME:
                  return CustomGameDetailFragment.newInstance(extras);
-            case BINOKELGAME:
+            case BINOKEL:
                 return BinokelGameDetailFragment.newInstance(extras);
             default:
                 throw new IllegalArgumentException("Game not supported: " + gameKey);
@@ -613,7 +613,7 @@ public final class GameKey {
                 return new dan.dit.gameMemo.appCore.minigolf.GameSetupOptions(context, container, parameters);
             case CUSTOMGAME:
                 return new dan.dit.gameMemo.appCore.custom.GameSetupOptions(context, container, parameters);
-            case BINOKELGAME:
+            case BINOKEL:
                 return new dan.dit.gameMemo.appCore.binokel.GameSetupOptions(context, container,
                         parameters);
             default:
@@ -625,7 +625,7 @@ public final class GameKey {
         switch(gameKey) {
             case GameKey.TICHU:
             case GameKey.DOPPELKOPF:
-            case GameKey.BINOKELGAME:
+            case GameKey.BINOKEL:
             case CUSTOMGAME:
                 return CardGameTable.TABLE_CARD_GAMES;
             case MINIGOLF:
@@ -639,7 +639,7 @@ public final class GameKey {
         switch(gameKey) {
             case GameKey.TICHU:
             case GameKey.DOPPELKOPF:
-            case GameKey.BINOKELGAME:
+            case GameKey.BINOKEL:
             case CUSTOMGAME:
                 return CardGameTable.AVAILABLE_COLUMNS_COLL;
             case MINIGOLF:
@@ -653,7 +653,7 @@ public final class GameKey {
         switch(gameKey) {
             case GameKey.TICHU:
             case GameKey.DOPPELKOPF:
-            case BINOKELGAME:
+            case BINOKEL:
             case CUSTOMGAME:
                 return CardGameTable.AVAILABLE_COLUMNS;
             case MINIGOLF:
@@ -667,7 +667,7 @@ public final class GameKey {
 		switch(gameKey) {
             case GameKey.TICHU:
             case GameKey.DOPPELKOPF:
-            case BINOKELGAME:
+            case BINOKEL:
             case MINIGOLF:
             case CUSTOMGAME:
                 return GamesDBContentProvider.makeUri(gameKey, uriType);
@@ -687,7 +687,7 @@ public final class GameKey {
                 return MinigolfGameStatisticAttributeManager.INSTANCE;
             case CUSTOMGAME:
                 return CustomGameStatisticAttributeManager.INSTANCE;
-            case BINOKELGAME:
+            case BINOKEL:
                 return BinokelGameStatisticAttributeManager.INSTANCE;
             default:
                 throw new IllegalArgumentException("Game not supported: " + gameKey);

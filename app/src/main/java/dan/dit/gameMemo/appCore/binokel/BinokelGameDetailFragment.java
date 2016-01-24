@@ -5,7 +5,6 @@ import android.os.Bundle;
 import java.util.List;
 
 import dan.dit.gameMemo.appCore.GameDetailFragment;
-import dan.dit.gameMemo.appCore.tichu.TichuGameDetailFragment;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.player.Player;
@@ -17,12 +16,13 @@ import dan.dit.gameMemo.storage.GameStorageHelper;
  */
 public class BinokelGameDetailFragment extends GameDetailFragment {
 
+
     public static BinokelGameDetailFragment newInstance(long gameId) {
         BinokelGameDetailFragment f = new BinokelGameDetailFragment();
 
         // Supply index input as an argument.
         Bundle args = new Bundle();
-        args.putLong(GameStorageHelper.getCursorItemType(GameKey.BINOKELGAME), gameId);
+        args.putLong(GameStorageHelper.getCursorItemType(GameKey.BINOKEL), gameId);
         f.setArguments(args);
 
         return f;

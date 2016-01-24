@@ -6,7 +6,7 @@
         		android:color="#87d9c9" />
             <stroke
                 android:width="1dp"
-                android:color="#7dc6ba" />
+                android:color="#0a0336" />
             <corners
                 android:radius="3dp" />
             <padding
@@ -23,7 +23,7 @@
         		android:color="#1bf3ec" />
             <stroke
                 android:width="1dp"
-                android:color="#0794bb" />
+                android:color="#0a0336" />
             <corners
                 android:radius="3dp" />
             <padding

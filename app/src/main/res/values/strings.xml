@@ -194,6 +194,14 @@
 	<string name="doppelkopf_rule_system_descr_ka1">Modified tournament1: Re/Contra +1, duty soli after rounds, ends after x rounds not matches</string>
 	<string name="lock_game">Lock game</string>
 	<string name="unlock_game">Unlock game</string>
+
+	<string name="binokel_score_limit">Score limit: %1$d</string>
+	<string name="binokel_unten_durch_score">Untendurch value: %1$d</string>
+	<string name="binokel_durch_score">Durch value: %1$d</string>
+	<string name="binokel_game_score_limit_with_value">Score limit: %1$d</string>
+	<string name="binokel_game_score_limit">Score limit</string>
+
+
 	<string name="statistics_show_chart_all_games">Calculate for all games</string>	
 	<plurals
 	     name="statistics_show_chart_x_games">

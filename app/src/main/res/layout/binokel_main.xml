@@ -3,12 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-    <!-- TODO adjust -->
     <Button
         android:id="@+id/setup_game"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/tichu_button"
+        android:background="@drawable/binokel_button"
         android:drawableLeft="@drawable/ic_menu_add"
         android:layout_margin="2dp"
         android:text="@string/setup_game" />
@@ -17,6 +16,6 @@
         android:id ="@+id/game_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="dan.dit.gameMemo.appCore.tichu.TichuGamesOverviewListFragment" />
+        android:name="dan.dit.gameMemo.appCore.binokel.BinokelGamesOverviewListFragment" />
 
 </LinearLayout>

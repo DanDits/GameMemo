@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+	<string name="binokel_score_limit">Punkte Limit: %1$d</string>
+	<string name="binokel_unten_durch_score">Untendurch Wert: %1$d</string>
+	<string name="binokel_durch_score">Durch Wert: %1$d</string>
+	<string name="binokel_game_score_limit_with_value">Punkte Limit: %1$d</string>
+	<string name="binokel_game_score_limit">Punkte Limit</string>
+
     <string name="app_name">GameMemo</string>
     <string name="game_list_empty">Deine Spiele werden hier automatisch gespeichert</string>
     <string name="setup_game">Spiel einrichten</string>

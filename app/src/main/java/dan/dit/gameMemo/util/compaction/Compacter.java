@@ -90,7 +90,12 @@ public class Compacter implements Iterable<String> {
 		data.add(dataString);
 		return this;
 	}
-	
+
+	public Compacter appendData(boolean value) {
+		data.add(value ? "1" : "0");
+		return this;
+	}
+
 	/**
 	 * Appends the given int. Equal to appendData(String.valueOf(dataInt)).
 	 * @param dataInt The int to append.
@@ -127,7 +132,11 @@ public class Compacter implements Iterable<String> {
         appendData(ldata);
         return this;
     }
-    
+
+	public boolean getBoolean(int index) {
+		return data.get(index).equals("1");
+	}
+
     public double getDouble(int index) throws CompactedDataCorruptException {
         long ldata = getLong(index);
         return Double.longBitsToDouble(ldata);
