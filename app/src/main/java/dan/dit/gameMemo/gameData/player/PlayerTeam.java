@@ -28,16 +28,18 @@ public class PlayerTeam extends AbstractPlayerTeam {
 		return mPlayers.contains(p);
 	}
 
-	public void addPlayer(Player player) {
+	public PlayerTeam addPlayer(Player player) {
 		if (player != null && !mPlayers.contains(player)) {
 			mPlayers.add(player);
 		}
+		return this;
 	}
 	
-	public void addPlayers(AbstractPlayerTeam players) {
+	public PlayerTeam addPlayers(AbstractPlayerTeam players) {
 	    for (Player p : players) {
 	        addPlayer(p);
 	    }
+		return this;
 	}
 
     @Override

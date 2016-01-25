@@ -220,7 +220,7 @@ public class BinokelGame extends Game {
     }
 
     public void addTeam(PlayerTeam team) {
-        if (team == null || team.getPlayerCount() == 0 || mTeams.size() >= MAX_TEAMS) {
+        if (team == null || team.getPlayerCount() < MIN_PLAYERS_PER_TEAM || mTeams.size() >= MAX_TEAMS) {
             throw new IllegalArgumentException("Too many teams! " + mTeams.size() + " adding: " +
                     team);
         }

@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Build;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,13 +17,12 @@ import java.util.Date;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameOverviewAdapter;
 import dan.dit.gameMemo.gameData.game.Game;
-import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
+import dan.dit.gameMemo.gameData.game.binokel.BinokelGame;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.storage.GameStorageHelper;
 import dan.dit.gameMemo.util.compaction.Compacter;
 
 public class BinokelGameOverviewAdapter extends GameOverviewAdapter {
-    //TODO adjust
 	public static final String[] REQUIRED_COLUMNS = new String[] { GameStorageHelper.COLUMN_PLAYERS, GameStorageHelper.COLUMN_STARTTIME,
 		GameStorageHelper.COLUMN_WINNER, GameStorageHelper.COLUMN_ID};
 	private static final int[] COLUMN_MAPPING = new int[REQUIRED_COLUMNS.length];
@@ -44,12 +44,16 @@ public class BinokelGameOverviewAdapter extends GameOverviewAdapter {
         final LayoutInflater inflater = LayoutInflater.from(context);
         View v = inflater.inflate(layout, parent, false);
         ViewHolder holder = new ViewHolder();
-        holder.team1_1 = (TextView) v.findViewById(R.id.tichu_overview_team1_1);
-        holder.team1_2 = (TextView) v.findViewById(R.id.tichu_overview_team1_2);
-        holder.team2_1 = (TextView) v.findViewById(R.id.tichu_overview_team2_1);
-        holder.team2_2 = (TextView) v.findViewById(R.id.tichu_overview_team2_2);
-        holder.team1 = (ImageView) v.findViewById(R.id.tichu_overview_team1);
-        holder.team2 = (ImageView) v.findViewById(R.id.tichu_overview_team2);
+        holder.team1_1 = (TextView) v.findViewById(R.id.binokel_overview_team1_1);
+        holder.team1_2 = (TextView) v.findViewById(R.id.binokel_overview_team1_2);
+        holder.team2_1 = (TextView) v.findViewById(R.id.binokel_overview_team2_1);
+        holder.team2_2 = (TextView) v.findViewById(R.id.binokel_overview_team2_2);
+        holder.team3_1 = (TextView) v.findViewById(R.id.binokel_overview_team3_1);
+        holder.team3_2 = (TextView) v.findViewById(R.id.binokel_overview_team3_2);
+        holder.team1Won = (ImageView) v.findViewById(R.id.binokel_team1_won);
+        holder.team2Won = (ImageView) v.findViewById(R.id.binokel_team2_won);
+        holder.team3Won = (ImageView) v.findViewById(R.id.binokel_team3_won);
+        holder.team3Container = v.findViewById(R.id.team3_container);
         holder.time = (TextView) v.findViewById(R.id.time);
         holder.date = (TextView) v.findViewById(R.id.date);
         holder.checker = (CheckBox) v.findViewById(R.id.selected_checker);
@@ -62,7 +66,7 @@ public class BinokelGameOverviewAdapter extends GameOverviewAdapter {
     }
     
     @Override
-    protected void updateViewInfo(View tichuRow, Cursor c) {
+    protected void updateViewInfo(View binokelRow, Cursor c) {
         int playersCol = c.getColumnIndex(GameStorageHelper.COLUMN_PLAYERS);
         int starttimeCol = c.getColumnIndex(GameStorageHelper.COLUMN_STARTTIME);
         int winnerCol = c.getColumnIndex(GameStorageHelper.COLUMN_WINNER);
@@ -75,16 +79,25 @@ public class BinokelGameOverviewAdapter extends GameOverviewAdapter {
         long id = c.getLong(idCol);
 
         // prepare information
-        Compacter cmp = new Compacter(players);
-        String playerOne = cmp.getData(0);
-        String playerTwo = cmp.getData(1);
-        String playerThree = cmp.getData(2);
-        String playerFour = cmp.getData(3);
-       
+        Compacter teams = new Compacter(players);
+        Compacter team1 = new Compacter(teams.getData(0));
+        Compacter team2 = new Compacter(teams.getData(1));
+        Compacter team3 = teams.getSize() > 2 ? new Compacter(teams.getData(2)) : null;
+        String player1_1 = team1.getData(0);
+        String player1_2 = team1.getSize() > 1 ? team1.getData(1) : null;
+        String player2_1 = team2.getData(0);
+        String player2_2 = team2.getSize() > 1 ? team2.getData(1) : null;
+        String player3_1 = team3 != null ? team3.getData(0) : null;
+        String player3_2 = team3 != null && team3.getSize() > 1 ? team3.getData(1) : null;
+
         Date startDate = new Date(startTime);
         boolean hasWinner = winner != Game.WINNER_NONE;
-        boolean team1Wins = winner == TichuGame.WINNER_TEAM1;
-        ViewHolder holder = (ViewHolder) tichuRow.getTag();
+        boolean team1Wins = winner == 1;
+        boolean team2Wins = winner == 2;
+        boolean team3Wins = winner == 3;
+
+        ViewHolder holder = (ViewHolder) binokelRow.getTag();
+        holder.team3Container.setVisibility(team3 == null ? View.GONE : View.VISIBLE);
         
         // checked state
         holder.checker.setChecked(isChecked(id));
@@ -105,40 +118,51 @@ public class BinokelGameOverviewAdapter extends GameOverviewAdapter {
         } else {
         	applyDate(holder.date, startDate);
         }
-        
-        // show players names               
-        Player p = TichuGame.PLAYERS.populatePlayer(playerOne);
-        holder.team1_1.setText(p.getShortenedName(Player.SHORT_NAME_LENGTH));
-        p = TichuGame.PLAYERS.populatePlayer(playerTwo);
-        holder.team1_2.setText(p.getShortenedName(Player.SHORT_NAME_LENGTH));
-        p = TichuGame.PLAYERS.populatePlayer(playerThree);
-        holder.team2_1.setText(p.getShortenedName(Player.SHORT_NAME_LENGTH));
-        p = TichuGame.PLAYERS.populatePlayer(playerFour);
-        holder.team2_2.setText(p.getShortenedName(Player.SHORT_NAME_LENGTH));
-        
-        // show images giving an indication of the game, like the score leader or winner
-        int team1Image = 0;
-        int team2Image = 0;
-        if (hasWinner) {
-        	team1Image = team1Wins ? R.drawable.tichu_mahjong : R.drawable.tichu_dog;
-        	team2Image = team1Wins ? R.drawable.tichu_dog : R.drawable.tichu_mahjong;
-        } else {
-            team1Image = R.drawable.tichu_phoenix;        		
-            team2Image = R.drawable.tichu_phoenix;	
-        }
-        holder.team1.setImageResource(team1Image);
-        holder.team2.setImageResource(team2Image);     
+
+        showPlayerName(holder.team1_1, player1_1);
+        showPlayerName(holder.team1_2, player1_2);
+        showPlayerName(holder.team2_1, player2_1);
+        showPlayerName(holder.team2_2, player2_2);
+        showPlayerName(holder.team3_1, player3_1);
+        showPlayerName(holder.team3_2, player3_2);
+
+
+        showWinner(holder.team1Won, team1Wins, hasWinner);
+        showWinner(holder.team2Won, team2Wins, hasWinner);
+        showWinner(holder.team3Won, team3Wins, hasWinner);
     }
-	
+
+    private void showWinner(ImageView view, boolean teamWins, boolean hasWinner) {
+        if (!hasWinner) {
+            view.setVisibility(View.GONE);
+            return;
+        }
+        view.setVisibility(teamWins ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    private void showPlayerName(TextView view, String playerName) {
+        if (TextUtils.isEmpty(playerName)) {
+            view.setVisibility(View.GONE);
+            return;
+        }
+        view.setVisibility(View.VISIBLE);
+        Player p = BinokelGame.PLAYERS.populatePlayer(playerName);
+        view.setText(p.getShortenedName(Player.SHORT_NAME_LENGTH));
+    }
+
 	private static class ViewHolder {
 		 TextView team1_1;
 		 TextView team1_2;
 		 TextView team2_1;
 		 TextView team2_2;
-		 ImageView team1;
-		 ImageView team2;
+         TextView team3_1;
+        TextView team3_2;
+		 ImageView team1Won;
+		 ImageView team2Won;
+         ImageView team3Won;
+         View team3Container;
 		 TextView date;
 		 TextView time;
 		 CheckBox checker;
-	}
+    }
 }

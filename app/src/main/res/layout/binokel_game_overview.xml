@@ -3,11 +3,10 @@
     android:id="@+id/RelativeLayoutCheckable1"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/tichu_list_selector"
+    android:background="@drawable/binokel_list_selector"
     android:orientation="horizontal" >
-    <!-- TODO adjust -->
     <LinearLayout
-        android:id="@+id/tichu_overview_header"
+        android:id="@+id/binokel_overview_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -37,75 +36,137 @@
             android:focusableInTouchMode="false" />
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/image_vs"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="false"
-        android:layout_below="@id/tichu_overview_header"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="15dp"
-        android:src="@drawable/vs" />
+        android:layout_below="@+id/binokel_overview_header">
 
-    <TextView
-        android:id="@+id/tichu_overview_team1_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tichu_overview_header"
-        android:layout_toLeftOf="@id/image_vs"
-        android:layout_toRightOf="@+id/tichu_overview_team1"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="2"
+            android:id="@+id/team1_and_team2_container">
 
-    <TextView
-        android:id="@+id/tichu_overview_team2_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tichu_overview_header"
-        android:layout_toLeftOf="@+id/tichu_overview_team2"
-        android:layout_toRightOf="@id/image_vs"
-        android:gravity="right"
-        android:maxLines="1"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/binokel_won"
+                    android:id="@+id/binokel_team1_won"
+                    android:layout_centerHorizontal="true"/>
+                <TextView
+                    android:id="@+id/binokel_overview_team1_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/binokel_team1_won"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Spieler1_1"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <TextView
-        android:id="@+id/tichu_overview_team1_2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/tichu_overview_team1_1"
-        android:layout_alignParentLeft="false"
-        android:layout_alignRight="@+id/tichu_overview_team1_1"
-        android:layout_below="@+id/tichu_overview_team1_1"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+                <TextView
+                    android:id="@+id/binokel_overview_team1_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/binokel_overview_team1_1"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:text="Spieler1_2"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <TextView
-        android:id="@+id/tichu_overview_team2_2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/tichu_overview_team2_1"
-        android:layout_alignParentRight="false"
-        android:layout_alignRight="@+id/tichu_overview_team2_1"
-        android:layout_below="@+id/tichu_overview_team2_1"
-        android:ellipsize="end"
-        android:gravity="right"
-        android:maxLines="1"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+            </RelativeLayout>
+            <ImageView
+                android:id="@+id/image_vs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/vs" />
 
-    <ImageView
-        android:id="@+id/tichu_overview_team1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/tichu_overview_header" />
+            <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/binokel_won"
+                    android:id="@+id/binokel_team2_won"
+                    android:layout_centerHorizontal="true"/>
+                <TextView
+                    android:id="@+id/binokel_overview_team2_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="false"
+                    android:layout_below="@+id/binokel_team2_won"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="Spieler2_1"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <ImageView
-        android:id="@+id/tichu_overview_team2"
-        android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/binokel_overview_team2_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/binokel_overview_team2_1"
+                    android:layout_below="@+id/binokel_overview_team2_1"
+                    android:ellipsize="end"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:text="Spieler2_2"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+        <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/tichu_overview_header" />
+        android:orientation="horizontal"
+        android:id="@+id/team3_container">
+
+        <ImageView
+            android:id="@+id/image_vs2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/vs" />
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/binokel_won"
+                android:id="@+id/binokel_team3_won"
+                android:layout_centerHorizontal="true"/>
+            <TextView
+                android:id="@+id/binokel_overview_team3_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="false"
+                android:layout_below="@+id/binokel_team3_won"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Spieler3_1"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+            <TextView
+                android:id="@+id/binokel_overview_team3_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="false"
+                android:layout_below="@+id/binokel_overview_team3_1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Spieler3_2"
+                android:visibility="invisible"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
+        </RelativeLayout>
+    </LinearLayout>
+    </LinearLayout>
 
 </dan.dit.gameMemo.util.RelativeLayoutCheckable>

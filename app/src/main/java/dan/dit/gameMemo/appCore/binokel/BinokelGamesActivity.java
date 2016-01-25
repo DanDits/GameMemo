@@ -77,4 +77,5 @@ public class BinokelGamesActivity extends GamesActivity {
                 teamsBuilder.build());
         startActivityForResult(i, GAME_SETUP_ACTIVITY);
     }
+
 }

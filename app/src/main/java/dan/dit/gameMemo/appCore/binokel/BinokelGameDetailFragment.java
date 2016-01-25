@@ -1,12 +1,17 @@
 package dan.dit.gameMemo.appCore.binokel;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import java.util.List;
 
+import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameDetailFragment;
 import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
+import dan.dit.gameMemo.gameData.game.binokel.BinokelGame;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.storage.GameStorageHelper;
@@ -16,6 +21,8 @@ import dan.dit.gameMemo.storage.GameStorageHelper;
  */
 public class BinokelGameDetailFragment extends GameDetailFragment {
 
+
+    private BinokelGame mGame;
 
     public static BinokelGameDetailFragment newInstance(long gameId) {
         BinokelGameDetailFragment f = new BinokelGameDetailFragment();
@@ -32,6 +39,12 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         BinokelGameDetailFragment f = new BinokelGameDetailFragment();
         f.setArguments(extras);
         return f;
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View baseView = inflater.inflate(R.layout.binokel_detail, null);
+        return baseView;
     }
 
     //TODO implement methods
@@ -52,12 +65,12 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
 
     @Override
     protected Game getGame() {
-        return null;
+        return mGame;
     }
 
     @Override
     protected int getGameKey() {
-        return 0;
+        return GameKey.BINOKEL;
     }
 
     @Override
@@ -67,7 +80,7 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
 
     @Override
     public PlayerPool getPool() {
-        return null;
+        return GameKey.getPool(GameKey.BINOKEL);
     }
 
     @Override

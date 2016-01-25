@@ -55,9 +55,9 @@ public class BinokelRound extends GameRound {
             }
             teamIndex++;
         }
+        int playersPerTeam = mPlayersCount / mTeamsCount;
         for (int i = 0; i < mMeldungen.length; i++) {
-            mMeldungen[i] = new BinokelMeldung(i / teams.get(i).getPlayerCount(),
-                    teams.get(i).getPlayerCount());
+            mMeldungen[i] = new BinokelMeldung(i / playersPerTeam, i);
         }
         mResults = new BinokelRoundResult[mTeamsCount];
         for (int i = 0; i < mResults.length; i++) {
@@ -243,6 +243,10 @@ public class BinokelRound extends GameRound {
                 return true;
             }
             return false;
+        }
+
+        public BinokelRound getValid() {
+            return isValid() ? mPrototype : null;
         }
     }
 }
