@@ -24,6 +24,8 @@
     <string name="tichu_game_tichu_button_3_content_description">Toggle tichu bid player 3</string>
     <string name="tichu_game_tichu_button_4_content_description">Toggle tichu bid player 4</string>
     <string name="tichu_game_tichu_round_bid_image_content_description">Visualizes tichu bid for player</string>
+	<string name="binokel_game_failed_loading_players_missing">Binokel benötigt mindestens 3 Spieler
+		.</string>
     <string name="game_failed_loading">Failed loading game.</string>
     <string name ="show_statistics">Statistics</string>
     <string name ="GamesDBAccessPermissionDescription">Access to games database table</string>
@@ -198,6 +200,8 @@
 	<string name="binokel_score_limit">Score limit: %1$d</string>
 	<string name="binokel_unten_durch_score">Untendurch value: %1$d</string>
 	<string name="binokel_durch_score">Durch value: %1$d</string>
+	<string name="binokel_unten_durch_score_short">Untendurch: %1$d</string>
+	<string name="binokel_durch_score_short">Durch: %1$d</string>
 	<string name="binokel_game_score_limit_with_value">Score limit: %1$d</string>
 	<string name="binokel_game_score_limit">Score limit</string>
 

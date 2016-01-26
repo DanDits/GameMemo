@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameDetailActivity;
 import dan.dit.gameMemo.appCore.GameDetailFragment;
+import dan.dit.gameMemo.appCore.binokel.BinokelGameDetailActivity;
 import dan.dit.gameMemo.appCore.binokel.BinokelGameDetailFragment;
 import dan.dit.gameMemo.appCore.binokel.BinokelGamesActivity;
 import dan.dit.gameMemo.appCore.custom.CustomGameDetailFragment;
@@ -514,6 +516,8 @@ public final class GameKey {
 		switch (gameKey) {
             case DOPPELKOPF:
                 return DoppelkopfGameDetailActivity.class;
+			case BINOKEL:
+				return BinokelGameDetailActivity.class;
             default:
                 return GameDetailActivity.class;
 		}
@@ -568,6 +572,9 @@ public final class GameKey {
 
 	public static GameDetailFragment getNewGameDetailFragmentInstance(
 			int gameKey, long gameId) {
+
+		Log.d("GameKey", "Getting new game detail fragment instance for key: " + gameKey + " with" +
+				" id " + gameId);
 		switch (gameKey) {
             case GameKey.TICHU:
                 return TichuGameDetailFragment.newInstance(gameId);
@@ -586,6 +593,8 @@ public final class GameKey {
 	
 	public static GameDetailFragment getNewGameDetailFragmentInstance(
 			int gameKey, Bundle extras) {
+		Log.d("GameKey", "Getting new game detail fragment instance for key: " + gameKey + " with" +
+				" extras " + extras);
 		switch (gameKey) {
             case GameKey.TICHU:
                 return TichuGameDetailFragment.newInstance(extras);

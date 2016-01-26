@@ -56,6 +56,8 @@
         </activity>
         <activity android:name=".appCore.doppelkopf.DoppelkopfGameDetailActivity">
         </activity>
+        <activity android:name=".appCore.binokel.BinokelGameDetailActivity">
+        </activity>
         <activity
             android:name=".appCore.GameDetailActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"

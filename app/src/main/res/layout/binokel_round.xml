@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dan.dit.gameMemo.util.LinearLayoutCheckable xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/LinearLayoutCheckable1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/binokel_list_selector"
+    android:orientation="horizontal" >
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="2"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/team1_delta"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/reizenwon_team1"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/team1_score"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/team2_delta"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/reizenwon_team2"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/team2_score"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:id="@+id/team3_container">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/team3_delta"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/reizenwon_team3"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/team3_score"/>
+    </LinearLayout>
+
+</dan.dit.gameMemo.util.LinearLayoutCheckable>

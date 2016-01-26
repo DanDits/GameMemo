@@ -2,6 +2,7 @@ package dan.dit.gameMemo.gameData.game.binokel;
 
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
+import dan.dit.gameMemo.gameData.player.PlayerTeam;
 
 /**
  * Created by daniel on 24.01.16.
@@ -38,5 +39,21 @@ public class BinokelTeam {
 
     public AbstractPlayerTeam getPlayers() {
         return mTeam;
+    }
+
+    public void setPlayer(int playerIndex, Player newPlayer) {
+        if (newPlayer == null || mTeam == null) {
+            return;
+        }
+        PlayerTeam newTeam = new PlayerTeam();
+        int index = 0;
+        for (Player p : mTeam.getPlayers()) {
+            if (index == playerIndex) {
+                newTeam.addPlayer(newPlayer);
+            } else {
+                newTeam.addPlayer(p);
+            }
+        }
+        mTeam = newTeam;
     }
 }

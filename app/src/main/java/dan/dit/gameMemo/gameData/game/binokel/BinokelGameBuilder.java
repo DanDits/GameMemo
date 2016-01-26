@@ -1,7 +1,12 @@
 package dan.dit.gameMemo.gameData.game.binokel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import dan.dit.gameMemo.gameData.game.GameBuilder;
+import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.InadequateRoundInfo;
+import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerTeam;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 import dan.dit.gameMemo.util.compaction.Compacter;
@@ -16,19 +21,15 @@ public class BinokelGameBuilder extends GameBuilder {
 
     @Override
     public GameBuilder loadPlayer(Compacter data) throws CompactedDataCorruptException {
-        if (data.getSize() < BinokelGame.MIN_TEAMS) {
+        if (data.getSize() < BinokelGame.MIN_PLAYER_COUNT) {
             throw new CompactedDataCorruptException("A binokel game needs at least 2 teams, not " +
                     data.getSize()).setCorruptData(data);
         }
-        // parsing player data
-        for (String teamData : data) {
-            Compacter playerData = new Compacter(teamData);
-            PlayerTeam team = new PlayerTeam();
-            for (String name : playerData) {
-                team.addPlayer(BinokelGame.PLAYERS.populatePlayer(name));
-            }
-            ((BinokelGame) mInst).addTeam(team);
+        List<Player> players = new ArrayList<>(data.getSize());
+        for (String player : data) {
+            players.add(GameKey.getPool(GameKey.BINOKEL).populatePlayer(player));
         }
+        ((BinokelGame) mInst).addAsTeams(players);
         return this;
     }
 

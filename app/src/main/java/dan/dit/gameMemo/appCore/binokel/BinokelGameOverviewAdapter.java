@@ -12,7 +12,10 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.appCore.GameOverviewAdapter;
@@ -73,22 +76,33 @@ public class BinokelGameOverviewAdapter extends GameOverviewAdapter {
         int idCol = c.getColumnIndex(GameStorageHelper.COLUMN_ID);
 
         // fetching raw information
-        String players = c.getString(playersCol);
+        String playersRaw = c.getString(playersCol);
         long startTime = c.getLong(starttimeCol);
         int winner = c.getInt(winnerCol);
         long id = c.getLong(idCol);
 
         // prepare information
-        Compacter teams = new Compacter(players);
-        Compacter team1 = new Compacter(teams.getData(0));
-        Compacter team2 = new Compacter(teams.getData(1));
-        Compacter team3 = teams.getSize() > 2 ? new Compacter(teams.getData(2)) : null;
-        String player1_1 = team1.getData(0);
-        String player1_2 = team1.getSize() > 1 ? team1.getData(1) : null;
-        String player2_1 = team2.getData(0);
-        String player2_2 = team2.getSize() > 1 ? team2.getData(1) : null;
-        String player3_1 = team3 != null ? team3.getData(0) : null;
-        String player3_2 = team3 != null && team3.getSize() > 1 ? team3.getData(1) : null;
+        Compacter playersCmp = new Compacter(playersRaw);
+        Iterator<String> playerNamesIt = playersCmp.iterator();
+        int playersPerTeam = BinokelGame.getPlayersPerTeam(playersCmp.getSize());
+        List<String> team1 = new ArrayList<>(playersPerTeam);
+        for (int i = 0; i < playersPerTeam && playerNamesIt.hasNext(); i++) {
+            team1.add(playerNamesIt.next());
+        }
+        List<String> team2 = new ArrayList<>(playersPerTeam);
+        for (int i = 0; i < playersPerTeam && playerNamesIt.hasNext(); i++) {
+            team2.add(playerNamesIt.next());
+        }
+        List<String> team3 = new ArrayList<>(playersPerTeam);
+        for (int i = 0; i < playersPerTeam && playerNamesIt.hasNext(); i++) {
+            team3.add(playerNamesIt.next());
+        }
+        String player1_1 = team1.get(0);
+        String player1_2 = team1.size() > 1 ? team1.get(1) : null;
+        String player2_1 = team2.get(0);
+        String player2_2 = team2.size() > 1 ? team2.get(1) : null;
+        String player3_1 = team3.size() > 0 ? team3.get(0) : null;
+        String player3_2 = team3.size() > 1 ? team3.get(1) : null;
 
         Date startDate = new Date(startTime);
         boolean hasWinner = winner != Game.WINNER_NONE;
@@ -97,7 +111,7 @@ public class BinokelGameOverviewAdapter extends GameOverviewAdapter {
         boolean team3Wins = winner == 3;
 
         ViewHolder holder = (ViewHolder) binokelRow.getTag();
-        holder.team3Container.setVisibility(team3 == null ? View.GONE : View.VISIBLE);
+        holder.team3Container.setVisibility(team3.size() == 0 ? View.GONE : View.VISIBLE);
         
         // checked state
         holder.checker.setChecked(isChecked(id));

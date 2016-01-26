@@ -15,6 +15,7 @@ import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.GameRound;
 import dan.dit.gameMemo.gameData.game.InadequateRoundInfo;
+import dan.dit.gameMemo.gameData.game.tichu.TichuRound;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
@@ -48,9 +49,10 @@ public class BinokelGame extends Game {
     }
 
     public BinokelGame(int scoreLimit, int untenDurchScore, int durchScore) {
-        mScoreLimit = scoreLimit;
-        mUntenDurchScore = untenDurchScore;
-        mDurchScore = durchScore;
+        mScoreLimit = scoreLimit < MIN_SCORE_LIMIT ? DEFAULT_SCORE_LIMIT :
+                            scoreLimit > MAX_SCORE_LIMIT ? DEFAULT_SCORE_LIMIT : scoreLimit;
+        mUntenDurchScore = untenDurchScore < 0 ? 0 : untenDurchScore;
+        mDurchScore = durchScore < 0 ? 0 : durchScore;
     }
 
     private BinokelTeam getWinnerTeam() {
@@ -128,13 +130,11 @@ public class BinokelGame extends Game {
 
     @Override
     protected String getPlayerData() {
-        Compacter cmp = new Compacter(MAX_TEAMS);
+        Compacter cmp = new Compacter(MAX_TEAMS * MAX_PLAYERS_PER_TEAM);
         for (BinokelTeam team : mTeams) {
-            Compacter teamData = new Compacter(team.getPlayerCount());
             for (Player p : team.mTeam) {
-                teamData.appendData(p.getName());
+                cmp.appendData(p.getName());
             }
-            cmp.appendData(teamData.compact());
         }
         return cmp.compact();
     }
@@ -276,5 +276,32 @@ public class BinokelGame extends Game {
 
     public int getDurchValue() {
         return mDurchScore;
+    }
+
+    public int getScoreUpToRound(int roundIndex, int teamIndex) {
+        int sum = 0;
+        for (int i = 0; i <= roundIndex && i < rounds.size(); i++) {
+            sum += ((BinokelRound) rounds.get(i)).getTeamScore(teamIndex);
+        }
+        return sum;
+    }
+
+    public static int getPlayersPerTeam(int playersCount) {
+        return playersCount == 3 ? 1 : 2;
+    }
+
+    public void addAsTeams(List<Player> allPlayers) {
+        PlayerTeam currTeam = null;
+        int playersPerTeam = BinokelGame.getPlayersPerTeam(allPlayers.size());
+        for (Player p : allPlayers) {
+            if (currTeam == null) {
+                currTeam = new PlayerTeam();
+            }
+            currTeam.addPlayer(p);
+            if (currTeam.getPlayerCount() == playersPerTeam) {
+                addTeam(currTeam);
+                currTeam = null;
+            }
+        }
     }
 }

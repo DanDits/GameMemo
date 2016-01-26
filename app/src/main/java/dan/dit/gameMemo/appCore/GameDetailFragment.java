@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
@@ -169,6 +170,7 @@ public abstract class GameDetailFragment extends ListFragment implements
 	protected void saveState() {
 		Game game = getGame();
 		if (game != null) {
+			Log.d("Game", "Saving game state of game " + game);
 			if (mLastRunningTimeUpdate != null) {
 				Date currTime = new Date();
 				game.addRunningTime(currTime.getTime() - mLastRunningTimeUpdate.getTime());

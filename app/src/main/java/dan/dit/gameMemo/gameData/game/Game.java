@@ -18,6 +18,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
+import android.util.Log;
+
 import dan.dit.gameMemo.R;
 import dan.dit.gameMemo.gameData.player.AbstractPlayerTeam;
 import dan.dit.gameMemo.gameData.player.Player;
@@ -266,10 +268,12 @@ public abstract class Game implements Iterable<GameRound>, Compactable {
 			// New game 
 			mId = GameStorageHelper.getIdOrStarttimeFromUri(resolver.insert( 
 						GameStorageHelper.getUriAllItems(getKey()), values));
+			Log.d("Binokel", "Saved new game with id " + mId);
 			
 		} else {
 			// Update game
 			resolver.update(GameStorageHelper.getUriWithId(getKey(), mId), values, null, null);
+			Log.d("Binokel", "Saved game with id " + mId);
 		}
 		return;
 	}
@@ -446,7 +450,8 @@ public abstract class Game implements Iterable<GameRound>, Compactable {
 	}*/
 
 	public static void rename(int gameKey, ContentResolver resolver, Player player, String pNewName, long[] renameInGameIds, PlayerRenamedListener listener) {
-		if (player == null || !Player.isValidPlayerName(pNewName)) {
+		if (player == null || !Player.isValidPlayerName(pNewName)
+				|| new Compacter(pNewName).getSize() > 1) {
 			if (listener != null) {
 				listener.playerRenamed(player == null ? null : player.getName(), pNewName, false);
 			}

@@ -194,6 +194,10 @@ public class BinokelRound extends GameRound {
         return mResults[teamIndex].getMadeLastStich() ? BinokelGame.LAST_STICH_SCORE : 0;
     }
 
+    public int getReizenWinningTeam() {
+        return mReizenWinnerTeamIndex;
+    }
+
 
     public static class PrototypeBuilder {
         private BinokelRound mPrototype;
