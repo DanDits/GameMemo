@@ -107,7 +107,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
             });
 		}
 		checkIfHandlesDetailsFragment();
-		if (savedInstanceState == null) {
+		if (savedInstanceState == null && mHandlesDetailFragment) {
 			// initial setup
 			loadGameDetails(getIntent().getExtras());
 		}
@@ -166,7 +166,8 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 	@Override
 	public void onBackPressed() {
 	    super.onBackPressed();
-        overridePendingTransition(R.animator.slide_in_left_to_right, R.animator.slide_out_left_to_right);
+        overridePendingTransition(R.anim.slide_in_left_to_right, R.anim
+				.slide_out_left_to_right);
 	}
 	
    protected void showStatistics() {
@@ -206,7 +207,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 	private void startGameChooserActivity() {
 		Intent i = GameChooserActivity.getInstance(this, mGameKey);
 		startActivity(i);
-		overridePendingTransition(R.animator.slide_in_left_to_right, R.animator.slide_out_left_to_right);
+		overridePendingTransition(R.anim.slide_in_left_to_right, R.anim.slide_out_left_to_right);
 	}
 
 	@Override
@@ -330,7 +331,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
                 	if (mDetailsFragment == null) {
                         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
                 	} else {
-                		ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                		ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
                 	}
                 	mDetailsFragment = GameKey.getNewGameDetailFragmentInstance(mGameKey, gameId);
                     ft.replace(R.id.game_detail_frame, mDetailsFragment);
@@ -345,7 +346,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
 		} else if (Game.isValidId(gameId)) {
 			Intent i = GameDetailActivity.newInstance(this, mGameKey, gameId);
 			startActivityForResult(i, GAME_DETAIL_ACTIVITY);		
-			overridePendingTransition(R.animator.grow_zero_to_full, android.R.anim.fade_out);
+			overridePendingTransition(R.anim.grow_zero_to_full, android.R.anim.fade_out);
 		}
 	}
 
@@ -370,7 +371,7 @@ public abstract class GamesActivity extends android.support.v4.app.FragmentActiv
         	if (mDetailsFragment == null) {
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         	} else {
-        		ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        		ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
         	}
             ft.replace(R.id.game_detail_frame, mDetailsFragment);
             ft.commit();

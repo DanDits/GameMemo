@@ -1,193 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/tichu_detail_base_container"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/binokel_header_frame"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <RelativeLayout
-        android:id="@+id/tichu_input_container"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-            android:id="@+id/tichu_game_info"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <RelativeLayout
+            android:id="@+id/binokel_header_container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:visibility="gone" />
+            android:layout_height="wrap_content" >
 
-        <TextView
-            android:id="@+id/tichu_game_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="false"
-            android:gravity="center_horizontal"
-            android:layout_below="@id/tichu_game_info"
-            android:text="@string/tichu_game_state_expect_data" />
-        
-        <LinearLayout
-            android:id="@+id/LinearLayout2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tichu_game_status"
-            android:orientation="horizontal" >
-
-            <EditText
-                android:id="@+id/scoreTeam1"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/binokel_game_info"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:ellipsize="end"
-                android:ems="10"
-                android:gravity="right|center_vertical"
-                android:hint="@string/tichu_game_enter_hand_score"
-                android:imeOptions="actionDone"
-                android:inputType="numberSigned" >
-            </EditText>
+                android:gravity="center_horizontal"
+                android:visibility="gone" />
 
-            <ImageButton
-                android:id="@+id/tichu_game_lockin"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:id="@+id/LinearLayout3"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:background="@drawable/tichu_button"
-                android:contentDescription="@string/tichu_game_lock_button_content_description" />
+                android:layout_below="@id/binokel_game_info">
 
-            <EditText
-                android:id="@+id/scoreTeam2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:ellipsize="end"
-                android:ems="10"
-                android:gravity="center_vertical"
-                android:hint="@string/tichu_game_enter_hand_score"
-                android:imeOptions="actionDone"
-                android:inputType="numberSigned" />
-        </LinearLayout>
+                <Button
+                    android:id="@+id/binokel_game_player1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/binokel_button"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:paddingBottom="10dp"
+                    android:paddingTop="10dp"
+                    android:text="@string/default_player_name"
+                    android:textColor="@color/binokel_text_color" />
 
-        <LinearLayout
-            android:id="@+id/LinearLayout3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/LinearLayout2">
+                <Button
+                    android:id="@+id/binokel_game_player2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/binokel_button"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:paddingBottom="10dp"
+                    android:paddingTop="10dp"
+                    android:text="@string/default_player_name"
+                    android:textColor="@color/binokel_text_color" />
 
-            <Button
-                android:id="@+id/tichu_game_player1"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/tichu_button"
-                android:lines="1"
-                android:maxLines="1"
-                android:paddingBottom="10dp"
-                android:paddingTop="10dp"
-                android:text="@string/default_player_name"
-                android:textColor="@color/tichu_text_color" />
+                <Button
+                    android:id="@+id/binokel_game_player3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/binokel_button"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:paddingBottom="10dp"
+                    android:paddingTop="10dp"
+                    android:text="@string/default_player_name"
+                    android:textColor="@color/binokel_text_color" />
+                <Button
+                    android:id="@+id/binokel_game_player4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/binokel_button"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:paddingBottom="10dp"
+                    android:paddingTop="10dp"
+                    android:text="@string/default_player_name"
+                    android:textColor="@color/binokel_text_color" />
 
-            <Button
-                android:id="@+id/tichu_game_player2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/tichu_button"
-                android:lines="1"
-                android:maxLines="1"
-                android:paddingBottom="10dp"
-                android:paddingTop="10dp"
-                android:text="@string/default_player_name"
-                android:textColor="@color/tichu_text_color" />
+            </LinearLayout>
 
-            <View
-       			android:layout_width="@dimen/tichu_detail_separator_line_width"
-                android:layout_height="match_parent"
-                android:background="@android:color/black" />
-
-            <Button
-                android:id="@+id/tichu_game_player3"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/tichu_button"
-                android:lines="1"
-                android:maxLines="1"
-                android:paddingBottom="10dp"
-                android:paddingTop="10dp"
-                android:text="@string/default_player_name"
-                android:textColor="@color/tichu_text_color" />
-
-            <Button
-                android:id="@+id/tichu_game_player4"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/tichu_button"
-                android:ellipsize="end"
-                android:lines="1"
-                android:maxLines="1"
-                android:paddingBottom="10dp"
-                android:paddingTop="10dp"
-                android:scrollHorizontally="true"
-                android:text="@string/default_player_name"
-                android:textColor="@color/tichu_text_color" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/tichu_bid_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/LinearLayout3" >
-
-            <ImageButton
-                android:id="@+id/tichu1"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/tichu_image_for_toggle_max_height"
-                android:layout_weight="1"
-                android:adjustViewBounds="true"
-                android:background="@null"
-                android:contentDescription="@string/tichu_game_tichu_button_1_content_description"
-                android:scaleType="centerInside" />
-
-            <ImageButton
-                android:id="@+id/tichu2"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/tichu_image_for_toggle_max_height"
-                android:layout_weight="1"
-                android:adjustViewBounds="true"
-                android:background="@null"
-                android:contentDescription="@string/tichu_game_tichu_button_2_content_description"
-                android:scaleType="centerInside" />
-
-            <View
-        		android:layout_width="@dimen/tichu_detail_separator_line_width"
-                android:layout_height="match_parent"
-                android:background="@android:color/black" />
-
-            <ImageButton
-                android:id="@+id/tichu3"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/tichu_image_for_toggle_max_height"
-                android:layout_weight="1"
-                android:adjustViewBounds="true"
-                android:background="@null"
-                android:contentDescription="@string/tichu_game_tichu_button_3_content_description"
-                android:scaleType="centerInside" />
-
-            <ImageButton
-                android:id="@+id/tichu4"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/tichu_image_for_toggle_max_height"
-                android:layout_weight="1"
-                android:adjustViewBounds="true"
-                android:background="@null"
-                android:contentDescription="@string/tichu_game_tichu_button_4_content_description"
-                android:scaleType="centerInside" />
-
-        </LinearLayout>
-    </RelativeLayout>
-
+        </RelativeLayout>
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
@@ -208,7 +101,7 @@
             android:transcriptMode="normal" 
             android:choiceMode="singleChoice"
             android:dividerHeight="2dp"
-            android:listSelector="@drawable/tichu_list_selector">
+            android:listSelector="@drawable/binokel_list_selector">
         </ListView>
 
         <TextView
@@ -216,7 +109,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="@string/tichu_no_rounds" />
+            android:text="@string/binokel_no_rounds" />
     </LinearLayout>
 
 </LinearLayout>
+
+    <dan.dit.gameMemo.util.SquareImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|top"
+        android:src="@drawable/rematch_big"
+        android:background="@drawable/binokel_status_selector"
+        android:id="@+id/floating_status_button"/>
+    </FrameLayout>

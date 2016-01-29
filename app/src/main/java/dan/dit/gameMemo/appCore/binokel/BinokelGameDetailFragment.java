@@ -1,16 +1,22 @@
 package dan.dit.gameMemo.appCore.binokel;
 
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -28,6 +34,8 @@ import dan.dit.gameMemo.gameData.game.OriginBuilder;
 import dan.dit.gameMemo.gameData.game.binokel.BinokelGame;
 import dan.dit.gameMemo.gameData.game.binokel.BinokelRoundType;
 import dan.dit.gameMemo.gameData.game.binokel.BinokelTeam;
+import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
+import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.storage.GameStorageHelper;
@@ -37,11 +45,12 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
 
 
     private BinokelGame mGame;
-    private EditText mInfoText; //TODO set to default gone view
+    private TextView mInfoText;
     private BinokelGameRoundAdapter mAdapter;
     private BinokelGameStateMachine mStateMachine;
+    private Button[] mPlayers;
+    private ImageButton mRoundStatusButton;
 
-    //TODO set image to visualize reizen won to round views by default
     public static BinokelGameDetailFragment newInstance(long gameId) {
         BinokelGameDetailFragment f = new BinokelGameDetailFragment();
 
@@ -67,6 +76,28 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
             window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
             window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         }
+        mInfoText = (TextView) getView().findViewById(R.id.binokel_game_info);
+        mPlayers = new Button[] {
+                (Button) getView().findViewById(R.id.binokel_game_player1),
+                (Button) getView().findViewById(R.id.binokel_game_player2),
+                (Button) getView().findViewById(R.id.binokel_game_player3),
+                (Button) getView().findViewById(R.id.binokel_game_player4)
+        };
+        mRoundStatusButton = (ImageButton) getView().findViewById(R.id.floating_status_button);
+        final ViewTreeObserver observer= mRoundStatusButton.getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                setRoundStatusDefaultPosition();
+                if (observer.isAlive()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        observer.removeOnGlobalLayoutListener(this);
+                    } else {
+                        observer.removeGlobalOnLayoutListener(this);
+                    }
+                }
+            }
+        });
         //TODO set refs to ui elements
         mStateMachine = new BinokelGameStateMachine();
         loadOrStartGame(savedInstanceState);
@@ -76,8 +107,58 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         GameKey.applySleepBehavior(GameKey.BINOKEL, getActivity());
     }
 
+    private void setRoundStatusDefaultPosition() {
+        View header = getView().findViewById(R.id.binokel_header_container);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            mRoundStatusButton.setY(header.getY() + header.getHeight() - mRoundStatusButton.getHeight
+                    () / 2);
+            Log.d("Binokel", "Setting to y: " + (header.getY() + header.getHeight() - mRoundStatusButton.getHeight
+                    () / 2));
+            Log.d("Binokel", "Own height: " + mRoundStatusButton.getHeight() + " other height: "
+                    + header.getHeight() + " other y " + header.getY());
+        }
+    }
+
+    private List<Player> getAllPlayer() {
+        List<Player> all = new LinkedList<>();
+        for (BinokelTeam team : mGame.getTeams()) {
+            all.addAll(team.getPlayers().getPlayers());
+        }
+        return all;
+    }
+
     private void initListeners() {
         //TODO init listeners for ui elements
+        View.OnLongClickListener exchangePlayerListener = new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                if (isImmutable()) {
+                    return false;
+                }
+                int playerId = 0;
+                for (Button mPlayer : mPlayers) {
+                    if (v == mPlayer) {
+                        break;
+                    }
+                    playerId++;
+                }
+                List<Player> allPlayers = getAllPlayer();
+                if (playerId < 0 || playerId >= allPlayers.size()) {
+                    return false;
+                }
+                DialogFragment dialog = ChoosePlayerDialogFragment.newInstance(playerId,
+                        allPlayers.get(playerId),
+                        true,
+                        false);
+                dialog.show(getActivity().getSupportFragmentManager(), "ChoosePlayerDialogFragment");
+                return true;
+            }
+
+        };
+        for (int i = 0; i < mPlayers.length; i++) {
+            mPlayers[i].setOnLongClickListener(exchangePlayerListener);
+        }
     }
 
     @Override
@@ -268,6 +349,18 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         }
     }
 
+    //TODO invoke when selecting/deselecting round
+    private void makeUserInputAvailable(boolean available) {
+        if (available && isImmutable()) {
+            // sorry dude, you cannot edit a loaded finished game which got locked forever
+            available = false;
+        }
+        for (Button player : mPlayers) {
+            player.setEnabled(available);
+        }
+        mRoundStatusButton.setEnabled(available);
+    }
+
     @Override
     protected Game getGame() {
         return mGame;
@@ -293,11 +386,7 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
 
     @Override
     public List<Player> toFilter() {
-        List<Player> filter = new LinkedList<Player>();
-        for (BinokelTeam team : mGame.getTeams()) {
-            filter.addAll(team.getPlayers().getPlayers());
-        }
-        return filter;
+        return getAllPlayer();
     }
 
     @Override
@@ -305,19 +394,24 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         if (chosen == null) {
             return;
         }
+        chosen.saveColor(getActivity());
         List<BinokelTeam> teams = mGame.getTeams();
         for (BinokelTeam team : teams) {
             if (team.getPlayers().contains(chosen)) {
+                updateDisplayedPlayers(); // maybe color changed
                 return;
             }
         }
         int teamIndex = arg / BinokelGame.MAX_PLAYERS_PER_TEAM;
         int playerIndex = arg % BinokelGame.MAX_PLAYERS_PER_TEAM;
         if (teamIndex < 0 || teamIndex >= teams.size() || playerIndex < 0) {
+            Log.e("Binokel", "Chosen player index invalid: " + teamIndex + " and " + playerIndex);
             return;
         }
         BinokelTeam team = teams.get(teamIndex);
         if (playerIndex >= team.getPlayerCount()) {
+            Log.e("Binokel", "Chosen player index too big: " + teamIndex + " and " + playerIndex
+                + " for players in team: " + team.getPlayerCount());
             return;
         }
         team.setPlayer(playerIndex, chosen);
@@ -325,7 +419,18 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
     }
 
     private void updateDisplayedPlayers() {
-        //TODO implement
+        List<BinokelTeam> teams = mGame.getTeams();
+        List<Player> players = getAllPlayer();
+        Log.d("Binokel", "Teams: " + teams + " players: " + players);
+        for (int i = 0; i < mPlayers.length; i++) {
+            if (i < players.size()) {
+                mPlayers[i].setVisibility(View.VISIBLE);
+                mPlayers[i].setText(players.get(i).getShortenedName(Player.SHORT_NAME_LENGTH));
+                mPlayers[i].setTextColor(players.get(i).getColor());
+            } else {
+                mPlayers[i].setVisibility(View.GONE);
+            }
+        }
     }
 
     @Override
@@ -403,6 +508,7 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         private void updateUI() {
             determineState();
             mCallback.setInfo(getMainInfoText(), getExtraInfoText());
+
         }
     }
 }

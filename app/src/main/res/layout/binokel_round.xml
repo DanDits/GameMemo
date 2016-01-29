@@ -16,6 +16,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:src="@drawable/reizen_won"
             android:id="@+id/reizenwon_team1"/>
         <TextView
             android:layout_width="wrap_content"
@@ -28,6 +29,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:src="@drawable/reizen_won"
             android:id="@+id/reizenwon_team2"/>
         <TextView
             android:layout_width="wrap_content"
@@ -46,6 +48,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:src="@drawable/reizen_won"
             android:id="@+id/reizenwon_team3"/>
         <TextView
             android:layout_width="wrap_content"

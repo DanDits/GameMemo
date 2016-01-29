@@ -53,6 +53,7 @@ public class BinokelTeam {
             } else {
                 newTeam.addPlayer(p);
             }
+            index++;
         }
         mTeam = newTeam;
     }

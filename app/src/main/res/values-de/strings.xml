@@ -92,7 +92,6 @@
 	<string name="data_exchange_games_received">Empfangen %1$d</string>
 	<string name="data_exchange_games_sent">Gesendet %1$d</string>
 	<string name="bluetooth_devices_state_bonded">Gekoppelt</string>
-    <string name ="GamesDBAccessPermissionDescription">Zugriff auf die Spiele Datenbank</string>
 	<string name="bluetooth_confirm_turn_off_title">Bluetooth ausschalten?</string>
 	<string name="bluetooth_leave_enabled">Nein</string>
 	<string name="unfinished_game_found_title">Offenes Spiel weiter spielen?</string>

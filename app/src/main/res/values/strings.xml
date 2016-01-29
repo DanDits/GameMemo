@@ -9,6 +9,7 @@
     <string name="game_starttime">Starttime</string>
     <string name="game_runtime">Duration</string>
     <string name="game_team_X">Team %1$d</string>
+	<string name="binokel_no_rounds">TODO ADD SOMETHING HERE</string>
     <string name="tichu_no_rounds">1. Press bubbles for tichu bids.\n2. Select the player that finished first.\n3. Enter the card score.</string>
     <string name="doppelkopf_no_rounds">Click on the re player(s)!</string>
     <string name="default_tichu_round_score"> </string><string name="default_player_name">Player</string>
@@ -28,7 +29,6 @@
 		.</string>
     <string name="game_failed_loading">Failed loading game.</string>
     <string name ="show_statistics">Statistics</string>
-    <string name ="GamesDBAccessPermissionDescription">Access to games database table</string>
 	<string name="data_exchange_button_refresh_devices_list">Scan</string>
 	<string name="data_exchange_connection_status_none">State: Idle</string>
 	<string name="data_exchange_connection_status_listen">State: Waiting</string>
@@ -405,4 +405,6 @@
 	<string name="customgame_detail_settings_delay_descr">Input delay</string>
 	<string name="customgame_detail_settings_delay_hint">Delay</string>
 	<string name="customgame_detail_settings_new_player_hint">New player</string>
+	<string name="GamesDBAccessPermissionDescription" translatable="false">Access to games
+		database</string>
 </resources>

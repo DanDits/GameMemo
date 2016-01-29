@@ -121,7 +121,7 @@ public class GameDetailActivity extends FragmentActivity implements
 	public void onBackPressed() {
 		prepareSuccessfulResult(false);
 		super.onBackPressed();
-        overridePendingTransition(android.R.anim.fade_in, R.animator.shrink_full_to_empty);
+        overridePendingTransition(android.R.anim.fade_in, R.anim.shrink_full_to_empty);
 	}
 
 	@Override
@@ -133,7 +133,7 @@ public class GameDetailActivity extends FragmentActivity implements
 		}
 		finish();
 		if (!error) {
-		    overridePendingTransition(android.R.anim.fade_in, R.animator.shrink_full_to_empty);
+		    overridePendingTransition(android.R.anim.fade_in, R.anim.shrink_full_to_empty);
 		}
 	}
 	

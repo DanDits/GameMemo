@@ -823,7 +823,7 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 				mGame.addRound(mCurrRound);
                 hideSoftKeyboard();
                 mInputContainer.startAnimation( 
-                        AnimationUtils.loadAnimation(getActivity(), R.animator.spin_and_shrink_full_to_empty) );
+                        AnimationUtils.loadAnimation(getActivity(), R.anim.spin_and_shrink_full_to_empty) );
                 fillRoundData();
 				deselectRound();
 				break;
@@ -831,7 +831,7 @@ public class TichuGameDetailFragment extends GameDetailFragment {
 				mGame.updateRound(mCurrRoundIndex, mCurrRound);
                 hideSoftKeyboard();
                 mInputContainer.startAnimation( 
-                        AnimationUtils.loadAnimation(getActivity(), R.animator.spin_and_shrink_full_to_empty) );
+                        AnimationUtils.loadAnimation(getActivity(), R.anim.spin_and_shrink_full_to_empty) );
                 fillRoundData();
 				deselectRound();
 				break;

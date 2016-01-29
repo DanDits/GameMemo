@@ -253,7 +253,8 @@ public class GameChooserActivity extends FragmentActivity implements
 				GameKey.getGamesActivity(gameKey));
 		i.putExtra(GameKey.EXTRA_GAMEKEY, gameKey);
 		startActivity(i);
-		this.overridePendingTransition(R.animator.slide_in_right_to_left, R.animator.slide_out_right_to_left);
+		this.overridePendingTransition(R.anim.slide_in_right_to_left, R.anim
+				.slide_out_right_to_left);
 	}
 
 	@Override
