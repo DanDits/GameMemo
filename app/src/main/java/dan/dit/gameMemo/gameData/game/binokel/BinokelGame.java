@@ -304,4 +304,12 @@ public class BinokelGame extends Game {
             }
         }
     }
+
+    public int getPlayersCount() {
+        int count = 0;
+        for (BinokelTeam team : mTeams) {
+            count += team.getPlayerCount();
+        }
+        return count;
+    }
 }

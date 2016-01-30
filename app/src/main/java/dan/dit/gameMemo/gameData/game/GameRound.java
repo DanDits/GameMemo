@@ -8,4 +8,5 @@ import dan.dit.gameMemo.util.compaction.Compactable;
  */
 public abstract class GameRound implements Compactable {
 
+
 }

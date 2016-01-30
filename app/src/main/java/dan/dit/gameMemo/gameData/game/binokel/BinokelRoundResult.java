@@ -10,9 +10,11 @@ import dan.dit.gameMemo.util.compaction.Compacter;
 public class BinokelRoundResult implements Compactable {
     private boolean mMadeLastStich;
     private boolean mLostSpecialGame;
+    private boolean mIsAbgegangen;
     private int mStichScore;
 
     public BinokelRoundResult() {
+        mStichScore = -1;
     }
 
     public BinokelRoundResult(Compacter data) throws CompactedDataCorruptException {
@@ -48,7 +50,8 @@ public class BinokelRoundResult implements Compactable {
         Compacter cmp = new Compacter();
         cmp.appendData(mMadeLastStich)
                 .appendData(mStichScore)
-                .appendData(mLostSpecialGame);
+                .appendData(mLostSpecialGame)
+                .appendData(mIsAbgegangen);
         return cmp.compact();
     }
 
@@ -61,5 +64,14 @@ public class BinokelRoundResult implements Compactable {
         mMadeLastStich = compactedData.getBoolean(0);
         mStichScore = compactedData.getInt(1);
         mLostSpecialGame = compactedData.getBoolean(2);
+        mIsAbgegangen = compactedData.getBoolean(3);
+    }
+
+    public boolean isAbgegangen() {
+        return mIsAbgegangen;
+    }
+
+    public void setIsAbgegangen(boolean isAbgegangen) {
+        mIsAbgegangen = isAbgegangen;
     }
 }

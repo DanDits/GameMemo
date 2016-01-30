@@ -5,7 +5,7 @@ package dan.dit.gameMemo.gameData.game.binokel;
  */
 public enum BinokelRoundType {
     TRUMP_EICHEL("Eichel"),
-    TRUMPF_BLATT("Blatt"),
+    TRUMPF_SCHIPPEN("Blatt"),
     TRUMPF_HERZ("Herz"),
     TRUMPF_SCHELLEN("Schellen"),
     UNTEN_DURCH("UntenDurch", 300),

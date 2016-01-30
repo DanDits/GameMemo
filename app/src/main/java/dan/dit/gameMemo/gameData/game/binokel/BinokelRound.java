@@ -3,6 +3,7 @@ package dan.dit.gameMemo.gameData.game.binokel;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import java.lang.annotation.IncompleteAnnotationException;
 import java.util.List;
 
 import dan.dit.gameMemo.gameData.game.GameRound;
@@ -16,9 +17,7 @@ import dan.dit.gameMemo.util.compaction.Compacter;
  */
 public class BinokelRound extends GameRound {
     private final BinokelGame mGame;
-    private int mReizenWinnerTeamIndex;
-    private int mReizenWinnerPlayerIndex;
-    private int mReizenValue;
+    private BinokelReizen mReizen;
     private BinokelRoundType mRoundType;
     private BinokelMeldung[] mMeldungen;
     private BinokelRoundResult[] mResults;
@@ -38,12 +37,22 @@ public class BinokelRound extends GameRound {
         initFromGame();
     }
 
+    private BinokelRound copy(@NonNull BinokelGame game) {
+        try {
+            return new BinokelRound(game, new Compacter(compact()));
+        } catch (CompactedDataCorruptException e) {
+            Log.e("Binokel", "Error copying round: " + e);
+            return null;
+        } catch (InadequateRoundInfo i) {
+            Log.e("Binokel", "Error copying round (inadequate): " + i);
+            return null;
+        }
+    }
+
     private void initFromGame() {
         List<BinokelTeam> teams = mGame.getTeams();
         mTeamsCount = teams.size();
-        for (BinokelTeam team : teams) {
-            mPlayersCount += team.getPlayerCount();
-        }
+        mPlayersCount = mGame.getPlayersCount();
         mMeldungen = new BinokelMeldung[mPlayersCount];
 
         int teamIndex = 0;
@@ -55,6 +64,7 @@ public class BinokelRound extends GameRound {
             }
             teamIndex++;
         }
+        mReizen = new BinokelReizen(mPlayersCount);
         int playersPerTeam = mPlayersCount / mTeamsCount;
         for (int i = 0; i < mMeldungen.length; i++) {
             mMeldungen[i] = new BinokelMeldung(i / playersPerTeam, i);
@@ -65,8 +75,14 @@ public class BinokelRound extends GameRound {
         }
     }
 
+    private boolean isReizenAndRoundValid() {
+        return mReizen.hasReizenWinner() && mRoundType != null;
+    }
+
     private boolean canBeValid() {
-        return mReizenValue > 0 && mRoundType != null;
+        Log.d("Binokel", "Round can be valid check: " + mRoundType + " reizen winner: " + mReizen
+                .getReizenWinnerPlayerIndex());
+        return isReizenAndRoundValid();
     }
 
     protected void checkAndThrowRoundState() throws InadequateRoundInfo {
@@ -80,13 +96,14 @@ public class BinokelRound extends GameRound {
             throw new InadequateRoundInfo("Unbalanced players per team: " + mTeamsCount + " " +
                     "players: " + mPlayersCount);
         }
-        if (mReizenWinnerTeamIndex < 0 || mReizenWinnerTeamIndex >= mTeamsCount
-                || mReizenWinnerPlayerIndex < 0 || mReizenWinnerPlayerIndex >= mPlayersCount) {
-            throw new InadequateRoundInfo("Illegal reizen winner team or player: " +
-                    mReizenWinnerTeamIndex + " by player " + mReizenWinnerPlayerIndex);
+        if (!mReizen.hasReizenWinner()) {
+            throw new InadequateRoundInfo("No reizen winner");
         }
-        if (mReizenValue <= 0) {
-            throw new InadequateRoundInfo("Nothing gereizt: " + mReizenValue);
+        int reizenValue = mReizen.getMaxReizenValue();
+        int reizenWinnerIndex = mReizen.getReizenWinnerPlayerIndex();
+        if (reizenValue <= 0 || reizenWinnerIndex < 0 || reizenWinnerIndex >= mPlayersCount) {
+            throw new InadequateRoundInfo("Nothing gereizt (" + reizenValue + ") or no valid " +
+                    "winner: " + reizenWinnerIndex);
         }
         if (mRoundType == null) {
             throw new InadequateRoundInfo("No round type given.");
@@ -102,10 +119,8 @@ public class BinokelRound extends GameRound {
     @Override
     public String compact() {
         Compacter cmp = new Compacter();
-        cmp.appendData(mReizenValue)
-                .appendData(mReizenWinnerPlayerIndex)
-                .appendData(mReizenWinnerTeamIndex)
-                .appendData(mRoundType.getKey());
+        cmp.appendData(mRoundType.getKey());
+        cmp.appendData(mReizen.compact());
         Compacter meldungen = new Compacter();
         for (BinokelMeldung meldung : mMeldungen) {
             meldungen.appendData(meldung.compact());
@@ -121,15 +136,13 @@ public class BinokelRound extends GameRound {
 
     @Override
     public void unloadData(Compacter compactedData) throws CompactedDataCorruptException {
-        mReizenValue = compactedData.getInt(0);
-        mReizenWinnerPlayerIndex = compactedData.getInt(1);
-        mReizenWinnerTeamIndex = compactedData.getInt(2);
-        mRoundType = BinokelRoundType.getFromKey(compactedData.getData(3));
-        Compacter meldungen = new Compacter(compactedData.getData(4));
+        mRoundType = BinokelRoundType.getFromKey(compactedData.getData(0));
+        mReizen = new BinokelReizen(new Compacter(compactedData.getData(1)));
+        Compacter meldungen = new Compacter(compactedData.getData(2));
         for (int i = 0; i < mMeldungen.length; i++) {
             mMeldungen[i] = new BinokelMeldung(new Compacter(meldungen.getData(i)));
         }
-        Compacter results = new Compacter(compactedData.getData(5));
+        Compacter results = new Compacter(compactedData.getData(3));
         for (int i = 0; i < mResults.length; i++) {
             mResults[i] = new BinokelRoundResult(new Compacter(results.getData(i)));
         }
@@ -145,17 +158,31 @@ public class BinokelRound extends GameRound {
         }
     }
 
+    private int getTeamIndexOfPlayer(int playerIndex) {
+        return playerIndex / BinokelGame.getPlayersPerTeam(mPlayersCount);
+    }
+
+    public int getReizenWinningTeam() {
+        return getTeamIndexOfPlayer(mReizen.getReizenWinnerPlayerIndex());
+    }
 
     private boolean isReizenWinningTeam(int teamIndex) {
-        return teamIndex == mReizenWinnerTeamIndex;
+        return teamIndex >= 0 && teamIndex == getReizenWinningTeam();
     }
 
     private int calculateTeamScore(int teamIndex) throws InadequateRoundInfo {
         checkAndThrowRoundState();
+        if (mResults[getReizenWinningTeam()].isAbgegangen()) {
+            if (mRoundType.isSpecial()) {
+                return -mRoundType.getSpecialDefaultScore();
+            } else {
+                return -mReizen.getMaxReizenValue();
+            }
+        }
         if (mRoundType.isSpecial()) {
             // reizen value doesn't matter, own meldungen ignored for playing team,
             // stich value ignored for all players
-            boolean specialRoundWon = !mResults[mReizenWinnerTeamIndex].isSpecialGameLost();
+            boolean specialRoundWon = !mResults[getReizenWinningTeam()].isSpecialGameLost();
             if (isReizenWinningTeam(teamIndex)) {
                 int value = mGame.getSpecialRoundValue(mRoundType);
                 return specialRoundWon ? value : -2 * value;
@@ -172,7 +199,8 @@ public class BinokelRound extends GameRound {
 
         int totalScore = lastStichScore + stichScore + meldungenScore;
         if (isReizenWinningTeam(teamIndex)) {
-            return mReizenValue <= totalScore ? totalScore : -2 * mReizenValue;
+            int reizenValue = mReizen.getMaxReizenValue();
+            return reizenValue <= totalScore ? totalScore : -2 * reizenValue;
         }
         return totalScore;
     }
@@ -194,8 +222,8 @@ public class BinokelRound extends GameRound {
         return mResults[teamIndex].getMadeLastStich() ? BinokelGame.LAST_STICH_SCORE : 0;
     }
 
-    public int getReizenWinningTeam() {
-        return mReizenWinnerTeamIndex;
+    public BinokelRoundType getRoundType() {
+        return mRoundType;
     }
 
 
@@ -205,8 +233,12 @@ public class BinokelRound extends GameRound {
             mPrototype = new BinokelRound(game);
         }
 
-        public void setReizenValue(int reizValue) {
-            mPrototype.mReizenValue = reizValue;
+        public PrototypeBuilder(BinokelGame game, BinokelRound round) {
+            mPrototype = round.copy(game);
+        }
+
+        public void setReizenValue(int playerIndex, int reizValue) {
+            mPrototype.mReizen.setReizValue(playerIndex, reizValue);
         }
 
         public void setRoundType(BinokelRoundType type) {
@@ -219,7 +251,7 @@ public class BinokelRound extends GameRound {
 
         public void setMadeLastStich(int teamIndex) {
             int index = 0;
-            for (BinokelRoundResult result : mPrototype.mResults) {
+            for (BinokelRoundResult ignored : mPrototype.mResults) {
                 mPrototype.mResults[index].setMadeLastStich(index == teamIndex);
                 index++;
             }
@@ -227,14 +259,28 @@ public class BinokelRound extends GameRound {
 
         public void setLostSpecialGame(int teamIndex) {
             int index = 0;
-            for (BinokelRoundResult result : mPrototype.mResults) {
+            for (BinokelRoundResult ignored : mPrototype.mResults) {
+                mPrototype.mResults[index].setIsAbgegangen(false);
                 mPrototype.mResults[index].setLostSpecialGame(index == teamIndex);
+                index++;
+            }
+        }
+
+        public void setIsAbgegangen(int teamIndex) {
+            int index = 0;
+            for (BinokelRoundResult ignored : mPrototype.mResults) {
+                mPrototype.mResults[index].setLostSpecialGame(false);
+                mPrototype.mResults[index].setIsAbgegangen(index == teamIndex);
                 index++;
             }
         }
 
         public void setStichScore(int teamIndex, int score) {
             mPrototype.mResults[teamIndex].setStichScore(score);
+        }
+
+        public boolean isReizenStateComplete() {
+            return mPrototype.isReizenAndRoundValid();
         }
 
         public boolean isValid() {
@@ -252,5 +298,25 @@ public class BinokelRound extends GameRound {
         public BinokelRound getValid() {
             return isValid() ? mPrototype : null;
         }
+
+        public int getReizenValue(int playerIndex) {
+            return mPrototype.getReizenValue(playerIndex);
+        }
+
+        public BinokelRoundType getRoundType() {
+            return mPrototype.getRoundType();
+        }
+
+        public int getMeldenValue(int playerIndex) {
+            return mPrototype.mMeldungen[playerIndex].getScore();
+        }
+
+        public int getReizenWinnerPlayerIndex() {
+            return mPrototype.mReizen.getReizenWinnerPlayerIndex();
+        }
+    }
+
+    private int getReizenValue(int playerIndex) {
+        return mReizen.getReizenValue(playerIndex);
     }
 }

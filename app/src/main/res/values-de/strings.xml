@@ -158,6 +158,8 @@
 	<string name="choose_color">Farbe wählen</string>
 	<string name="color">Farbe</string>
 	<string name="game_setup_new_team">Neues Team</string>
+	<string name="binokel_no_rounds">Klicke auf das + um eine neue Runde zu spielen.\nAlle
+		eingegebenen Runden werden dann hier angezeigt</string>
 	<string name="doppelkopf_option_cycles">Runden</string>
 	<string name="doppelkopf_option_cycles_with_value">Runden: %1$d</string>
 	<string name="doppelkopf_option_cycles_no_limit">Runden unbegrenzt</string>
@@ -413,4 +415,7 @@
 	<string name="customgame_detail_settings_delay_descr">Eingabeverzögerung</string>
 	<string name="customgame_detail_settings_delay_hint">Verzögerung</string>
 	<string name="customgame_detail_settings_new_player_hint">Neuer Spieler</string>
+	<string name="binokel_reizen_title">Reizen</string>
+	<string name="binokel_melden_title">Melden</string>
+	<string name="binokel_result_title">Ergebnis</string>
 </resources>

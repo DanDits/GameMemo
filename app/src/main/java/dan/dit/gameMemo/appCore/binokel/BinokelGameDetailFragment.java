@@ -1,5 +1,6 @@
 package dan.dit.gameMemo.appCore.binokel;
 
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,13 +15,14 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewSwitcher;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,13 +34,14 @@ import dan.dit.gameMemo.gameData.game.Game;
 import dan.dit.gameMemo.gameData.game.GameKey;
 import dan.dit.gameMemo.gameData.game.OriginBuilder;
 import dan.dit.gameMemo.gameData.game.binokel.BinokelGame;
+import dan.dit.gameMemo.gameData.game.binokel.BinokelRound;
 import dan.dit.gameMemo.gameData.game.binokel.BinokelRoundType;
 import dan.dit.gameMemo.gameData.game.binokel.BinokelTeam;
-import dan.dit.gameMemo.gameData.game.tichu.TichuGame;
 import dan.dit.gameMemo.gameData.player.ChoosePlayerDialogFragment;
 import dan.dit.gameMemo.gameData.player.Player;
 import dan.dit.gameMemo.gameData.player.PlayerPool;
 import dan.dit.gameMemo.storage.GameStorageHelper;
+import dan.dit.gameMemo.util.SlidingNumberPicker;
 import dan.dit.gameMemo.util.compaction.CompactedDataCorruptException;
 
 public class BinokelGameDetailFragment extends GameDetailFragment {
@@ -50,6 +53,11 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
     private BinokelGameStateMachine mStateMachine;
     private Button[] mPlayers;
     private ImageButton mRoundStatusButton;
+    private ViewSwitcher mBinokelSwitcher;
+    private int mCurrRoundIndex = -1;
+    private SlidingNumberPicker[] mReizenValues;
+    private HashMap<BinokelRoundType, ImageButton> mRoundTypeToView;
+    private SlidingNumberPicker[] mMeldenValues;
 
     public static BinokelGameDetailFragment newInstance(long gameId) {
         BinokelGameDetailFragment f = new BinokelGameDetailFragment();
@@ -89,15 +97,42 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
             @Override
             public void onGlobalLayout() {
                 setRoundStatusDefaultPosition();
-                if (observer.isAlive()) {
+                ViewTreeObserver toRemoveOn = observer.isAlive() ? observer : mRoundStatusButton
+                        .getViewTreeObserver();
+                if (toRemoveOn.isAlive()) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                        observer.removeOnGlobalLayoutListener(this);
+                        toRemoveOn.removeOnGlobalLayoutListener(this);
                     } else {
-                        observer.removeGlobalOnLayoutListener(this);
+                        toRemoveOn.removeGlobalOnLayoutListener(this);
                     }
                 }
             }
         });
+        mReizenValues = new SlidingNumberPicker[] {
+                (SlidingNumberPicker) getView().findViewById(R.id.reizen1),
+                (SlidingNumberPicker) getView().findViewById(R.id.reizen2),
+                (SlidingNumberPicker) getView().findViewById(R.id.reizen3),
+                (SlidingNumberPicker) getView().findViewById(R.id.reizen4)
+        };
+        mRoundTypeToView = new HashMap<>();
+        mRoundTypeToView.put(BinokelRoundType.DURCH, (ImageButton) getView().findViewById(R.id.binokel_durch));
+        mRoundTypeToView.put(BinokelRoundType.UNTEN_DURCH, (ImageButton) getView().findViewById(R.id
+                .binokel_untendurch));
+        mRoundTypeToView.put(BinokelRoundType.TRUMPF_HERZ, (ImageButton) getView().findViewById(R.id
+                .binokel_herz));
+        mRoundTypeToView.put(BinokelRoundType.TRUMP_EICHEL, (ImageButton) getView().findViewById(R.id
+                .binokel_eichel));
+        mRoundTypeToView.put(BinokelRoundType.TRUMPF_SCHIPPEN, (ImageButton) getView().findViewById(R.id
+                .binokel_schippen));
+        mRoundTypeToView.put(BinokelRoundType.TRUMPF_SCHELLEN, (ImageButton) getView().findViewById(R.id
+                .binokel_schellen));
+        mMeldenValues = new SlidingNumberPicker[] {
+                (SlidingNumberPicker) getView().findViewById(R.id.melden1),
+                (SlidingNumberPicker) getView().findViewById(R.id.melden2),
+                (SlidingNumberPicker) getView().findViewById(R.id.melden3),
+                (SlidingNumberPicker) getView().findViewById(R.id.melden4)
+        };
+        mBinokelSwitcher = (ViewSwitcher) getView().findViewById(R.id.binokel_switcher);
         //TODO set refs to ui elements
         mStateMachine = new BinokelGameStateMachine();
         loadOrStartGame(savedInstanceState);
@@ -111,11 +146,7 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         View header = getView().findViewById(R.id.binokel_header_container);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             mRoundStatusButton.setY(header.getY() + header.getHeight() - mRoundStatusButton.getHeight
-                    () / 2);
-            Log.d("Binokel", "Setting to y: " + (header.getY() + header.getHeight() - mRoundStatusButton.getHeight
-                    () / 2));
-            Log.d("Binokel", "Own height: " + mRoundStatusButton.getHeight() + " other height: "
-                    + header.getHeight() + " other y " + header.getY());
+                    () * 1.f / 3.f);
         }
     }
 
@@ -127,6 +158,21 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         return all;
     }
 
+    private int getPlayerButtonIndex(View view) {
+        int playerId = 0;
+        for (Button mPlayer : mPlayers) {
+            if (view == mPlayer) {
+                break;
+            }
+            playerId++;
+        }
+        List<Player> allPlayers = getAllPlayer();
+        if (playerId < 0 || playerId >= allPlayers.size()) {
+            return -1;
+        }
+        return playerId;
+    }
+
     private void initListeners() {
         //TODO init listeners for ui elements
         View.OnLongClickListener exchangePlayerListener = new View.OnLongClickListener() {
@@ -136,19 +182,12 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
                 if (isImmutable()) {
                     return false;
                 }
-                int playerId = 0;
-                for (Button mPlayer : mPlayers) {
-                    if (v == mPlayer) {
-                        break;
-                    }
-                    playerId++;
-                }
-                List<Player> allPlayers = getAllPlayer();
-                if (playerId < 0 || playerId >= allPlayers.size()) {
+                int playerIndex = getPlayerButtonIndex(v);
+                if (playerIndex < 0) {
                     return false;
                 }
-                DialogFragment dialog = ChoosePlayerDialogFragment.newInstance(playerId,
-                        allPlayers.get(playerId),
+                DialogFragment dialog = ChoosePlayerDialogFragment.newInstance(playerIndex,
+                        getAllPlayer().get(playerIndex),
                         true,
                         false);
                 dialog.show(getActivity().getSupportFragmentManager(), "ChoosePlayerDialogFragment");
@@ -158,6 +197,54 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         };
         for (int i = 0; i < mPlayers.length; i++) {
             mPlayers[i].setOnLongClickListener(exchangePlayerListener);
+            mPlayers[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int playerIndex = getPlayerButtonIndex(v);
+                    if (playerIndex < 0) {
+                        return;
+                    }
+                    onHotButtonClick(playerIndex);
+                }
+            });
+        }
+        mRoundStatusButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mStateMachine.onStateButtonPressed();
+            }
+        });
+        for (int i = 0; i < mReizenValues.length; i++) {
+            mReizenValues[i].setVisibility(i >= mGame.getPlayersCount() ? View.GONE : View.VISIBLE);
+            final int index = i;
+            mReizenValues[i].setOnValueChangedListener(new SlidingNumberPicker.OnValueChangedListener() {
+                @Override
+                public void onValueChanged(SlidingNumberPicker view, int newValue) {
+                    mStateMachine.mRoundBuiler.setReizenValue(index, newValue);
+                    mStateMachine.updateUI();
+                }
+            });
+        }
+        for (final BinokelRoundType type : BinokelRoundType.values()) {
+            ImageButton view = mRoundTypeToView.get(type);
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mStateMachine.mRoundBuiler.setRoundType(type);
+                    mStateMachine.updateUI();
+                }
+            });
+        }
+        for (int i = 0; i < mMeldenValues.length; i++) {
+            mMeldenValues[i].setVisibility(i >= mGame.getPlayersCount() ? View.GONE : View.VISIBLE);
+            final int index = i;
+            mMeldenValues[i].setOnValueChangedListener(new SlidingNumberPicker.OnValueChangedListener() {
+                @Override
+                public void onValueChanged(SlidingNumberPicker view, int newValue) {
+                    mStateMachine.mRoundBuiler.setMeldungValue(index, newValue);
+                    mStateMachine.updateUI();
+                }
+            });
         }
     }
 
@@ -212,15 +299,19 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         if (Game.isValidId(gameId)) {
             loadGame(gameId, savedInstanceState);
         } else {
-            int scoreLimit = extras != null ? GameSetupOptions.extractScoreLimit(extras) :
+            Log.d("Binokel", "Extras: " + extras);
+            Bundle parameters = extras != null ? extras.getBundle
+                    (GameSetupActivity.EXTRA_OPTIONS_PARAMETERS) : null;
+            int scoreLimit = parameters != null ? GameSetupOptions.extractScoreLimit(parameters) :
                     BinokelGame.DEFAULT_SCORE_LIMIT;
-            int untenDurchValue = extras != null ? GameSetupOptions.extractUntenDurchValue(extras) :
+            int untenDurchValue = parameters != null ? GameSetupOptions.extractUntenDurchValue(parameters) :
                     BinokelRoundType.UNTEN_DURCH.getSpecialDefaultScore();
-            int durchValue = extras != null ? GameSetupOptions.extractDurchValue(extras) :
+            int durchValue = parameters != null ? GameSetupOptions.extractDurchValue(parameters) :
                     BinokelRoundType.DURCH.getSpecialDefaultScore();
 
             createNewGame(players, scoreLimit, untenDurchValue, durchValue);
-            Log.d("Binokel", "Creating new game for players: " + players + " of extras: " + extras);
+            Log.d("Binokel", "Creating new game for players: " + players + " of parameters: " +
+                    parameters);
         }
     }
 
@@ -294,17 +385,27 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
     }
 
     public boolean hasSelectedRound() {
-        return false;
+        return mStateMachine == null || mStateMachine.shouldShowRound();
     }
 
     @Override
     protected void deselectRound() {
-
+        mStateMachine.mRoundBuiler = null;
+        mCurrRoundIndex = -1;
+        getListView().clearChoices();
+        getListView().requestLayout();
+        makeUserInputAvailable(!mGame.isFinished());
+        mStateMachine.updateUI();
     }
 
     @Override
-    protected void selectRound(int position) {
-
+    protected void selectRound(int index) {
+        makeUserInputAvailable(true);
+        mCurrRoundIndex = index;
+        getListView().setItemChecked(mCurrRoundIndex, true);
+        mStateMachine.mRoundBuiler = new BinokelRound.PrototypeBuilder(mGame,
+                (BinokelRound) mGame.getRound(index));
+        mStateMachine.updateUI();
     }
 
     private void saveCloseAndRematch() {
@@ -358,7 +459,6 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         for (Button player : mPlayers) {
             player.setEnabled(available);
         }
-        mRoundStatusButton.setEnabled(available);
     }
 
     @Override
@@ -402,8 +502,9 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
                 return;
             }
         }
-        int teamIndex = arg / BinokelGame.MAX_PLAYERS_PER_TEAM;
-        int playerIndex = arg % BinokelGame.MAX_PLAYERS_PER_TEAM;
+        int playersPerTeam = BinokelGame.getPlayersPerTeam(mGame.getPlayersCount());
+        int teamIndex = arg / playersPerTeam;
+        int playerIndex = arg % playersPerTeam;
         if (teamIndex < 0 || teamIndex >= teams.size() || playerIndex < 0) {
             Log.e("Binokel", "Chosen player index invalid: " + teamIndex + " and " + playerIndex);
             return;
@@ -414,6 +515,8 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
                 + " for players in team: " + team.getPlayerCount());
             return;
         }
+        Log.d("Binokel", "Setting " + chosen + " to playerindex " + playerIndex + " for team " +
+                team.getPlayers() + " arg was " + arg + " team index was " + teamIndex);
         team.setPlayer(playerIndex, chosen);
         updateDisplayedPlayers();
     }
@@ -443,29 +546,46 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         throw new UnsupportedOperationException();
     }
 
+    private void onHotButtonClick(int playerIndex) {
+        if (mStateMachine.ensureRoundSelected()) {
+            mReizenValues[playerIndex].addDelta();
+        }
+    }
+
     private class BinokelGameStateMachine {
-        private static final int STATE_EXPECT_DATA = 1;
-        private static final int STATE_ADD_ROUND= 2;
+        private static final int STATE_NO_ROUND_SELECTED = 1;
+        private static final int STATE_ADD_SELECTED_ROUND= 2;
         private static final int STATE_OLD_ROUND_EDITED = 3;
         private static final int STATE_OLD_ROUND_SELECTED = 4;
         private static final int STATE_REMATCH = 5;
 
         private int mState;
+        private BinokelRound.PrototypeBuilder mRoundBuiler;
+
         //TODO implement methods
         private void determineState() {
-            mState = STATE_EXPECT_DATA;
+            mState = isImmutable() ? STATE_REMATCH : STATE_NO_ROUND_SELECTED;
+            if (mRoundBuiler != null) {
+                if (mRoundBuiler.isValid()) {
+                    mState = mCurrRoundIndex >= 0 ? STATE_OLD_ROUND_EDITED :
+                            STATE_ADD_SELECTED_ROUND;
+                } else {
+                    mState = STATE_OLD_ROUND_SELECTED;
+                }
+            }
+
         }
 
-        private int getLockInButtonDrawableId() {
+        private int getStateButtonDrawableId() {
             switch(mState) {
                 case STATE_REMATCH:
-                    return R.drawable.rematch;
-                case STATE_EXPECT_DATA:
-                    return R.drawable.ic_menu_view;
-                case STATE_ADD_ROUND:
-                    return R.drawable.ic_menu_add;
+                    return R.drawable.rematch_big;
+                case STATE_ADD_SELECTED_ROUND:
+                    return R.drawable.ic_menu_save;
                 case STATE_OLD_ROUND_EDITED:
                     return R.drawable.ic_menu_edit;
+                case STATE_NO_ROUND_SELECTED:
+                    return R.drawable.ic_menu_add;
                 case STATE_OLD_ROUND_SELECTED:
                     return R.drawable.ic_menu_close_clear_cancel;
                 default:
@@ -473,16 +593,51 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
             }
         }
 
-        private String getStateText() {
-            return "";
+        private void onStateButtonPressed() {
+            if (mRoundStatusButton.getVisibility() != View.VISIBLE) {
+                return;
+            }
+            switch (mState) {
+                case STATE_REMATCH:
+                    saveCloseAndRematch();
+                    break;
+                case STATE_ADD_SELECTED_ROUND:
+                    if (mRoundBuiler != null) {
+                        BinokelRound round = mRoundBuiler.getValid();
+                        if (round != null) {
+                            mGame.addRound(round);
+                            fillRoundData();
+                        }
+                    }
+                    deselectRound();
+                    break;
+                case STATE_OLD_ROUND_EDITED:
+                    if (mRoundBuiler != null) {
+                        BinokelRound round = mRoundBuiler.getValid();
+                        if (round != null) {
+                            mGame.updateRound(mCurrRoundIndex, round);
+                            fillRoundData();
+                        }
+                    }
+                    deselectRound();
+                    break;
+                case STATE_OLD_ROUND_SELECTED:
+                    deselectRound();
+                    break;
+                case STATE_NO_ROUND_SELECTED:
+                    ensureRoundSelected();
+                    break;
+            }
         }
 
-        private boolean lockinButtonEnabled() {
-            return mState != STATE_EXPECT_DATA;
-        }
-
-        private void onLockinButtonPressed() {
-
+        private boolean ensureRoundSelected() {
+            if (!isImmutable() && !shouldShowRound()) {
+                mRoundBuiler = new BinokelRound.PrototypeBuilder(mGame);
+                mCurrRoundIndex = -1;
+                mStateMachine.updateUI();
+                return true;
+            }
+            return shouldShowRound();
         }
 
         private CharSequence getMainInfoText() {
@@ -508,7 +663,66 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         private void updateUI() {
             determineState();
             mCallback.setInfo(getMainInfoText(), getExtraInfoText());
+            applyRoundTypeUi();
+            applyReizenUi();
+            applyMeldenUi();
+            updateStateButton();
+            ensureSwitcherViewIsCorrect();
+        }
 
+        private void applyReizenUi() {
+            if (mRoundBuiler == null) {
+                return;
+            }
+            for (int i = 0; i < mGame.getPlayersCount(); i++) {
+                mReizenValues[i].setValue(mRoundBuiler.getReizenValue(i));
+            }
+            int reizenWinner = mRoundBuiler.getReizenWinnerPlayerIndex();
+            for (int i = 0; i < mGame.getPlayersCount(); i++) {
+                mReizenValues[i].setTextColor(i == reizenWinner ? 0xFFa40909 : Color.BLACK);
+            }
+        }
+
+        private void applyMeldenUi() {
+            if (mRoundBuiler == null) {
+                return;
+            }
+            for (int i = 0; i < mGame.getPlayersCount(); i++) {
+                mMeldenValues[i].setValue(mRoundBuiler.getMeldenValue(i));
+            }
+        }
+
+        private void updateStateButton() {
+            if (isImmutable() && mState == STATE_NO_ROUND_SELECTED) {
+                mRoundStatusButton.setVisibility(View.INVISIBLE);
+            } else {
+                mRoundStatusButton.setVisibility(View.VISIBLE);
+            }
+            mRoundStatusButton.setImageResource(getStateButtonDrawableId());
+        }
+        private void ensureSwitcherViewIsCorrect() {
+            boolean isShowingRound = mBinokelSwitcher.getCurrentView() == mBinokelSwitcher
+                    .getChildAt(0);
+            boolean shouldShowRound = shouldShowRound();
+            if (isShowingRound && !shouldShowRound) {
+                mBinokelSwitcher.showNext();
+            } else if (!isShowingRound && shouldShowRound) {
+                mBinokelSwitcher.showPrevious();
+            }
+        }
+
+        public boolean shouldShowRound() {
+            return (mState != STATE_REMATCH && mState != STATE_NO_ROUND_SELECTED);
+        }
+
+        public void applyRoundTypeUi() {
+            if (mRoundBuiler == null) {
+                return;
+            }
+            for (BinokelRoundType type : BinokelRoundType.values()) {
+                ImageButton view = mRoundTypeToView.get(type);
+                view.setEnabled(type != mRoundBuiler.getRoundType());
+            }
         }
     }
 }
