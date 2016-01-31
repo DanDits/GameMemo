@@ -27,6 +27,9 @@ public class SlidingNumberPicker extends TextView {
     private float mRequiredHeightFractionForFullDelta = 0.5f;
     private boolean mEnforceDelta = true;
     private OnValueChangedListener mListener;
+    private boolean mHideArrows;
+    private CharSequence mMinText;
+    private CharSequence mMaxText;
 
     public SlidingNumberPicker(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -47,12 +50,37 @@ public class SlidingNumberPicker extends TextView {
         initSlidingListener();
     }
 
+    public void setMinText(CharSequence text) {
+        mMinText = text;
+    }
+
+    public void setMaxText(CharSequence text) {
+        mMaxText = text;
+    }
+
+    public void setHideArrows(boolean hide) {
+        mHideArrows = hide;
+        if (hide) {
+            setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+        } else {
+            updateIndicator();
+        }
+    }
+
     public void setOnValueChangedListener(OnValueChangedListener listener) {
         mListener = listener;
     }
 
     public void addDelta() {
         setValue(mValue + mDelta);
+    }
+
+    public int getMinValue() {
+        return mMin;
+    }
+
+    public int getMaxValue() {
+        return mMax;
     }
 
     public interface OnValueChangedListener {
@@ -75,6 +103,8 @@ public class SlidingNumberPicker extends TextView {
                         DEFAULT_DELTA);
                 setBounds(min, max, delta);
                 gravity = a.getInteger(R.styleable.SlidingNumberPicker_android_gravity, gravity);
+                mMinText = a.getString(R.styleable.SlidingNumberPicker_minText);
+                mMaxText = a.getString(R.styleable.SlidingNumberPicker_maxText);
             } finally {
                 a.recycle();
             }
@@ -99,11 +129,15 @@ public class SlidingNumberPicker extends TextView {
         }
     }
 
+    private void startSlide(float y) {
+        mSlideStartY = y;
+        mSlideStartValue = mValue;
+    }
+
     private void onSlide(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                mSlideStartY = event.getY();
-                mSlideStartValue = mValue;
+                startSlide(event.getY());
                 break;
             case MotionEvent.ACTION_MOVE:
                 float heightDelta = mSlideStartY - event.getY(); //positive if moving up
@@ -113,7 +147,16 @@ public class SlidingNumberPicker extends TextView {
                     valueDelta = valueDelta -
                             (int) (Math.signum(valueDelta) * (Math.abs(valueDelta) % Math.abs(mDelta)));
                 }
-                setValue(mSlideStartValue + valueDelta);
+                int newValue = mSlideStartValue + valueDelta;
+                if ((newValue > mMax && mValue == mMax)
+                        || (newValue < mMin && mValue == mMin)) {
+                    // when already at bound we do not need to set new value
+                    // instead to help for views positioned at edge of display restart the slide
+                    // start position to more easily change max/min value
+                    startSlide(event.getY());
+                } else {
+                    setValue(newValue);
+                }
                 break;
         }
     }
@@ -134,13 +177,24 @@ public class SlidingNumberPicker extends TextView {
         int oldValue = mValue;
         mValue = Math.max(mMin, Math.min(mMax, value));
         if (oldValue != mValue) {
-            setText(String.valueOf(mValue));
+            CharSequence text;
+            if (mValue == mMin && mMinText != null) {
+                text = mMinText;
+            } else if (mValue == mMax && mMaxText != null) {
+                text = mMaxText;
+            } else {
+                text = String.valueOf(mValue);
+            }
+            setText(text);
             updateIndicator();
             notifyListener();
         }
     }
 
     private void updateIndicator() {
+        if (mHideArrows) {
+            return;
+        }
         int indicatorResId = R.drawable.sliding_number_picker_arrow_up_down;
         if (mValue == mMin) {
             indicatorResId = R.drawable.sliding_number_picker_arrow_up;

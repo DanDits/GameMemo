@@ -21,8 +21,11 @@
     <string name="game_team_X">Team %1$d</string>
     <string name="tichu_no_rounds">1. Drücke die Sprechblasen für Tichuansagen.\n2. Wähle den Spieler, der erster wurde.\n3. Gebe die Kartenpunkte ein.</string>
     <string name="doppelkopf_no_rounds">Klick auf die Re Spieler!</string>
-    <string name="default_tichu_round_score"> </string><string name="default_player_name">Spieler</string>
-    <string name="tichu_team_select_team1">Team 1</string>
+    <string name="default_player_name">Spieler</string>
+	<string name="statistic_tichu_small_tichu_own_name">Eigene kleine Tichus</string>
+	<string name="statistic_tichu_small_tichu_own_descr">Akzeptiert eine Runde, falls die Anzahl
+		der eigenen kleinen Tichus größer als 0 ist.</string>
+	<string name="tichu_team_select_team1">Team 1</string>
     <string name="tichu_team_select_team2">Team 2</string>
     <string name="remove_player_dialog">Entfernen</string>
     <string name="game_enter_name">Name eingeben</string>
@@ -418,4 +421,16 @@
 	<string name="binokel_reizen_title">Reizen</string>
 	<string name="binokel_melden_title">Melden</string>
 	<string name="binokel_result_title">Ergebnis</string>
+	<string name="binokel_abgegangen">Abgegangen</string>
+	<string name="binokel_durch_lost">Durch verloren</string>
+	<string name="binokel_game_failed_loading_players_missing">Binokel benötigt mindestens 3 Spieler.</string>
+	<string name="binokel_made_last_stich">Letzter Stich</string>
+	<string name="binokel_no_stich">Kein Stich</string>
+	<string name="binokel_normal_game">Normales Spiel</string>
+	<string name="binokel_special_game_lost">Spezialspiel verloren</string>
+	<string name="binokel_unten_durch_lost">Untendurch verloren</string>
+	<string name="statistic_priority_short">Prio</string>
+	<string name="statistic_tichu_big_tichu_own_descr">Akzeptiert eine Runde, falls die berechnet Amount von eigenen großen Tichus größer als Null ist.</string>
+	<string name="statistic_tichu_big_tichu_own_name">Eigene große Tichus</string>
+	<string name="stich_punkte_title">Stichpunkte</string>
 </resources>

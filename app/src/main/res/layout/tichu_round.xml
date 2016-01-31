@@ -29,7 +29,6 @@
         android:layout_height="wrap_content"
         android:layout_weight="7"
         android:gravity="right"
-        android:text="@string/default_tichu_round_score"
         android:textSize="20sp" />
 
     <View
@@ -70,7 +69,6 @@
         android:layout_height="wrap_content"
         android:layout_weight="7"
         android:gravity="right"
-        android:text="@string/default_tichu_round_score"
         android:textSize="20sp" />
 
     <View

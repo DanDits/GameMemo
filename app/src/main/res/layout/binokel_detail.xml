@@ -170,42 +170,42 @@
                                 android:layout_height="wrap_content"
                                 android:id="@+id/binokel_schellen"
                                 android:src="@drawable/binokel_schellen"
-                                android:background="@drawable/binokel_button"/>
+                                android:background="@drawable/binokel_button_disabledhighlight"/>
                             <ImageButton
                                 android:layout_width="0dp"
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/binokel_schippen"
                                 android:src="@drawable/binokel_schippen"
-                                android:background="@drawable/binokel_button"/>
+                                android:background="@drawable/binokel_button_disabledhighlight"/>
                             <ImageButton
                                 android:layout_width="0dp"
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/binokel_herz"
                                 android:src="@drawable/binokel_herz"
-                                android:background="@drawable/binokel_button"/>
+                                android:background="@drawable/binokel_button_disabledhighlight"/>
                             <ImageButton
                                 android:layout_width="0dp"
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/binokel_eichel"
                                 android:src="@drawable/binokel_eichel"
-                                android:background="@drawable/binokel_button"/>
+                                android:background="@drawable/binokel_button_disabledhighlight"/>
                             <ImageButton
                                 android:layout_width="0dp"
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/binokel_untendurch"
                                 android:src="@drawable/binokel_untendurch"
-                                android:background="@drawable/binokel_button"/>
+                                android:background="@drawable/binokel_button_disabledhighlight"/>
                             <ImageButton
                                 android:layout_width="0dp"
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/binokel_durch"
                                 android:src="@drawable/binokel_durch"
-                                android:background="@drawable/binokel_button"/>
+                                android:background="@drawable/binokel_button_disabledhighlight"/>
                         </LinearLayout>
                     </RelativeLayout>
                     <View
@@ -298,7 +298,8 @@
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:text="@string/binokel_made_last_stich"
-                                android:background="@drawable/binokel_button"
+                                android:id="@+id/letzer_stich1"
+                                android:background="@drawable/binokel_button_disabledhighlight"
                                 android:textAppearance="@android:style/TextAppearance.Small"
                                 android:layout_margin="8dp"/>
                             <Button
@@ -306,7 +307,8 @@
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:text="@string/binokel_made_last_stich"
-                                android:background="@drawable/binokel_button"
+                                android:id="@+id/letzer_stich2"
+                                android:background="@drawable/binokel_button_disabledhighlight"
                                 android:textAppearance="@android:style/TextAppearance.Small"
                                 android:layout_margin="8dp"/>
                             <Button
@@ -314,7 +316,8 @@
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:text="@string/binokel_made_last_stich"
-                                android:background="@drawable/binokel_button"
+                                android:id="@+id/letzer_stich3"
+                                android:background="@drawable/binokel_button_disabledhighlight"
                                 android:textAppearance="@android:style/TextAppearance.Small"
                                 android:layout_margin="8dp"/>
                         </LinearLayout>
@@ -344,7 +347,8 @@
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/stich1"
-                                app:minValue="0"
+                                app:minValue="-5"
+                                app:minText="@string/binokel_no_stich"
                                 app:maxValue="240"
                                 app:deltaValue="5"
                                 android:gravity="center"
@@ -354,7 +358,8 @@
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/stich2"
-                                app:minValue="0"
+                                app:minValue="-5"
+                                app:minText="@string/binokel_no_stich"
                                 app:maxValue="240"
                                 app:deltaValue="5"
                                 android:gravity="center"
@@ -364,7 +369,8 @@
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
                                 android:id="@+id/stich3"
-                                app:minValue="0"
+                                app:minValue="-5"
+                                app:minText="@string/binokel_no_stich"
                                 app:maxValue="240"
                                 app:deltaValue="5"
                                 android:gravity="center"
@@ -387,6 +393,7 @@
                             android:layout_weight="1"
                             android:text="@string/binokel_result_unknown"
                             android:gravity="center"
+                            android:textAppearance="@android:style/TextAppearance.Large"
                             android:drawableLeft="@drawable/sigma"/>
                         <TextView
                             android:layout_width="0dp"
@@ -395,6 +402,7 @@
                             android:layout_weight="1"
                             android:text="@string/binokel_result_unknown"
                             android:gravity="center"
+                            android:textAppearance="@android:style/TextAppearance.Large"
                             android:drawableLeft="@drawable/sigma"/>
                         <TextView
                             android:layout_width="0dp"
@@ -403,6 +411,7 @@
                             android:layout_weight="1"
                             android:text="@string/binokel_result_unknown"
                             android:gravity="center"
+                            android:textAppearance="@android:style/TextAppearance.Large"
                             android:drawableLeft="@drawable/sigma"/>
                     </LinearLayout>
                 </LinearLayout>

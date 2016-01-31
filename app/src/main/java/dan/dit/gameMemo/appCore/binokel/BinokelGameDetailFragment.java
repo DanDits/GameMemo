@@ -58,6 +58,11 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
     private SlidingNumberPicker[] mReizenValues;
     private HashMap<BinokelRoundType, ImageButton> mRoundTypeToView;
     private SlidingNumberPicker[] mMeldenValues;
+    private Button[] mLetzerStich;
+    private Button mGamePlayedStyle;
+    private SlidingNumberPicker[] mStichValues;
+    private TextView[] mResults;
+    private TextView mStichTitle;
 
     public static BinokelGameDetailFragment newInstance(long gameId) {
         BinokelGameDetailFragment f = new BinokelGameDetailFragment();
@@ -103,6 +108,7 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                         toRemoveOn.removeOnGlobalLayoutListener(this);
                     } else {
+                        //noinspection deprecation
                         toRemoveOn.removeGlobalOnLayoutListener(this);
                     }
                 }
@@ -132,8 +138,25 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
                 (SlidingNumberPicker) getView().findViewById(R.id.melden3),
                 (SlidingNumberPicker) getView().findViewById(R.id.melden4)
         };
+        mLetzerStich = new Button[] {
+                (Button) getView().findViewById(R.id.letzer_stich1),
+                (Button) getView().findViewById(R.id.letzer_stich2),
+                (Button) getView().findViewById(R.id.letzer_stich3)
+        };
+
+        mGamePlayedStyle = (Button) getView().findViewById(R.id.binokel_game_played_style);
+        mStichValues = new SlidingNumberPicker[] {
+                (SlidingNumberPicker) getView().findViewById(R.id.stich1),
+                (SlidingNumberPicker) getView().findViewById(R.id.stich2),
+                (SlidingNumberPicker) getView().findViewById(R.id.stich3)
+        };
+        mResults = new TextView[] {
+                (TextView) getView().findViewById(R.id.result1),
+                (TextView) getView().findViewById(R.id.result2),
+                (TextView) getView().findViewById(R.id.result3)
+        };
+        mStichTitle = (TextView) getView().findViewById(R.id.stich_punkte_title);
         mBinokelSwitcher = (ViewSwitcher) getView().findViewById(R.id.binokel_switcher);
-        //TODO set refs to ui elements
         mStateMachine = new BinokelGameStateMachine();
         loadOrStartGame(savedInstanceState);
         registerForContextMenu(getListView());
@@ -174,7 +197,6 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
     }
 
     private void initListeners() {
-        //TODO init listeners for ui elements
         View.OnLongClickListener exchangePlayerListener = new View.OnLongClickListener() {
 
             @Override
@@ -195,11 +217,14 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
             }
 
         };
-        for (int i = 0; i < mPlayers.length; i++) {
-            mPlayers[i].setOnLongClickListener(exchangePlayerListener);
-            mPlayers[i].setOnClickListener(new View.OnClickListener() {
+        for (Button mPlayer : mPlayers) {
+            mPlayer.setOnLongClickListener(exchangePlayerListener);
+            mPlayer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (isImmutable()) {
+                        return;
+                    }
                     int playerIndex = getPlayerButtonIndex(v);
                     if (playerIndex < 0) {
                         return;
@@ -242,6 +267,38 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
                 @Override
                 public void onValueChanged(SlidingNumberPicker view, int newValue) {
                     mStateMachine.mRoundBuiler.setMeldungValue(index, newValue);
+                    mStateMachine.updateUI();
+                }
+            });
+        }
+        for (int i = 0; i < mLetzerStich.length; i++) {
+            mLetzerStich[i].setVisibility(i >= mGame.getTeamsCount() ? View.GONE : View.VISIBLE);
+            final int index = i;
+            mLetzerStich[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View clicked) {
+                    mStateMachine.mRoundBuiler.setMadeLastStich(index);
+                    mStateMachine.updateUI();
+                }
+            });
+        }
+        for (int i = 0; i < mResults.length; i++) {
+            mResults[i].setVisibility(i >= mGame.getTeamsCount() ? View.GONE : View.VISIBLE);
+        }
+        mGamePlayedStyle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mStateMachine.mRoundBuiler.nextStyle();
+                mStateMachine.updateUI();
+            }
+        });
+        for (int i = 0; i < mStichValues.length; i++) {
+            mStichValues[i].setVisibility(i >= mGame.getTeamsCount() ? View.GONE : View.VISIBLE);
+            final int index = i;
+            mStichValues[i].setOnValueChangedListener(new SlidingNumberPicker.OnValueChangedListener() {
+                @Override
+                public void onValueChanged(SlidingNumberPicker view, int newValue) {
+                    mStateMachine.mRoundBuiler.setStichScore(index, newValue);
                     mStateMachine.updateUI();
                 }
             });
@@ -340,8 +397,7 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
     }
 
     private void loadGame(long gameId, Bundle saveInstanceState) {
-        assert Game.isValidId(gameId);
-        List<Game> games = null;
+        List<Game> games;
         try {
             games = Game.loadGames(GameKey.BINOKEL, getActivity().getContentResolver(),
                     GameStorageHelper.getUriWithId(GameKey.BINOKEL, gameId), true);
@@ -450,7 +506,6 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         }
     }
 
-    //TODO invoke when selecting/deselecting round
     private void makeUserInputAvailable(boolean available) {
         if (available && isImmutable()) {
             // sorry dude, you cannot edit a loaded finished game which got locked forever
@@ -562,11 +617,10 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         private int mState;
         private BinokelRound.PrototypeBuilder mRoundBuiler;
 
-        //TODO implement methods
         private void determineState() {
-            mState = isImmutable() ? STATE_REMATCH : STATE_NO_ROUND_SELECTED;
+            mState = mGame.isFinished() ? STATE_REMATCH : STATE_NO_ROUND_SELECTED;
             if (mRoundBuiler != null) {
-                if (mRoundBuiler.isValid()) {
+                if (!isImmutable() && mRoundBuiler.isValid()) {
                     mState = mCurrRoundIndex >= 0 ? STATE_OLD_ROUND_EDITED :
                             STATE_ADD_SELECTED_ROUND;
                 } else {
@@ -631,7 +685,7 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         }
 
         private boolean ensureRoundSelected() {
-            if (!isImmutable() && !shouldShowRound()) {
+            if (!mGame.isFinished() && !shouldShowRound()) {
                 mRoundBuiler = new BinokelRound.PrototypeBuilder(mGame);
                 mCurrRoundIndex = -1;
                 mStateMachine.updateUI();
@@ -666,8 +720,68 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
             applyRoundTypeUi();
             applyReizenUi();
             applyMeldenUi();
+            applyStichUi();
+            applyLastStichUi();
+            applyGameStyleUi();
+            updateResultValueUi();
             updateStateButton();
             ensureSwitcherViewIsCorrect();
+        }
+
+        private void applyStichUi() {
+            if (mRoundBuiler == null) {
+                return;
+            }
+            int sum = 0;
+            for (int i = 0; i < mGame.getTeamsCount(); i++) {
+                int stichValue = mRoundBuiler.getStichValue(i);
+                if (stichValue < 0) {
+                    mStichValues[i].setValue(mStichValues[i].getMinValue());
+                } else {
+                    mStichValues[i].setValue(stichValue);
+                }
+                sum += Math.max(0, stichValue);
+            }
+            mStichTitle.setTextColor(sum == BinokelRound.MAX_STICH_SCORE ? Color.BLACK : Color.RED);
+        }
+
+        private void updateResultValueUi() {
+            if (mRoundBuiler == null) {
+                return;
+            }
+            for (int i = 0; i < mGame.getTeamsCount(); i++) {
+                if (mRoundBuiler.isValid()) {
+                    int total = mRoundBuiler.getTotalValue(i);
+                    mResults[i].setText(total >= 0 ? ("+" + total) : String.valueOf(total));
+                    mResults[i].setTextColor(Color.BLACK);
+                } else {
+                    mResults[i].setText(R.string.binokel_result_unknown);
+                    mResults[i].setTextColor(Color.RED);
+                }
+            }
+        }
+
+        private void applyGameStyleUi() {
+            if (mRoundBuiler == null) {
+                return;
+            }
+            int specialGameResId = mRoundBuiler.getRoundType() == BinokelRoundType.UNTEN_DURCH ?
+                        R.string.binokel_unten_durch_lost :
+                    mRoundBuiler.getRoundType() == BinokelRoundType.DURCH ?
+                            R.string.binokel_durch_lost : R.string.binokel_special_game_lost;
+            mGamePlayedStyle.setText(mRoundBuiler.getStyleAbgegangen() ? R.string
+                    .binokel_abgegangen :
+                mRoundBuiler.getStyleLostSpecialGame() ? specialGameResId :
+                R.string.binokel_normal_game);
+        }
+
+        private void applyLastStichUi() {
+            if (mRoundBuiler == null) {
+                return;
+            }
+            for (int i = 0; i < mGame.getTeamsCount(); i++) {
+                mLetzerStich[i].setEnabled(i != mRoundBuiler.getLastStichTeamIndex());
+            }
         }
 
         private void applyReizenUi() {
@@ -693,7 +807,7 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
         }
 
         private void updateStateButton() {
-            if (isImmutable() && mState == STATE_NO_ROUND_SELECTED) {
+            if (mGame.isFinished() && mState == STATE_NO_ROUND_SELECTED) {
                 mRoundStatusButton.setVisibility(View.INVISIBLE);
             } else {
                 mRoundStatusButton.setVisibility(View.VISIBLE);

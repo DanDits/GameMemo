@@ -6,5 +6,7 @@
         <attr name="value" format="integer"/>
         <attr name="deltaValue" format="integer"/>
         <attr name="android:gravity"/>
+        <attr name="minText" format="reference"/>
+        <attr name="maxText" format="reference"/>
     </declare-styleable>
 </resources>

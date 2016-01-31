@@ -13,7 +13,7 @@
 		will then be displayed here.</string>
     <string name="tichu_no_rounds">1. Press bubbles for tichu bids.\n2. Select the player that finished first.\n3. Enter the card score.</string>
     <string name="doppelkopf_no_rounds">Click on the re player(s)!</string>
-    <string name="default_tichu_round_score"> </string><string name="default_player_name">Player</string>
+    <string name="default_player_name">Player</string>
     <string name="remove_player_dialog">Remove</string>
     <string name="game_setup_select_player">Select player</string>
     <string name="game_setup_general_player_list">Players</string>
@@ -26,8 +26,7 @@
     <string name="tichu_game_tichu_button_3_content_description">Toggle tichu bid player 3</string>
     <string name="tichu_game_tichu_button_4_content_description">Toggle tichu bid player 4</string>
     <string name="tichu_game_tichu_round_bid_image_content_description">Visualizes tichu bid for player</string>
-	<string name="binokel_game_failed_loading_players_missing">Binokel benötigt mindestens 3 Spieler
-		.</string>
+	<string name="binokel_game_failed_loading_players_missing">Binokel requires 3 players at least.</string>
     <string name="game_failed_loading">Failed loading game.</string>
     <string name ="show_statistics">Statistics</string>
 	<string name="data_exchange_button_refresh_devices_list">Scan</string>
@@ -134,7 +133,7 @@
 	<!-- Do not use the dash, the regex does not work then.
 		This regex should match all translations of player_dummy_name and only capture the number. 
 		Do not add this string resource to translations -->
-	<string name="player_dummy_name_regex">(?:Spieler ([0-9]+))|(?:Player ([0-9]+))</string>
+	<string name="player_dummy_name_regex" translatable="false">(?:Spieler ([0-9]+))|(?:Player ([0-9]+))</string>
 	<string name="color">Color</string>
 	<string name="choose_color">Choose color</string>
 	<string name="game_setup_new_team">New team</string>
@@ -201,8 +200,8 @@
 	<string name="binokel_score_limit">Score limit: %1$d</string>
 	<string name="binokel_unten_durch_score">Untendurch value: %1$d</string>
 	<string name="binokel_durch_score">Durch value: %1$d</string>
-	<string name="binokel_unten_durch_score_short">Untendurch: %1$d</string>
-	<string name="binokel_durch_score_short">Durch: %1$d</string>
+	<string name="binokel_unten_durch_score_short" translatable="false">Untendurch: %1$d</string>
+	<string name="binokel_durch_score_short" translatable="false">Durch: %1$d</string>
 	<string name="binokel_game_score_limit_with_value">Score limit: %1$d</string>
 	<string name="binokel_game_score_limit">Score limit</string>
 
@@ -341,16 +340,16 @@
 	<string name="attribute_tichu_score_values_descr">Accepts if the score values (all points made during a round for each team) match the ones in the custom value. Can be any number like 5 or 15 or a combination like 15:85 or 300:0.</string>
 	<string name="statistic_tichu_won_200_0_name">200 : 0</string>
 	<string name="statistic_tichu_won_200_0_descr">The amount of rounds that the player and his/her team won 200:0.</string>
-	<string name="attribute_tichu_0_200_name">0 : 200</string>
-	<string name="attribute_tichu_200_0_name">200 : 0</string>
+	<string name="attribute_tichu_0_200_name" translatable="false">0 : 200</string>
+	<string name="attribute_tichu_200_0_name" translatable="false">200 : 0</string>
 	<string name="statistic_tichu_won_300_0_name">300 : 0</string>
 	<string name="statistic_tichu_won_300_0_descr">The amount of rounds that the player and his/her team won 300:0.</string>
-	<string name="attribute_tichu_0_300_name">0 : 300</string>
-	<string name="attribute_tichu_300_0_name">300 : 0</string>
+	<string name="attribute_tichu_0_300_name" translatable="false">0 : 300</string>
+	<string name="attribute_tichu_300_0_name" translatable="false">300 : 0</string>
 	<string name="statistic_tichu_won_400_0_name">400 : 0</string>
 	<string name="statistic_tichu_won_400_0_descr">The amount of rounds that the player and his/her team won 400:0.</string>
-	<string name="attribute_tichu_0_400_name">0 : 400</string>
-	<string name="attribute_tichu_400_0_name">400 : 0</string>
+	<string name="attribute_tichu_0_400_name" translatable="false">0 : 400</string>
+	<string name="attribute_tichu_400_0_name" translatable="false">400 : 0</string>
 	<string name="statistic_tichu_won_0_200_name">0 : 200</string>
 	<string name="statistic_tichu_won_0_200_descr">The amount of rounds that the player and his/her team lost 200:0.</string>
 	<string name="statistic_tichu_won_0_300_name">0 : 300</string>
@@ -411,8 +410,44 @@
 	<string name="binokel_reizen_title">Reizen</string>
 	<string name="binokel_melden_title">Melden</string>
 	<string name="binokel_result_title">Result</string>
-	<string name="binokel_made_last_stich">Letzter Stich</string>
-	<string name="binokel_normal_game">Normales Spiel</string>
-	<string name="stich_punkte_title">Stichpunkte</string>
-	<string name="binokel_result_unknown">\?</string>
+	<string name="binokel_made_last_stich">Last trick</string>
+	<string name="binokel_normal_game">Normal game</string>
+	<string name="stich_punkte_title">Trick points</string>
+	<string name="binokel_result_unknown" translatable="false">\?</string>
+	<string name="binokel_unten_durch_lost">Untendurch lost</string>
+	<string name="binokel_special_game_lost">Special game lost</string>
+	<string name="binokel_no_stich">No trick</string>
+	<string name="binokel_abgegangen">Skip</string>
+	<string name="binokel_durch_lost">Durch lost</string>
+	<string name="doppelkopf_game_style_herz_solo">heart solo</string>
+	<string name="doppelkopf_game_style_karo_solo">caro solo</string>
+	<string name="doppelkopf_game_style_kreuz_solo">cross solo</string>
+	<string name="doppelkopf_game_style_pik_solo">pik solo</string>
+	<string name="statistic_tichu_big_tichu_won_own_descr">Accepts a round if the calculated amount of own won big tichu bids is greater than zero</string>
+	<string name="statistic_tichu_big_tichu_won_own_name">Own won big tichu bids</string>
+	<string name="statistic_tichu_small_tichu_won_own_descr">Accepts a round if the calculated amount of own won small tichu bids is greater than zero.</string>
+	<string name="statistic_tichu_small_tichu_won_own_name">Own won small tichu bids</string>
+	<string name="statistics_average_finisher_pos_descr">Finishing position (mean)</string>
+	<string name="statistics_big_tichus_descr">Big tichu bids</string>
+	<string name="statistics_big_tichus_won_descr">Won big tichus</string>
+	<string name="statistics_by_genre">By type</string>
+	<string name="statistics_by_genre_value_column_descr">Value</string>
+	<string name="statistics_by_player">By players</string>
+	<string name="statistics_column_header_total_abs_value">Total</string>
+	<string name="statistics_column_header_won">Won</string>
+	<string name="statistics_games_played_descr">Played games</string>
+	<string name="statistics_games_won_descr">Won games</string>
+	<string name="statistics_rounds_played_descr">Played rounds</string>
+	<string name="statistics_rounds_won_descr">Won rounds</string>
+	<string name="statistics_score_per_round_incl_tichus">Points per round (with tichus)</string>
+	<string name="statistics_score_per_round_no_tichus">Points per round (without tichus)</string>
+	<string name="statistics_small_tichus_descr">Small tichus</string>
+	<string name="statistics_small_tichus_won_descr">Won small tichus</string>
+	<string name="tichu_row_team1_heading">Team 1</string>
+	<string name="tichu_row_team2_heading">Team 2</string>
+	<string name="tichu_row_time_empty">Starting time</string>
+	<string name="tichu_row_time_heading">Starting time</string>
+	<string name="tichu_team_select_start_game">Start game</string>
+	<string name="tichu_team_select_team1">Team 1</string>
+	<string name="tichu_team_select_team2">Team 2</string>
 </resources>
