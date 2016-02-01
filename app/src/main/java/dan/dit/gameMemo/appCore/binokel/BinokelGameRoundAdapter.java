@@ -79,7 +79,7 @@ public class BinokelGameRoundAdapter extends ArrayAdapter<GameRound> {
             row.findViewById(R.id.team3_container).setVisibility(View.GONE);
         }
 
-		if ((position == game.getRoundCount() - 1) && position > 0) {
+		if (position > 0) {
 			for (int i = 0; i < game.getTeamsCount(); i++) {
                 visualizeDelta(teamsDelta[i], position, i, isLastRound);
             }

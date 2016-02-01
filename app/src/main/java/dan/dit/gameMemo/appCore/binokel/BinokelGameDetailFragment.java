@@ -732,6 +732,7 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
             if (mRoundBuiler == null) {
                 return;
             }
+            boolean show = mRoundBuiler.isNormalRoundStyle() && !mRoundBuiler.isSpecialRoundType();
             int sum = 0;
             for (int i = 0; i < mGame.getTeamsCount(); i++) {
                 int stichValue = mRoundBuiler.getStichValue(i);
@@ -741,8 +742,11 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
                     mStichValues[i].setValue(stichValue);
                 }
                 sum += Math.max(0, stichValue);
+                mStichValues[i].setVisibility(show ? View.VISIBLE : View.INVISIBLE);
             }
             mStichTitle.setTextColor(sum == BinokelRound.MAX_STICH_SCORE ? Color.BLACK : Color.RED);
+            mStichTitle.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+
         }
 
         private void updateResultValueUi() {
@@ -779,8 +783,11 @@ public class BinokelGameDetailFragment extends GameDetailFragment {
             if (mRoundBuiler == null) {
                 return;
             }
+            boolean show = mRoundBuiler.isNormalRoundStyle() && !mRoundBuiler.isSpecialRoundType();
             for (int i = 0; i < mGame.getTeamsCount(); i++) {
                 mLetzerStich[i].setEnabled(i != mRoundBuiler.getLastStichTeamIndex());
+                mLetzerStich[i].setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+
             }
         }
 

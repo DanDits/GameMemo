@@ -173,14 +173,18 @@ public class BinokelRound extends GameRound {
 
     private int calculateTeamScore(int teamIndex) throws InadequateRoundInfo {
         checkAndThrowRoundState();
-        if (mStyleAbgegangen && teamIndex == getReizenWinningTeam()) {
-            if (mRoundType.isSpecial()) {
-                return -mRoundType.getSpecialDefaultScore();
+        if (mStyleAbgegangen) {
+            if (isReizenWinningTeam(teamIndex)) {
+                if (mRoundType.isSpecial()) {
+                    return -mRoundType.getSpecialDefaultScore();
+                } else {
+                    return -mReizen.getMaxReizenValue();
+                }
             } else {
-                return -mReizen.getMaxReizenValue();
+                return sumMeldungenScore(teamIndex);
             }
         }
-        if (mRoundType.isSpecial() && teamIndex == getReizenWinningTeam()) {
+        if (mRoundType.isSpecial()) {
             // reizen value doesn't matter, own meldungen ignored for playing team,
             // stich value ignored for all players
             boolean specialRoundWon = !mStyleLostSpecialGame;
@@ -191,11 +195,7 @@ public class BinokelRound extends GameRound {
                 return specialRoundWon ? 0 : sumMeldungenScore(teamIndex);
             }
         }
-        //TODO untendurch no stich scores and no last stich (melden score for gegner only if
-        // TODO specialgame is lost, no melden score for own team (hide melden slider and last
-        // TODO stich bottom for special team)
 
-        //TODO order: eichel,blatt,herz,schellen switch order!
         // no special round
         int lastStichScore = sumLastStichScore(teamIndex);
         int stichScore = sumStichScore(teamIndex);
@@ -260,6 +260,9 @@ public class BinokelRound extends GameRound {
 
         public void setRoundType(BinokelRoundType type) {
             mPrototype.mRoundType = type;
+            if (!isSpecialRoundType() && mPrototype.mStyleLostSpecialGame) {
+                nextStyle();
+            }
         }
 
         public void setMeldungValue(int playerIndex, int value) {
@@ -334,12 +337,16 @@ public class BinokelRound extends GameRound {
 
         public void nextStyle() {
             if (mPrototype.mStyleAbgegangen) {
+                // lost special game (or normal if not special round type)
                 mPrototype.mStyleAbgegangen = false;
-                mPrototype.mStyleLostSpecialGame = true;
+                mPrototype.mStyleLostSpecialGame = isSpecialRoundType();
             } else if (mPrototype.mStyleLostSpecialGame) {
-                mPrototype.mStyleLostSpecialGame = false;
                 // normal game
+                mPrototype.mStyleLostSpecialGame = false;
+                mPrototype.mStyleAbgegangen = false;
             } else {
+                // abgegangen
+                mPrototype.mStyleLostSpecialGame = false;
                 mPrototype.mStyleAbgegangen = true;
             }
             Log.d("Binokel", "After next style now is: " + getStyleAbgegangen() + " - " +
@@ -360,6 +367,14 @@ public class BinokelRound extends GameRound {
 
         public int getStichValue(int teamIndex) {
             return mPrototype.mResults[teamIndex].getStichScore();
+        }
+
+        public boolean isSpecialRoundType() {
+            return mPrototype.getRoundType() != null && mPrototype.getRoundType().isSpecial();
+        }
+
+        public boolean isNormalRoundStyle() {
+            return !mPrototype.mStyleAbgegangen && !mPrototype.mStyleLostSpecialGame;
         }
     }
 

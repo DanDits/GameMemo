@@ -6,7 +6,6 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import dan.dit.gameMemo.R;
@@ -30,6 +29,9 @@ public class SlidingNumberPicker extends TextView {
     private boolean mHideArrows;
     private CharSequence mMinText;
     private CharSequence mMaxText;
+    private boolean mSmartClickDisabled;
+    private boolean mCurrentNoValidClick;
+    private OnClickListener mClickListener;
 
     public SlidingNumberPicker(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -117,9 +119,52 @@ public class SlidingNumberPicker extends TextView {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 onSlide(event);
+                onProcessClick(event);
                 return true;
             }
         });
+    }
+
+    private void onProcessClick(MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                mCurrentNoValidClick = false;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (!isInsideBounds(event)) {
+                    mCurrentNoValidClick = true;
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                if (!mCurrentNoValidClick) {
+                    onClick(event);
+                }
+                break;
+        }
+    }
+
+    private void onClick(MotionEvent event) {
+        // use own reference to click listener as the sliding will process the motion event and
+        // not delegate to the click listener
+        if (mClickListener != null) {
+            mClickListener.onClick(this);
+        }
+        if (!mSmartClickDisabled) {
+            addDelta();
+        }
+    }
+
+    @Override
+    public void setOnClickListener(OnClickListener listener) {
+        super.setOnClickListener(listener);
+        mClickListener = listener;
+    }
+
+    private boolean isInsideBounds(MotionEvent event) {
+        float checkX = event.getX() + getLeft();
+        float checkY = event.getY() + getTop();
+        return checkX >= getLeft() && checkX <= getRight()
+                && checkY >= getTop() && checkY <= getBottom();
     }
 
     private void notifyListener() {

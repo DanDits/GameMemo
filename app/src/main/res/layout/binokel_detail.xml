@@ -168,8 +168,8 @@
                                 android:layout_width="0dp"
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
-                                android:id="@+id/binokel_schellen"
-                                android:src="@drawable/binokel_schellen"
+                                android:id="@+id/binokel_eichel"
+                                android:src="@drawable/binokel_eichel"
                                 android:background="@drawable/binokel_button_disabledhighlight"/>
                             <ImageButton
                                 android:layout_width="0dp"
@@ -189,8 +189,8 @@
                                 android:layout_width="0dp"
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
-                                android:id="@+id/binokel_eichel"
-                                android:src="@drawable/binokel_eichel"
+                                android:id="@+id/binokel_schellen"
+                                android:src="@drawable/binokel_schellen"
                                 android:background="@drawable/binokel_button_disabledhighlight"/>
                             <ImageButton
                                 android:layout_width="0dp"
